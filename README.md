@@ -42,20 +42,15 @@ EdgeFlow is a minimalist, declarative programming language designed to simplify 
 git clone <https://github.com/yourusername/edge-ai-dsl.git>
 cd edge-ai-dsl
 
-
 ### Generate the Parser with ANTLR
 
 antlr4 -Dlanguage=Python3 -o parser grammar/EdgeAILang.g4
-
-
 
 ### Running the DSL Compiler
 
 Currently, you can parse DSL scripts and trigger basic quantization:
 
 python main.py examples/sample.dsl
-
-
 
 ---
 
@@ -72,7 +67,6 @@ edgeFlow/
 ├── main.py # Entry point for DSL compiler CLI
 ├── README.md
 └── requirements.txt # Python dependencies
-
 
 ---
 
