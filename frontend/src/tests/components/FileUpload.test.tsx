@@ -13,10 +13,7 @@ describe('FileUpload', () => {
     render(<FileUpload onFileSelect={onFileSelect} acceptedFormats={[ '.ef' ]} maxSize={5} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const file = makeFile('config.ef', 1000);
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    fileInput.files = dt.files;
-    fireEvent.change(fileInput);
+    fireEvent.change(fileInput, { target: { files: [file] } });
     expect(onFileSelect).toHaveBeenCalled();
   });
 
@@ -26,10 +23,7 @@ describe('FileUpload', () => {
     render(<FileUpload onFileSelect={onFileSelect} acceptedFormats={[ '.ef' ]} maxSize={5} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const file = makeFile('bad.txt', 1000);
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    fileInput.files = dt.files;
-    fireEvent.change(fileInput);
+    fireEvent.change(fileInput, { target: { files: [file] } });
     expect(alertSpy).toHaveBeenCalled();
     expect(onFileSelect).not.toHaveBeenCalled();
     alertSpy.mockRestore();
