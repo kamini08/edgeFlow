@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: edgeflow-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - edgeflow-net
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    container_name: edgeflow-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - edgeflow-net
+
+networks:
+  edgeflow-net:
+    driver: bridge
+
