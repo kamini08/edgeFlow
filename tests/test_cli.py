@@ -159,13 +159,13 @@ def test_main_verbose_emits_debug_log(tmp_path, monkeypatch, caplog):
 
 def test_main_help_returns_0(monkeypatch):
     # Verify SystemExit handling path in main
-    _set_argv(["--help"]) 
+    _set_argv(["--help"])
     rc = edgeflowc.main()
     assert rc == 0
 
 
 def test_main_version_returns_0():
-    _set_argv(["--version"]) 
+    _set_argv(["--version"])
     rc = edgeflowc.main()
     assert rc == 0
 
