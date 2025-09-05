@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   backend:
     image: ${BACKEND_IMAGE}
@@ -30,4 +29,3 @@ services:
 networks:
   edgeflow-net:
     driver: bridge
-

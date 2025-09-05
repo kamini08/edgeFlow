@@ -133,9 +133,12 @@ jobs:
             fi
             # Ensure docker compose is available
             (docker compose version || docker-compose version)
+            export COMPOSE_PROJECT_NAME=edgeflow
             # Pull and run
-            (docker compose --env-file .env -f docker-compose.yml pull || docker-compose --env-file .env -f docker-compose.yml pull)
-            (docker compose --env-file .env -f docker-compose.yml up -d || docker-compose --env-file .env -f docker-compose.yml up -d)
+            # Stop any existing stack to free ports
+            (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml down -v || docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml down -v || true)
+            (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml pull || docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml pull)
+            (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml up -d --remove-orphans || docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml up -d --remove-orphans)
             docker image prune -f || true
             # Basic health checks
             curl -fsS http://localhost:8000/api/health || (echo 'Backend health failed' && exit 1)
