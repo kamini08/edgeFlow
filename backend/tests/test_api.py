@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import base64
-from typing import Any, Dict
+from typing import Any, Dict  # noqa: F401 (placeholders kept for future tests)
 
 from fastapi.testclient import TestClient
 
 from backend.app import app
-
 
 client = TestClient(app)
 
@@ -31,7 +30,7 @@ def test_help():
 
 
 def test_compile_success():
-    cfg = "model_path=\"m.tflite\"\nquantize=int8\n"
+    cfg = 'model_path="m.tflite"\nquantize=int8\n'
     r = client.post("/api/compile", json={"config_file": cfg, "filename": "c.ef"})
     assert r.status_code == 200
     data = r.json()
@@ -45,8 +44,10 @@ def test_compile_invalid_ext():
 
 
 def test_compile_verbose_logs():
-    cfg = "model_path=\"m.tflite\"\n"
-    r = client.post("/api/compile/verbose", json={"config_file": cfg, "filename": "c.ef"})
+    cfg = 'model_path="m.tflite"\n'
+    r = client.post(
+        "/api/compile/verbose", json={"config_file": cfg, "filename": "c.ef"}
+    )
     assert r.status_code == 200
     data = r.json()
     assert data["success"] is True
@@ -70,7 +71,10 @@ def test_optimize_and_benchmark():
 
     r2 = client.post(
         "/api/benchmark",
-        json={"original_model": b64, "optimized_model": opt_b64},
+        json={
+            "original_model": b64,
+            "optimized_model": opt_b64,
+        },
     )
     assert r2.status_code == 200
     bench = r2.json()
@@ -78,9 +82,7 @@ def test_optimize_and_benchmark():
 
 
 def test_rate_limit():
-    # Hit the health endpoint many times to trigger limiter (>120 per minute is hard to simulate reliably here)
-    # We'll just ensure it doesn't erroneously rate-limit basic access.
+    # Basic check: a few calls should not trigger limiter.
     for _ in range(5):
         r = client.get("/api/health")
         assert r.status_code == 200
-
