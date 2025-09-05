@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-});
+// Default to relative path so Next.js rewrites can proxy to backend in Docker Compose
+const api = axios.create({ baseURL: process.env.NEXT_PUBLIC_API_URL || '' });
 
 export const compileConfig = (config_file: string, filename: string) =>
   api.post('/api/compile', { config_file, filename }).then(r => r.data);
@@ -19,4 +18,3 @@ export const benchmarkModels = (original_model: string, optimized_model: string)
 export const getVersion = () => api.get('/api/version').then(r => r.data);
 export const getHelp = () => api.get('/api/help').then(r => r.data);
 export const getHealth = () => api.get('/api/health').then(r => r.data);
-
