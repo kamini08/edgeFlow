@@ -70,6 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push
     environment: production
+    if: ${{ secrets.KUBECONFIG_B64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -132,3 +133,50 @@ jobs:
           kubectl -n ${NS} rollout status deployment/edgeflow-frontend --timeout=180s
         env:
           NAMESPACE: ${{ vars.K8S_NAMESPACE }}
+
+  deploy-compose:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_PRIVATE_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload docker-compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "/opt/edgeflow/docker-compose.yml"
+          strip_components: 0
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            APP_DIR=/opt/edgeflow
+            sudo mkdir -p ${APP_DIR}
+            cd ${APP_DIR}
+            # Write .env with image tags
+            cat > .env << 'EOF'
+            BACKEND_IMAGE=${{ needs.build-and-push.outputs.backend_image }}
+            FRONTEND_IMAGE=${{ needs.build-and-push.outputs.frontend_image }}
+            EOF
+            # Login to GHCR if credentials provided
+            if [ -n "${{ secrets.GHCR_USERNAME }}" ] && [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
+              echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+            fi
+            # Ensure docker compose is available
+            (docker compose version || docker-compose version)
+            # Pull and run
+            (docker compose --env-file .env -f docker-compose.yml pull || docker-compose --env-file .env -f docker-compose.yml pull)
+            (docker compose --env-file .env -f docker-compose.yml up -d || docker-compose --env-file .env -f docker-compose.yml up -d)
+            docker image prune -f || true
+            # Basic health checks
+            curl -fsS http://localhost:8000/api/health || (echo 'Backend health failed' && exit 1)
+            curl -fsS http://localhost:3000/ || (echo 'Frontend health failed' && exit 1)
