@@ -21,6 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Derive lowercase image repo
         run: |
           echo "IMAGE_REPO=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -47,6 +50,8 @@ jobs:
           context: .
           file: backend/Dockerfile
           push: true
+          provenance: false
+          compression: gzip
           tags: |
             ${{ steps.tags.outputs.backend }}
             ${{ steps.tags.outputs.backend_latest }}
@@ -57,6 +62,8 @@ jobs:
           context: frontend
           file: frontend/Dockerfile
           push: true
+          provenance: false
+          compression: gzip
           tags: |
             ${{ steps.tags.outputs.frontend }}
             ${{ steps.tags.outputs.frontend_latest }}
