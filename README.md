@@ -145,6 +145,30 @@ GitHub Actions runs on pushes and PRs for Python 3.11:
 - Tests with coverage (fail below 90%)
 - Coverage badge artifact generated via `genbadge`
 
+Web Interface
+-------------
+Backend (FastAPI):
+- App entry: `backend/app.py`
+- Endpoints with strict CLI parity:
+  - `POST /api/compile` (maps to `python edgeflowc.py config.ef`)
+  - `POST /api/compile/verbose` (maps to `--verbose`)
+  - `POST /api/optimize` (optimization phase)
+  - `POST /api/benchmark` (benchmarking)
+  - `GET /api/version` (maps to `--version`)
+  - `GET /api/help` (maps to `--help`)
+  - `GET /api/health` (health check)
+
+Frontend (Next.js + TS):
+- Components under `frontend/src/components` and pages under `frontend/src/pages`
+- API client in `frontend/src/services/api.ts`
+
+Local run (Docker):
+```
+docker-compose up --build
+# Backend: http://localhost:8000/docs
+# Frontend: http://localhost:3000
+```
+
 Contributing
 ------------
 - Open a PR with a focused set of changes
