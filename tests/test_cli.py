@@ -164,6 +164,12 @@ def test_main_help_returns_0(monkeypatch):
     assert rc == 0
 
 
+def test_main_version_returns_0():
+    _set_argv(["--version"])
+    rc = edgeflowc.main()
+    assert rc == 0
+
+
 def test_main_handles_unexpected_exception(monkeypatch):
     # Force an unexpected exception inside main
     def boom():
