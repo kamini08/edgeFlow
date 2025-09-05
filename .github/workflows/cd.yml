@@ -83,32 +83,52 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
         run: |
-          for v in SSH_HOST SSH_USER SSH_PRIVATE_KEY; do
-            if [ -z "${!v}" ]; then echo "Missing secret: $v"; exit 1; fi
-          done
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_USER" ]; then
+            echo "Missing SSH_HOST or SSH_USER"; exit 1; fi
+          if [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$SSH_PASSWORD" ]; then
+            echo "Provide either SSH_PRIVATE_KEY or SSH_PASSWORD"; exit 1; fi
 
-      - name: Upload docker-compose file
+      - name: Upload docker-compose file (key)
+        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "docker-compose.prod.yml"
-          target: "/opt/edgeflow/docker-compose.yml"
+          target: "/tmp/edgeflow-docker-compose.yml"
           strip_components: 0
 
-      - name: Deploy via SSH
+      - name: Upload docker-compose file (password)
+        if: ${{ secrets.SSH_PRIVATE_KEY == '' && secrets.SSH_PASSWORD != '' }}
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "docker-compose.prod.yml"
+          target: "/tmp/edgeflow-docker-compose.yml"
+          strip_components: 0
+
+      - name: Deploy via SSH (key)
+        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             set -euo pipefail
             APP_DIR=/opt/edgeflow
             sudo mkdir -p ${APP_DIR}
             cd ${APP_DIR}
+            # Move compose file into place
+            if [ -d docker-compose.yml ]; then sudo rm -rf docker-compose.yml; fi
+            if [ -f /tmp/edgeflow-docker-compose.yml ]; then mv /tmp/edgeflow-docker-compose.yml docker-compose.yml; fi
             # Write .env with image tags
             cat > .env << 'EOF'
             BACKEND_IMAGE=${{ needs.build-and-push.outputs.backend_image }}
@@ -125,5 +145,36 @@ jobs:
             (docker compose --env-file .env -f docker-compose.yml up -d || docker-compose --env-file .env -f docker-compose.yml up -d)
             docker image prune -f || true
             # Basic health checks
+            curl -fsS http://localhost:8000/api/health || (echo 'Backend health failed' && exit 1)
+            curl -fsS http://localhost:3000/ || (echo 'Frontend health failed' && exit 1)
+
+      - name: Deploy via SSH (password)
+        if: ${{ secrets.SSH_PRIVATE_KEY == '' && secrets.SSH_PASSWORD != '' }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -euo pipefail
+            APP_DIR=/opt/edgeflow
+            sudo mkdir -p ${APP_DIR}
+            cd ${APP_DIR}
+            # Move compose file into place
+            if [ -d docker-compose.yml ]; then sudo rm -rf docker-compose.yml; fi
+            if [ -f /tmp/edgeflow-docker-compose.yml ]; then mv /tmp/edgeflow-docker-compose.yml docker-compose.yml; fi
+            # Write .env with image tags
+            cat > .env << 'EOF'
+            BACKEND_IMAGE=${{ needs.build-and-push.outputs.backend_image }}
+            FRONTEND_IMAGE=${{ needs.build-and-push.outputs.frontend_image }}
+            EOF
+            # Login to GHCR if credentials provided
+            if [ -n "${{ secrets.GHCR_USERNAME }}" ] && [ -n "${{ secrets.GHCR_TOKEN }}" ]; then
+              echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+            fi
+            (docker compose version || docker-compose version)
+            (docker compose --env-file .env -f docker-compose.yml pull || docker-compose --env-file .env -f docker-compose.yml pull)
+            (docker compose --env-file .env -f docker-compose.yml up -d || docker-compose --env-file .env -f docker-compose.yml up -d)
+            docker image prune -f || true
             curl -fsS http://localhost:8000/api/health || (echo 'Backend health failed' && exit 1)
             curl -fsS http://localhost:3000/ || (echo 'Frontend health failed' && exit 1)
