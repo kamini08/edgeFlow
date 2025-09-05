@@ -21,9 +21,11 @@ jobs:
           flake8 backend
           mypy --ignore-missing-imports backend
       - name: Test backend
+        env:
+          PYTHONPATH: .
         run: pytest -q --cov=backend --cov-report=xml --cov-fail-under=85
       - name: Bandit security scan
-        run: bandit -r backend -q
+        run: bandit -r backend -x backend/tests -q
 
   frontend:
     runs-on: ubuntu-latest
@@ -53,9 +55,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Compose build
-        run: docker-compose build
+        run: |
+          docker compose version || true
+          docker compose build || docker-compose build
       - name: Compose up
-        run: docker-compose up -d
+        run: docker compose up -d || docker-compose up -d
       - name: Wait for backend
         run: |
           for i in {1..30}; do curl -sf http://localhost:8000/api/health && break || sleep 2; done
@@ -64,5 +68,4 @@ jobs:
           curl -sf http://localhost:8000/api/version
       - name: Compose down
         if: always()
-        run: docker-compose down -v
-
+        run: docker compose down -v || docker-compose down -v
