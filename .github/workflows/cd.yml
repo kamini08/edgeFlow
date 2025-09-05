@@ -90,8 +90,16 @@ jobs:
           if [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$SSH_PASSWORD" ]; then
             echo "Provide either SSH_PRIVATE_KEY or SSH_PASSWORD"; exit 1; fi
 
+      - name: Set deploy flags
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          if [ -n "$SSH_PRIVATE_KEY" ]; then echo "HAS_KEY=true" >> $GITHUB_ENV; else echo "HAS_KEY=false" >> $GITHUB_ENV; fi
+          if [ -n "$SSH_PASSWORD" ]; then echo "HAS_PASSWORD=true" >> $GITHUB_ENV; else echo "HAS_PASSWORD=false" >> $GITHUB_ENV; fi
+
       - name: Upload docker-compose file (key)
-        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
+        if: ${{ env.HAS_KEY == 'true' }}
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -103,7 +111,7 @@ jobs:
           strip_components: 0
 
       - name: Upload docker-compose file (password)
-        if: ${{ secrets.SSH_PRIVATE_KEY == '' && secrets.SSH_PASSWORD != '' }}
+        if: ${{ env.HAS_KEY != 'true' && env.HAS_PASSWORD == 'true' }}
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -114,7 +122,7 @@ jobs:
           strip_components: 0
 
       - name: Deploy via SSH (key)
-        if: ${{ secrets.SSH_PRIVATE_KEY != '' }}
+        if: ${{ env.HAS_KEY == 'true' }}
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -149,7 +157,7 @@ jobs:
             curl -fsS http://localhost:3000/ || (echo 'Frontend health failed' && exit 1)
 
       - name: Deploy via SSH (password)
-        if: ${{ secrets.SSH_PRIVATE_KEY == '' && secrets.SSH_PASSWORD != '' }}
+        if: ${{ env.HAS_KEY != 'true' && env.HAS_PASSWORD == 'true' }}
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
