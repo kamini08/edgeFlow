@@ -13,6 +13,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enforce linear history (no merge commits)
+        run: |
+          git fetch origin main --quiet || true
+          BASE=$(git merge-base HEAD origin/main || echo "")
+          if [ -n "$BASE" ]; then
+            MERGES=$(git rev-list --merges ${BASE}..HEAD)
+            if [ -n "$MERGES" ]; then
+              echo "Merge commits detected in branch history:" >&2
+              echo "$MERGES" >&2
+              exit 1
+            fi
+          fi
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
