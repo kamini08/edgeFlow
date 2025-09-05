@@ -18,15 +18,14 @@ jobs:
 
       - name: Enforce linear history (no merge commits)
         run: |
+          # Fail if the PR branch introduces merge commits not in the base branch.
+          # Check only commits reachable from HEAD but not from origin/main.
           git fetch origin main --quiet || true
-          BASE=$(git merge-base HEAD origin/main || echo "")
-          if [ -n "$BASE" ]; then
-            MERGES=$(git rev-list --merges ${BASE}..HEAD)
-            if [ -n "$MERGES" ]; then
-              echo "Merge commits detected in branch history:" >&2
-              echo "$MERGES" >&2
-              exit 1
-            fi
+          MERGES=$(git rev-list --merges origin/main..HEAD)
+          if [ -n "$MERGES" ]; then
+            echo "Merge commits detected in branch (not in origin/main):" >&2
+            echo "$MERGES" >&2
+            exit 1
           fi
 
       - name: Set up Python 3.11
