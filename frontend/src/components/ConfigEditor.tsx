@@ -13,10 +13,9 @@ const ConfigEditor: React.FC<ConfigEditorProps> = ({ initialContent, onChange, r
       readOnly={!!readOnly}
       onChange={e => onChange(e.target.value)}
       rows={12}
-      style={{ width: '100%', fontFamily: 'monospace' }}
+      className="input font-mono"
     />
   );
 };
 
 export default ConfigEditor;
-
