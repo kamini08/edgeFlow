@@ -49,7 +49,9 @@ jobs:
         run: mypy --ignore-missing-imports .
 
       - name: Run tests
-        run: pytest -q --cov=edgeflowc --cov-report=xml --cov-fail-under=90
+        env:
+          PYTHONPATH: .
+        run: python -m pytest -q --cov=edgeflowc --cov-report=xml --cov-fail-under=90
 
       - name: Generate coverage badge
         run: genbadge coverage -i coverage.xml -o coverage.svg
@@ -59,4 +61,3 @@ jobs:
         with:
           name: coverage-badge
           path: coverage.svg
-
