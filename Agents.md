@@ -27,6 +27,14 @@ Before raising ANY PR:
 - [ ] Update API documentation if endpoints changed
 - [ ] Update Agents.md if new CLI commands added
 
+### Rule 4: CD Pipeline (PROD-ONLY)
+- Deployment runs on `push` to `main` or manual dispatch.
+- Build images to GHCR; deploy over SSH with Docker Compose on the server.
+- Required Secrets: `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY` (optionally `SSH_PASSPHRASE`).
+- Optional Secrets for private registries: `GHCR_USERNAME`, `GHCR_TOKEN` (read:packages).
+- Default host ports: Backend `18000`, Frontend `13000` (change in `docker-compose.prod.yml`).
+- Do NOT commit secrets; lockfiles MUST be committed (e.g., `frontend/package-lock.json`).
+
 Evidence Required in PR:
 ```
 make pre-commit
@@ -77,6 +85,7 @@ git push origin feature/your-feature
 - [ ] Added CLI command: `___`
 - [ ] Added API endpoint: `___`
 - [ ] CLI-API parity maintained
+ - [ ] If web changes: Tailwind styles updated and tested
 
 ## Testing
 - [ ] Backend tests pass
@@ -90,6 +99,18 @@ make pre-commit
 ```
 ```
 
+## CD Runbook
+
+- Pipeline: `.github/workflows/cd.yml`
+- Server path: `/opt/edgeflow`
+- Compose file: `docker-compose.yml` (deployed from `docker-compose.prod.yml`)
+- To change ports: edit `docker-compose.prod.yml` and update health checks in the workflow if host ports change.
+- Rollout logic: stop existing stack, free named containers/network, pull, force-recreate, health checks.
+- Logs on server:
+  - `docker compose -p edgeflow -f /opt/edgeflow/docker-compose.yml ps`
+  - `docker compose -p edgeflow -f /opt/edgeflow/docker-compose.yml logs -f backend`
+  - `docker compose -p edgeflow -f /opt/edgeflow/docker-compose.yml logs -f frontend`
+
 ## Monitoring
 
 Dashboard tracking:
@@ -97,4 +118,3 @@ Dashboard tracking:
 - API endpoints without CLI commands: 1 (/health only)
 - Test coverage: Backend >90%, Frontend >80%
 - Lint violations: 0
-
