@@ -3,8 +3,6 @@ name: CD
 on:
   push:
     branches: [ main ]
-  pull_request_target:
-    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -20,19 +18,8 @@ jobs:
     outputs:
       backend_image: ${{ steps.tags.outputs.backend }}
       frontend_image: ${{ steps.tags.outputs.frontend }}
-    # Only run on PRs originating from this repo to avoid exposing secrets to forks
-    if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
-      - name: Select ref
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            echo "REF=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
-          else
-            echo "REF=${GITHUB_SHA}" >> $GITHUB_ENV
-          fi
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.REF }}
 
       - name: Derive lowercase image repo
         run: |
@@ -89,16 +76,7 @@ jobs:
       group: prod-deploy
       cancel-in-progress: false
     steps:
-      - name: Select ref
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            echo "REF=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
-          else
-            echo "REF=${GITHUB_SHA}" >> $GITHUB_ENV
-          fi
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.REF }}
 
       - name: Verify required secrets are present
         env:
@@ -109,11 +87,6 @@ jobs:
           for v in SSH_HOST SSH_USER SSH_PRIVATE_KEY; do
             if [ -z "${!v}" ]; then echo "Missing secret: $v"; exit 1; fi
           done
-      - name: Verify PR origin (internal only)
-        if: ${{ github.event_name == 'pull_request_target' }}
-        run: |
-          if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
-            echo "Refusing to deploy from external fork PR"; exit 1; fi
 
       - name: Upload docker-compose file
         uses: appleboy/scp-action@v0.1.7
