@@ -8,3 +8,7 @@ parser/.antlr/
 .coverage
 coverage.xml
 coverage.svg
+coverage/
+frontend/coverage/
+backend/coverage/
+htmlcov/
