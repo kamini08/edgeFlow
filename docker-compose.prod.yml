@@ -20,7 +20,7 @@ services:
     container_name: edgeflow-frontend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "13000:3000"
     depends_on:
       - backend
     networks:

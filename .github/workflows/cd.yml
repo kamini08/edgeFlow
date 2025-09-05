@@ -145,4 +145,4 @@ jobs:
             docker image prune -f || true
             # Basic health checks (backend on host port 18000)
             curl -fsS http://localhost:18000/api/health || (echo 'Backend health failed' && exit 1)
-            curl -fsS http://localhost:3000/ || (echo 'Frontend health failed' && exit 1)
+            curl -fsS http://localhost:13000/ || (echo 'Frontend health failed' && exit 1)
