@@ -161,6 +161,7 @@ Backend (FastAPI):
 Frontend (Next.js + TS):
 - Components under `frontend/src/components` and pages under `frontend/src/pages`
 - API client in `frontend/src/services/api.ts`
+- Styling via Tailwind CSS (see `frontend/src/styles/globals.css`)
 
 Local run (Docker):
 ```
@@ -168,6 +169,15 @@ docker-compose up --build
 # Backend: http://localhost:8000/docs
 # Frontend: http://localhost:3000
 ```
+
+Production (CD + Reverse Proxy)
+-------------------------------
+- Continuous Deployment builds/pushes GHCR images, then deploys over SSH with Docker Compose on the server.
+- Public site: https://edgeflow.pointblank.club/
+- Host ports by default:
+  - Backend: `18000` (container 8000)
+  - Frontend: `13000` (container 3000)
+- Recommended: bind services to `127.0.0.1` and expose via Nginx with TLS (Certbot). Frontend proxies `/api/*` to backend inside the Docker network; backend need not be directly exposed.
 
 Contributing
 ------------
