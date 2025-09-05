@@ -12,3 +12,7 @@ coverage/
 frontend/coverage/
 backend/coverage/
 htmlcov/
+.pytest_cache/
+.mypy_cache/
+backend/.pytest_cache/
+backend/.mypy_cache/
