@@ -18,9 +18,7 @@ import argparse
 import json
 import logging
 import os
-import sys
 from typing import Any, Dict
-
 
 VERSION = "0.1.0"
 
@@ -172,9 +170,7 @@ def main() -> int:
             if not os.path.exists(args.config_path):
                 logging.error("Error: File '%s' not found", args.config_path)
             else:
-                logging.error(
-                    "Error: Invalid file extension. Expected '.ef' file"
-                )
+                logging.error("Error: Invalid file extension. Expected '.ef' file")
             return 1
 
         cfg = load_config(args.config_path)
@@ -193,4 +189,3 @@ def main() -> int:
 
 if __name__ == "__main__":  # pragma: no cover - exercised via tests calling main
     raise SystemExit(main())
-
