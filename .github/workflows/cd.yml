@@ -3,7 +3,7 @@ name: CD
 on:
   push:
     branches: [ main ]
-  pull_request:
+  pull_request_target:
     branches: [ main ]
   workflow_dispatch:
 
@@ -20,8 +20,19 @@ jobs:
     outputs:
       backend_image: ${{ steps.tags.outputs.backend }}
       frontend_image: ${{ steps.tags.outputs.frontend }}
+    # Only run on PRs originating from this repo to avoid exposing secrets to forks
+    if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
+      - name: Select ref
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
+            echo "REF=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+          else
+            echo "REF=${GITHUB_SHA}" >> $GITHUB_ENV
+          fi
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.REF }}
 
       - name: Derive lowercase image repo
         run: |
@@ -73,10 +84,22 @@ jobs:
   deploy-compose:
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_PRIVATE_KEY != '' }}
+    if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_PRIVATE_KEY != '' && (github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository) }}
     environment: production
+    concurrency:
+      group: prod-deploy
+      cancel-in-progress: false
     steps:
+      - name: Select ref
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
+            echo "REF=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+          else
+            echo "REF=${GITHUB_SHA}" >> $GITHUB_ENV
+          fi
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.REF }}
 
       - name: Upload docker-compose file
         uses: appleboy/scp-action@v0.1.7
