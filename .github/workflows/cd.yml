@@ -72,6 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push
     if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_PRIVATE_KEY != '' }}
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
