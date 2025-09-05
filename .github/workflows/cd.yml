@@ -66,73 +66,7 @@ jobs:
           echo "Backend: ${{ steps.tags.outputs.backend }}"
           echo "Frontend: ${{ steps.tags.outputs.frontend }}"
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-    environment: production
-    if: ${{ secrets.KUBECONFIG_B64 != '' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'v1.30.0'
-
-      - name: Write kubeconfig from secret
-        shell: bash
-        run: |
-          echo "${KUBECONFIG_B64}" | base64 -d > kubeconfig
-        env:
-          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
-
-      - name: Set kubectl context
-        run: echo "KUBECONFIG=${GITHUB_WORKSPACE}/kubeconfig" >> $GITHUB_ENV
-
-      - name: Create namespace if missing
-        run: |
-          NS=${NAMESPACE:-edgeflow}
-          kubectl create namespace ${NS} --dry-run=client -o yaml | kubectl apply -f -
-        env:
-          NAMESPACE: ${{ vars.K8S_NAMESPACE }}
-
-      - name: Ensure GHCR imagePullSecret (optional)
-        if: ${{ secrets.GHCR_USERNAME && secrets.GHCR_TOKEN }}
-        run: |
-          NS=${NAMESPACE:-edgeflow}
-          kubectl -n ${NS} create secret docker-registry ghcr-pull-secret \
-            --docker-server=ghcr.io \
-            --docker-username=${{ secrets.GHCR_USERNAME }} \
-            --docker-password=${{ secrets.GHCR_TOKEN }} \
-            --docker-email=ci@example.com \
-            --dry-run=client -o yaml | kubectl apply -f -
-        env:
-          NAMESPACE: ${{ vars.K8S_NAMESPACE }}
-
-      - name: Apply manifests
-        run: |
-          NS=${NAMESPACE:-edgeflow}
-          kubectl -n ${NS} apply -k k8s/
-        env:
-          NAMESPACE: ${{ vars.K8S_NAMESPACE }}
-
-      - name: Update images
-        run: |
-          NS=${NAMESPACE:-edgeflow}
-          kubectl -n ${NS} set image deployment/edgeflow-backend backend=${BACKEND_IMAGE}
-          kubectl -n ${NS} set image deployment/edgeflow-frontend frontend=${FRONTEND_IMAGE}
-        env:
-          NAMESPACE: ${{ vars.K8S_NAMESPACE }}
-          BACKEND_IMAGE: ${{ needs.build-and-push.outputs.backend_image }}
-          FRONTEND_IMAGE: ${{ needs.build-and-push.outputs.frontend_image }}
-
-      - name: Rollout status
-        run: |
-          NS=${NAMESPACE:-edgeflow}
-          kubectl -n ${NS} rollout status deployment/edgeflow-backend --timeout=180s
-          kubectl -n ${NS} rollout status deployment/edgeflow-frontend --timeout=180s
-        env:
-          NAMESPACE: ${{ vars.K8S_NAMESPACE }}
+  
 
   deploy-compose:
     runs-on: ubuntu-latest
