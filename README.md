@@ -72,6 +72,33 @@ CLI Options
 - `-v, --verbose`: Enable verbose debug output
 - `--version`: Print CLI version and exit
 
+=======
+- Python 3.8+
+- Java JDK (required by ANTLR)
+- `antlr4-python3-runtime` library (`pip install antlr4-python3-runtime`)
+- TensorFlow and TensorFlow Lite Converter (`pip install tensorflow`)
+- ANTLR 4.13.1 Complete Jar (download from [antlr.org](https://www.antlr.org/download/antlr-4.13.1-complete.jar) and place in `grammer/`)
+- SSH access/setup for target device (if deploying physically)
+
+### Clone the Repository
+
+git clone <https://github.com/yourusername/edge-ai-dsl.git>
+cd edge-ai-dsl
+
+### Generate the Parser with ANTLR
+
+java -jar grammer/antlr-4.13.1-complete.jar -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4
+
+### Running the DSL Compiler
+
+Currently, you can parse DSL scripts and trigger basic quantization:
+
+python main.py examples/sample.dsl
+
+---
+
+## Project Structure
+
 Architecture
 ------------
 ```

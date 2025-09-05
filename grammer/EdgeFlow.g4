@@ -1,6 +1,4 @@
-// EdgeAILang.g4 - ANTLR Grammar for Edge AI DSL
-
-grammar EdgeAILang;
+grammar EdgeFlow;
 
 // Parser rules
 
@@ -63,6 +61,7 @@ NONE            : 'none';
 IDENTIFIER      : [a-zA-Z_] [a-zA-Z_0-9]* ;
 STRING          : '"' (~["\r\n])* '"' ;
 INTEGER         : [0-9]+ ;
+BOOL            : 'true' | 'false';
 
-
+COMMENT         : '//' .*? '\n' -> skip;
 WS              : [ \t\r\n]+ -> skip ;
