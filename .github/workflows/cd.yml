@@ -134,9 +134,13 @@ jobs:
             # Ensure docker compose is available
             (docker compose version || docker-compose version)
             export COMPOSE_PROJECT_NAME=edgeflow
-            # Pull and run
-            # Stop any existing stack to free ports
-            (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml down -v || docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml down -v || true)
+            # Stop any existing stack and containers to free ports
+            (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml down -v || true)
+            (docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml down -v || true)
+            (docker rm -f edgeflow-backend edgeflow-frontend || true)
+            (docker network rm ${COMPOSE_PROJECT_NAME}_edgeflow-net || true)
+            sleep 2
+            # Pull and run cleanly
             (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml pull || docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml pull)
             (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml up -d --remove-orphans || docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml up -d --remove-orphans)
             docker image prune -f || true
