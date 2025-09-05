@@ -12,27 +12,27 @@ def _set_argv(args):
 
 
 def test_parse_arguments_with_config_path(monkeypatch):
-    _set_argv(["model.ef"]) 
+    _set_argv(["model.ef"])
     ns = edgeflowc.parse_arguments()
     assert ns.config_path == "model.ef"
     assert ns.verbose is False
 
 
 def test_parse_arguments_verbose(monkeypatch):
-    _set_argv(["model.ef", "--verbose"]) 
+    _set_argv(["model.ef", "--verbose"])
     ns = edgeflowc.parse_arguments()
     assert ns.verbose is True
 
 
 def test_parse_arguments_help(monkeypatch):
-    _set_argv(["--help"]) 
+    _set_argv(["--help"])
     with pytest.raises(SystemExit) as exc:
         edgeflowc.parse_arguments()
     assert exc.value.code == 0
 
 
 def test_parse_arguments_version(monkeypatch, capsys):
-    _set_argv(["--version"]) 
+    _set_argv(["--version"])
     with pytest.raises(SystemExit) as exc:
         edgeflowc.parse_arguments()
     assert exc.value.code == 0
@@ -60,7 +60,7 @@ def test_validate_file_path_uppercase_extension(tmp_path):
 
 def test_load_config_fallback_reads_file(tmp_path):
     p = tmp_path / "model.ef"
-    content = "model_path=\"m.tflite\"\n"
+    content = 'model_path="m.tflite"\n'
     p.write_text(content, encoding="utf-8")
     cfg = edgeflowc.load_config(str(p))
     assert cfg["__source__"].endswith("model.ef")
@@ -150,7 +150,7 @@ def test_main_verbose_emits_debug_log(tmp_path, monkeypatch, caplog):
     monkeypatch.setattr(edgeflowc, "optimize_model", lambda cfg: None)
 
     caplog.set_level("DEBUG")
-    _set_argv([str(p), "--verbose"]) 
+    _set_argv([str(p), "--verbose"])
     code = edgeflowc.main()
     assert code == 0
     # confirm debug log emitted by load step
@@ -159,7 +159,7 @@ def test_main_verbose_emits_debug_log(tmp_path, monkeypatch, caplog):
 
 def test_main_help_returns_0(monkeypatch):
     # Verify SystemExit handling path in main
-    _set_argv(["--help"]) 
+    _set_argv(["--help"])
     rc = edgeflowc.main()
     assert rc == 0
 
