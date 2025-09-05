@@ -8,7 +8,6 @@ from fastapi.testclient import TestClient
 
 from backend.app import app, rate_limiter
 
-
 client = TestClient(app)
 
 
@@ -25,16 +24,23 @@ def test_e2e_workflow():
     b64 = base64.b64encode(raw).decode()
     r2 = client.post(
         "/api/optimize",
-        json={"model_file": b64, "config": {"quantize": "int8", "target_device": "raspberry_pi"}},
+        json={
+            "model_file": b64,
+            "config": {"quantize": "int8", "target_device": "raspberry_pi"},
+        },
     )
     assert r2.status_code == 200
     opt_b64 = r2.json()["optimized_model"]
 
     # 3) Benchmark
-    r3 = client.post("/api/benchmark", json={"original_model": b64, "optimized_model": opt_b64})
+    r3 = client.post(
+        "/api/benchmark", json={"original_model": b64, "optimized_model": opt_b64}
+    )
     assert r3.status_code == 200
     data = r3.json()
-    assert "original_stats" in data and "optimized_stats" in data and "improvement" in data
+    assert (
+        "original_stats" in data and "optimized_stats" in data and "improvement" in data
+    )
 
 
 def test_concurrent_requests():
@@ -63,10 +69,19 @@ def test_rate_limit_enforced():
         rate_limiter.window_started.clear()
         # Make 3 compile calls, third should hit 429
         cfg = 'model_path="m.tflite"\n'
-        assert client.post("/api/compile", json={"config_file": cfg, "filename": "a.ef"}).status_code == 200
-        assert client.post("/api/compile", json={"config_file": cfg, "filename": "a.ef"}).status_code == 200
+        assert (
+            client.post(
+                "/api/compile", json={"config_file": cfg, "filename": "a.ef"}
+            ).status_code
+            == 200
+        )
+        assert (
+            client.post(
+                "/api/compile", json={"config_file": cfg, "filename": "a.ef"}
+            ).status_code
+            == 200
+        )
         r = client.post("/api/compile", json={"config_file": cfg, "filename": "a.ef"})
         assert r.status_code in (200, 429)
     finally:
         rate_limiter.capacity = old_cap
-
