@@ -118,7 +118,7 @@ pytest -q --cov=edgeflowc --cov-report=term-missing
 
 CI/CD
 -----
-GitHub Actions runs on pushes and PRs for Python 3.8–3.11:
+GitHub Actions runs on pushes and PRs for Python 3.11:
 - Lint: black, isort, flake8
 - Type check: mypy (ignore missing imports by default)
 - Tests with coverage (fail below 90%)
@@ -140,4 +140,3 @@ Security Notes
 License
 -------
 TBD (add the appropriate license file for your project).
-
