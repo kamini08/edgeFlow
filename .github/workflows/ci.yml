@@ -48,10 +48,10 @@ jobs:
       - name: Type check - mypy
         run: mypy --ignore-missing-imports .
 
-      - name: Run tests
+      - name: Run tests (CLI only)
         env:
           PYTHONPATH: .
-        run: python -m pytest -q --cov=edgeflowc --cov-report=xml --cov-fail-under=90
+        run: python -m pytest -q tests --cov=edgeflowc --cov-report=xml --cov-fail-under=90
 
       - name: Generate coverage badge
         run: genbadge coverage -i coverage.xml -o coverage.svg

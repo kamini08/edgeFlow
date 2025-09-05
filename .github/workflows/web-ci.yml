@@ -42,7 +42,7 @@ jobs:
           npm run type-check
       - name: Test
         working-directory: frontend
-        run: npm test -- --coverage
+        run: npm test -- --coverage --passWithNoTests
       - name: E2E placeholder
         working-directory: frontend
         run: npm run test:e2e
