@@ -8,7 +8,6 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -33,4 +32,3 @@ def optimize(config: Dict[str, Any]) -> None:
         quantize,
     )
     # No-op for now.
-

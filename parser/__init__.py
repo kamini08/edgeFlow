@@ -13,12 +13,14 @@ from typing import Any, Dict
 
 try:  # Attempt optional imports of generated artifacts
     # These files are expected when running:
-    #   java -jar grammer/antlr-4.13.1-complete.jar -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4
+    #   java -jar grammer/antlr-4.13.1-complete.jar \
+    #       -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4
     # They may not be present in early development.
+    from antlr4 import CommonTokenStream, FileStream  # type: ignore
+
     from .EdgeFlowLexer import EdgeFlowLexer  # type: ignore
     from .EdgeFlowParser import EdgeFlowParser  # type: ignore
     from .EdgeFlowVisitor import EdgeFlowVisitor  # type: ignore
-    from antlr4 import CommonTokenStream, FileStream  # type: ignore
 
     _ANTLR_AVAILABLE = True
 except Exception:  # noqa: BLE001 - permissive import for optional dependency
@@ -52,6 +54,7 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
 
     if _ANTLR_AVAILABLE:
         try:
+
             class CollectVisitor(EdgeFlowVisitor):  # type: ignore[misc]
                 def __init__(self) -> None:
                     self.data: Dict[str, Any] = {}
@@ -67,8 +70,8 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
             parser = EdgeFlowParser(tokens)  # type: ignore[call-arg]
             tree = parser.start()  # type: ignore[attr-defined]
 
-            # Visit tree. Without detailed grammar hooks here, we rely on Team A's visitor
-            # to populate data. Keep a safe, empty default.
+            # Visit tree. Without detailed grammar hooks here, we rely on
+            # Team A's visitor to populate data. Keep a safe, empty default.
             visitor = CollectVisitor()
             visitor.visit(tree)
             result = dict(visitor.data)

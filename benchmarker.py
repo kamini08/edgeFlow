@@ -8,7 +8,6 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,6 +22,12 @@ def benchmark(model_path: str, device: str = "cpu") -> Dict[str, Any]:
         Dict[str, Any]: Minimal benchmark results.
     """
 
-    logger.info("[benchmarker] Benchmarking placeholder: model=%s on %s", model_path, device)
-    return {"model_path": model_path, "device": device, "latency_ms": None, "throughput": None}
-
+    logger.info(
+        "[benchmarker] Benchmarking placeholder: model=%s on %s", model_path, device
+    )
+    return {
+        "model_path": model_path,
+        "device": device,
+        "latency_ms": None,
+        "throughput": None,
+    }
