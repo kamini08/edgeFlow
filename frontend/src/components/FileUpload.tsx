@@ -23,9 +23,12 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, acceptedFormats, 
   }, [onFileSelect, acceptedFormats, maxSize]);
 
   return (
-    <input type="file" onChange={onChange} />
+    <input
+      type="file"
+      onChange={onChange}
+      className="input cursor-pointer file:mr-4 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-2 file:text-white hover:file:bg-blue-700"
+    />
   );
 };
 
 export default FileUpload;
-
