@@ -10,7 +10,8 @@ import base64
 import io
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from parser import parse_ef  # type: ignore
+from typing import Any, Dict, List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,12 +20,11 @@ from pydantic import BaseModel, Field, constr
 
 # Import core CLI logic
 import edgeflowc  # type: ignore
-from parser import parse_ef  # type: ignore
-
 
 # ----------------------------------------------------------------------------
 # Rate limiting (simple in-memory token bucket per client IP)
 # ----------------------------------------------------------------------------
+
 
 class SimpleRateLimiter:
     def __init__(self, capacity: int = 60) -> None:
@@ -47,6 +47,11 @@ class SimpleRateLimiter:
 rate_limiter = SimpleRateLimiter(capacity=120)
 
 
+def rate_limit_dep(request: Request) -> None:
+    """Dependency wrapper to apply rate limiting using the client IP."""
+    rate_limiter(request)
+
+
 # ----------------------------------------------------------------------------
 # Request/Response Schemas
 # ----------------------------------------------------------------------------
@@ -59,9 +64,9 @@ class CompileRequest(BaseModel):
 
 class CompileResponse(BaseModel):
     success: bool
-    parsed_config: Dict[str, Any] | None = None
-    message: str | None = None
-    logs: List[str] | None = None
+    parsed_config: Optional[Dict[str, Any]] = None
+    message: Optional[str] = None
+    logs: Optional[List[str]] = None
 
 
 class OptimizeRequest(BaseModel):
@@ -125,10 +130,12 @@ async def limit_body_size(request: Request, call_next):  # type: ignore
 
 def _parse_config_content(filename: str, content: str) -> Dict[str, Any]:
     if not filename.lower().endswith(".ef"):
-        raise HTTPException(status_code=400, detail="Invalid file extension; expected .ef")
+        raise HTTPException(
+            status_code=400, detail="Invalid file extension; expected .ef"
+        )
     # Write to in-memory file-like then to temp file if parser requires a path
-    import tempfile
     import os
+    import tempfile
 
     try:
         with tempfile.NamedTemporaryFile("w+", suffix=".ef", delete=False) as tmp:
@@ -140,8 +147,10 @@ def _parse_config_content(filename: str, content: str) -> Dict[str, Any]:
     finally:
         try:
             os.unlink(path)  # type: ignore[name-defined]
-        except Exception:
+        except FileNotFoundError:
             pass
+        except Exception as exc:  # noqa: BLE001 - log unexpected cleanup errors
+            logging.getLogger(__name__).warning("Temp cleanup failed: %s", exc)
 
 
 def _b64_size_mb(data_b64: str) -> float:
@@ -178,13 +187,19 @@ def help_() -> Dict[str, Any]:
 
 
 @app.post("/api/compile", response_model=CompileResponse)
-def compile_cfg(req: CompileRequest, _: None = Depends(rate_limiter)) -> CompileResponse:
+def compile_cfg(
+    req: CompileRequest, _: None = Depends(rate_limit_dep)
+) -> CompileResponse:
     parsed = _parse_config_content(req.filename, req.config_file)
-    return CompileResponse(success=True, parsed_config=parsed, message="Parsed successfully")
+    return CompileResponse(
+        success=True, parsed_config=parsed, message="Parsed successfully"
+    )
 
 
 @app.post("/api/compile/verbose", response_model=CompileResponse)
-def compile_verbose(req: CompileRequest, _: None = Depends(rate_limiter)) -> CompileResponse:
+def compile_verbose(
+    req: CompileRequest, _: None = Depends(rate_limit_dep)
+) -> CompileResponse:
     log_stream = io.StringIO()
     handler = logging.StreamHandler(log_stream)
     root = logging.getLogger()
@@ -195,14 +210,18 @@ def compile_verbose(req: CompileRequest, _: None = Depends(rate_limiter)) -> Com
         parsed = _parse_config_content(req.filename, req.config_file)
         handler.flush()
         logs = [line for line in log_stream.getvalue().splitlines() if line]
-        return CompileResponse(success=True, parsed_config=parsed, logs=logs, message="Parsed successfully")
+        return CompileResponse(
+            success=True, parsed_config=parsed, logs=logs, message="Parsed successfully"
+        )
     finally:
         root.removeHandler(handler)
         root.setLevel(old_level)
 
 
 @app.post("/api/optimize", response_model=OptimizeResponse)
-def optimize(req: OptimizeRequest, _: None = Depends(rate_limiter)) -> OptimizeResponse:
+def optimize(
+    req: OptimizeRequest, _: None = Depends(rate_limit_dep)
+) -> OptimizeResponse:
     # Placeholder: return the same model and simple report
     size_mb = _b64_size_mb(req.model_file)
     report = {
@@ -213,17 +232,23 @@ def optimize(req: OptimizeRequest, _: None = Depends(rate_limiter)) -> OptimizeR
         "estimated_size_mb": max(size_mb * 0.5, 0.000001),
     }
     optimized_model = req.model_file  # echo for now
-    return OptimizeResponse(success=True, optimized_model=optimized_model, optimization_report=report)
+    return OptimizeResponse(
+        success=True, optimized_model=optimized_model, optimization_report=report
+    )
 
 
 @app.post("/api/benchmark", response_model=BenchmarkResponse)
-def benchmark(req: BenchmarkRequest, _: None = Depends(rate_limiter)) -> BenchmarkResponse:
+def benchmark(
+    req: BenchmarkRequest, _: None = Depends(rate_limit_dep)
+) -> BenchmarkResponse:
     orig_size = _b64_size_mb(req.original_model)
     opt_size = _b64_size_mb(req.optimized_model)
     # Simple synthetic latencies: proportional to size
     orig_latency = round(max(1.0, orig_size * 10.0), 3)
     opt_latency = round(max(0.5, opt_size * 8.0), 3)
-    size_reduction = round((orig_size - opt_size) / max(orig_size, 1e-9), 6) if orig_size else 0.0
+    size_reduction = (
+        round((orig_size - opt_size) / max(orig_size, 1e-9), 6) if orig_size else 0.0
+    )
     speedup = round(orig_latency / max(opt_latency, 1e-9), 6)
     return BenchmarkResponse(
         original_stats=Stats(size_mb=orig_size, latency_ms=orig_latency),
@@ -236,4 +261,3 @@ def benchmark(req: BenchmarkRequest, _: None = Depends(rate_limiter)) -> Benchma
 @app.get("/")
 def root() -> Dict[str, Any]:
     return {"message": "EdgeFlow API", "docs": "/docs", "health": "/api/health"}
-
