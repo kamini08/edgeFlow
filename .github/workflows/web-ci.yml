@@ -1,0 +1,68 @@
+name: Web Stack CI
+
+on: [push, pull_request]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install backend deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+      - name: Lint
+        run: |
+          black --check backend
+          isort --profile black --check-only backend
+          flake8 backend
+          mypy --ignore-missing-imports backend
+      - name: Test backend
+        run: pytest -q --cov=backend --cov-report=xml --cov-fail-under=85
+      - name: Bandit security scan
+        run: bandit -r backend -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install and lint
+        working-directory: frontend
+        run: |
+          npm ci || npm install
+          npm run lint
+          npm run type-check
+      - name: Test
+        working-directory: frontend
+        run: npm test -- --coverage
+      - name: E2E placeholder
+        working-directory: frontend
+        run: npm run test:e2e
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compose build
+        run: docker-compose build
+      - name: Compose up
+        run: docker-compose up -d
+      - name: Wait for backend
+        run: |
+          for i in {1..30}; do curl -sf http://localhost:8000/api/health && break || sleep 2; done
+      - name: Smoke API
+        run: |
+          curl -sf http://localhost:8000/api/version
+      - name: Compose down
+        if: always()
+        run: docker-compose down -v
+
