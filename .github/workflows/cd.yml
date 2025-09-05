@@ -132,17 +132,16 @@ jobs:
               echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             fi
             # Ensure docker compose is available
-            (docker compose version || docker-compose version)
+            docker compose version
             export COMPOSE_PROJECT_NAME=edgeflow
-            # Stop any existing stack and containers to free ports
-            (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml down -v || true)
-            (docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml down -v || true)
+            # Stop any existing stack and containers to free ports (plugin only)
+            (docker compose -p ${COMPOSE_PROJECT_NAME} -f docker-compose.yml down -v || true)
             (docker rm -f edgeflow-backend edgeflow-frontend || true)
             (docker network rm ${COMPOSE_PROJECT_NAME}_edgeflow-net || true)
             sleep 2
             # Pull and run cleanly
-            (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml pull || docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml pull)
-            (docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml up -d --remove-orphans || docker-compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml up -d --remove-orphans)
+            docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml pull
+            docker compose -p ${COMPOSE_PROJECT_NAME} --env-file .env -f docker-compose.yml up -d --remove-orphans --force-recreate
             docker image prune -f || true
             # Basic health checks (backend on host port 18000)
             curl -fsS http://localhost:18000/api/health || (echo 'Backend health failed' && exit 1)
