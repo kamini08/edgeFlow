@@ -1,3 +1,10 @@
 venv/
-parser/
 grammer/antlr-4.13.1-complete.jar
+parser/EdgeFlow*
+parser/*.interp
+parser/*.tokens
+parser/__pycache__/
+parser/.antlr/
+.coverage
+coverage.xml
+coverage.svg

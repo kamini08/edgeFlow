@@ -23,8 +23,8 @@ optimize_for = latency
 
 Installation
 ------------
-- Python 3.8–3.11 supported (tested in CI)
-- Install dependencies:
+- Python 3.11 (CI target)
+- Install runtime dependencies:
 ```
 pip install -r requirements.txt
 ```
@@ -72,30 +72,25 @@ CLI Options
 - `-v, --verbose`: Enable verbose debug output
 - `--version`: Print CLI version and exit
 
-=======
-- Python 3.8+
-- Java JDK (required by ANTLR)
-- `antlr4-python3-runtime` library (`pip install antlr4-python3-runtime`)
-- TensorFlow and TensorFlow Lite Converter (`pip install tensorflow`)
-- ANTLR 4.13.1 Complete Jar (download from [antlr.org](https://www.antlr.org/download/antlr-4.13.1-complete.jar) and place in `grammer/`)
-- SSH access/setup for target device (if deploying physically)
+Language Toolchain (ANTLR)
+-------------------------
+Prereqs:
+- Java JDK (required by ANTLR tool)
+- `antlr4-python3-runtime` (`pip install antlr4-python3-runtime`)
+- ANTLR 4.13.1 Complete Jar (download from antlr.org and place in `grammer/`)
 
-### Clone the Repository
-
-git clone <https://github.com/yourusername/edge-ai-dsl.git>
-cd edge-ai-dsl
-
-### Generate the Parser with ANTLR
-
+Generate Python parser/lexer into the `parser/` package:
+```
 java -jar grammer/antlr-4.13.1-complete.jar -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4
+```
+After generation, `parser/` contains `EdgeFlowLexer.py`, `EdgeFlowParser.py`, `EdgeFlowVisitor.py`, etc. The CLI automatically uses them when present; otherwise it falls back to a simple line-based parser.
 
-### Running the DSL Compiler
-
-Currently, you can parse DSL scripts and trigger basic quantization:
-
-python main.py examples/sample.dsl
-
----
+Running the Compiler
+--------------------
+Parse a `.ef` config and run the (placeholder) optimization pipeline:
+```
+python edgeflowc.py path/to/config.ef
+```
 
 ## Project Structure
 
@@ -104,12 +99,11 @@ Architecture
 ```
 edgeFlow/
 ├── edgeflowc.py          # CLI entry point (this repo)
-├── parser.py             # ANTLR-based parser (Team A)
+├── parser/               # ANTLR-generated modules + wrapper (__init__.py)
 ├── optimizer.py          # Model optimization logic (Team B)
 ├── benchmarker.py        # Performance measurement tools
 ├── reporter.py           # Report generation
 ├── tests/                # Unit tests
-│   ├── __init__.py
 │   └── test_cli.py
 ├── .github/workflows/ci.yml   # CI: lint, type, test, coverage badge
 ├── requirements.txt      # Runtime dependencies
