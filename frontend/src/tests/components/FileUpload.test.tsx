@@ -10,10 +10,7 @@ function makeFile(name: string, sizeBytes: number, type = 'application/octet-str
 describe('FileUpload', () => {
   test('accepts allowed extension and size', () => {
     const onFileSelect = jest.fn();
-    const { getByRole } = render(
-      <FileUpload onFileSelect={onFileSelect} acceptedFormats={[ '.ef' ]} maxSize={5} />
-    );
-    const input = getByRole('textbox', { hidden: true }) as HTMLInputElement | undefined || getByRole('button', { hidden: true }) as any; // fallback
+    render(<FileUpload onFileSelect={onFileSelect} acceptedFormats={[ '.ef' ]} maxSize={5} />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const file = makeFile('config.ef', 1000);
     const dt = new DataTransfer();
@@ -38,4 +35,3 @@ describe('FileUpload', () => {
     alertSpy.mockRestore();
   });
 });
-
