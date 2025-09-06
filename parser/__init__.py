@@ -9,7 +9,7 @@ that supports ``key = value`` pairs and preserves the raw content.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 try:  # Attempt optional imports of generated artifacts
     # These files are expected when running:
@@ -105,6 +105,25 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
 # Day 2 parser API re-exports
 # ---------------------------------------------------------------------------
 
+# Static type stubs so mypy sees these attributes on the package
+class EdgeFlowParserError(Exception):
+    """Parser error type (populated at runtime)."""
+
+
+def parse_edgeflow_string(content: str) -> Dict[str, Any]:  # type: ignore[empty-body]
+    """Parse EdgeFlow content string (populated at runtime)."""
+    ...
+
+
+def parse_edgeflow_file(file_path: str) -> Dict[str, Any]:  # type: ignore[empty-body]
+    """Parse EdgeFlow file path (populated at runtime)."""
+    ...
+
+
+def validate_config(cfg: Dict[str, Any]) -> Tuple[bool, List[str]]:  # type: ignore[empty-body]
+    """Validate config (populated at runtime)."""
+    ...
+
 def _ensure_day2_exports() -> None:
     """Best-effort re-export of Day 2 parser API from top-level parser.py.
 
@@ -116,7 +135,6 @@ def _ensure_day2_exports() -> None:
     import importlib.util
     import os
     from types import ModuleType
-    from typing import Any, Dict, Tuple
 
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     mod_path = os.path.join(root, "parser.py")
@@ -138,10 +156,10 @@ def _ensure_day2_exports() -> None:
 
     # If still missing, provide minimal fallbacks that use Day 1 API
     if "EdgeFlowParserError" not in globals():
-        class EdgeFlowParserError(Exception):
+        class _EdgeFlowParserError(EdgeFlowParserError):
             """Fallback parser error type."""
 
-        globals()["EdgeFlowParserError"] = EdgeFlowParserError
+        globals()["EdgeFlowParserError"] = _EdgeFlowParserError
 
     if "parse_edgeflow_string" not in globals():
         def parse_edgeflow_string(content: str) -> Dict[str, Any]:  # type: ignore[name-defined]
@@ -168,12 +186,15 @@ def _ensure_day2_exports() -> None:
         globals()["parse_edgeflow_file"] = parse_edgeflow_file
 
     if "validate_config" not in globals():
-        def validate_config(cfg: Dict[str, Any]) -> Tuple[bool, list[str]]:  # type: ignore[name-defined]
+        def _validate_config(cfg: Dict[str, Any]) -> Tuple[bool, List[str]]:  # type: ignore[name-defined]
             # Minimal validation: ensure a string model_path exists
             ok = isinstance(cfg.get("model_path"), str) and bool(cfg["model_path"].strip())
-            return ok, ([] if ok else ["'model_path' is required and must be a non-empty string"])  # type: ignore[index]
+            errs: List[str] = [] if ok else [
+                "'model_path' is required and must be a non-empty string",
+            ]
+            return ok, errs
 
-        globals()["validate_config"] = validate_config
+        globals()["validate_config"] = _validate_config
 
     globals()["__all__"] = [
         "parse_ef",

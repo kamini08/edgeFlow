@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -52,6 +52,18 @@ jobs:
         env:
           PYTHONPATH: .
         run: python -m pytest -q tests --cov=edgeflowc --cov-report=xml --cov-fail-under=90
+
+      - name: Run parser unit tests
+        env:
+          PYTHONPATH: .
+        run: |
+          # Optional ANTLR generation if jar present
+          if [ -f "grammer/antlr-4.13.1-complete.jar" ]; then \
+            java -jar grammer/antlr-4.13.1-complete.jar -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4; \
+          else \
+            echo "ANTLR jar not found; using fallback parser"; \
+          fi
+          python -m pytest -q tests/test_parser.py --cov=parser --cov-append --cov-report=xml --cov-fail-under=90
 
       - name: Generate coverage badge
         run: genbadge coverage -i coverage.xml -o coverage.svg
