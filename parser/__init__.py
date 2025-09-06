@@ -66,7 +66,7 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
                     if string_token:
                         # Remove quotes from string
                         value = string_token.getText()[1:-1]
-                        self.data["model_path"] = value
+                        self.data["model"] = value
                     return self.visitChildren(ctx)
 
                 def visitQuantizeStmt(self, ctx):  # type: ignore[misc]
@@ -100,18 +100,36 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
                         self.data["buffer_size"] = int(integer.getText())
                     return self.visitChildren(ctx)
 
+                def visitOptimizeForStmt(self, ctx):  # type: ignore[misc]
+                    identifier = ctx.IDENTIFIER()
+                    if identifier:
+                        self.data["optimize_for"] = identifier.getText()
+                    return self.visitChildren(ctx)
+
+                def visitMemoryLimitStmt(self, ctx):  # type: ignore[misc]
+                    integer = ctx.INTEGER()
+                    if integer:
+                        self.data["memory_limit"] = int(integer.getText())
+                    return self.visitChildren(ctx)
+
+                def visitFusionStmt(self, ctx):  # type: ignore[misc]
+                    bool_token = ctx.BOOL()
+                    if bool_token:
+                        self.data["enable_fusion"] = bool_token.getText() == "true"
+                    return self.visitChildren(ctx)
+
             # Tokenize and parse
             stream = FileStream(file_path, encoding="utf-8")
             lexer = EdgeFlowLexer(stream)  # type: ignore[call-arg]
             tokens = CommonTokenStream(lexer)
             parser = EdgeFlowParser(tokens)  # type: ignore[call-arg]
             tree = parser.program()  # type: ignore[attr-defined]
-
-            # Visit tree. Without detailed grammar hooks here, we rely on
-            # Team A's visitor to populate data. Keep a safe, empty default.
+            
+            # Visit the tree to collect data
             visitor = CollectVisitor()
             visitor.visit(tree)
-            result = dict(visitor.data)
+            result = visitor.data
+
         except Exception as exc:  # noqa: BLE001
             logger.warning("ANTLR parse failed, falling back to naive parse: %s", exc)
             result = {}
