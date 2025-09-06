@@ -112,6 +112,7 @@ if TYPE_CHECKING:
         ...
 
 
+
 def _ensure_day2_exports() -> None:
     """Best-effort re-export of Day 2 parser API from top-level parser.py.
 
