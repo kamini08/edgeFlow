@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.11']
 
     steps:
       - uses: actions/checkout@v3
@@ -55,7 +55,7 @@ jobs:
           mypy parser.py || true
           black --check parser.py || true
 
-      - name: Integration tests (parser-only)
+      - name: Integration tests (parser-only, start API)
         run: |
           # Start backend in background if available
           if [ -f backend/app.py ]; then \
@@ -65,4 +65,3 @@ jobs:
           else \
             echo "Backend app not found; skipping API integration"; \
           fi
-

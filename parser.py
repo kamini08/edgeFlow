@@ -19,11 +19,11 @@ Notes:
 
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union
 import io
 import logging
 import re
+from pathlib import Path
+from typing import Any, Dict, List, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
