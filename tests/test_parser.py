@@ -1,14 +1,13 @@
 import tempfile
-from pathlib import Path
-
-import pytest
-
 from parser import (
     EdgeFlowParserError,
     parse_edgeflow_file,
     parse_edgeflow_string,
     validate_config,
 )
+from pathlib import Path
+
+import pytest
 
 
 class TestEdgeFlowParser:
@@ -123,6 +122,7 @@ class TestParserIntegration:
 
         # Use CLI's load_config directly to avoid dependency on optimizer
         import importlib
+
         import edgeflowc
 
         importlib.reload(edgeflowc)

@@ -19,9 +19,8 @@ Notes:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 import io
 import logging
 import re
@@ -37,8 +36,9 @@ ANTLR_AVAILABLE = False
 
 try:
     # Prefer generated files under the package directory used by this repo.
-    # They are produced using:
-    #   java -jar grammer/antlr-4.13.1-complete.jar -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4
+    # They are produced using commands similar to:
+    #   java -jar grammer/antlr-4.13.1-complete.jar \
+    #        -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4
     from antlr4 import CommonTokenStream, InputStream, error  # type: ignore
     from parser.EdgeFlowLexer import EdgeFlowLexer  # type: ignore
     from parser.EdgeFlowParser import EdgeFlowParser  # type: ignore
@@ -68,14 +68,18 @@ class EdgeFlowParserError(Exception):
     """Custom exception for parser errors."""
 
 
-class EdgeFlowErrorListener(error.ErrorListener.ErrorListener):  # type: ignore[attr-defined]
+class EdgeFlowErrorListener(  # type: ignore[attr-defined]
+    error.ErrorListener.ErrorListener
+):
     """Custom error listener for better error messages when using ANTLR."""
 
     def __init__(self) -> None:
         super().__init__()
         self.errors: List[str] = []
 
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):  # type: ignore[override]
+    def syntaxError(  # type: ignore[override]
+        self, recognizer, offendingSymbol, line, column, msg, e
+    ):
         self.errors.append(f"Line {line}:{column} - {msg}")
 
 
