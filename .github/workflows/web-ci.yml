@@ -27,7 +27,7 @@ jobs:
       - name: Test backend
         env:
           PYTHONPATH: .
-        run: pytest -q --cov=backend --cov-report=xml --cov-fail-under=85
+        run: pytest -q backend/tests --cov=backend --cov-report=xml --cov-fail-under=85
       - name: Bandit security scan
         run: bandit -r backend -x backend/tests -q
 

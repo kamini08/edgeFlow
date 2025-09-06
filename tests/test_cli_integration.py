@@ -44,3 +44,4 @@ class TestEndToEndIntegration:
         data = response.json()
         assert data["success"] is True
         assert data["parsed_config"]["model_path"] == "test.tflite"
+
