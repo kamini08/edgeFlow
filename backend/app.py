@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field, constr
 
 # Import core CLI logic
 import edgeflowc  # type: ignore
+from backend.api.services.parser_service import ParserService
 
 # ----------------------------------------------------------------------------
 # Rate limiting (simple in-memory token bucket per client IP)
@@ -142,6 +143,11 @@ def _parse_config_content(filename: str, content: str) -> Dict[str, Any]:
             tmp.write(content)
             tmp.flush()
             path = tmp.name
+        # Prefer new parser service; fall back to day-1 helper if needed
+        success, cfg, err = ParserService.parse_config_content(content)
+        if success:
+            return cfg
+        # Fallback to existing parse_ef via temp file so older flows still work
         parsed = parse_ef(path)
         return parsed
     finally:
@@ -176,13 +182,14 @@ def help_() -> Dict[str, Any]:
     commands = [
         "POST /api/compile",
         "POST /api/compile/verbose",
+        "POST /api/compile/dry-run",
         "POST /api/optimize",
         "POST /api/benchmark",
         "GET /api/version",
         "GET /api/help",
         "GET /api/health",
     ]
-    usage = "python edgeflowc.py <config.ef> [--verbose|--version|--help]"
+    usage = "python edgeflowc.py <config.ef> [--verbose|--dry-run|--version|--help]"
     return {"commands": commands, "usage": usage}
 
 
@@ -190,9 +197,15 @@ def help_() -> Dict[str, Any]:
 def compile_cfg(
     req: CompileRequest, _: None = Depends(rate_limit_dep)
 ) -> CompileResponse:
-    parsed = _parse_config_content(req.filename, req.config_file)
+    if not req.filename.lower().endswith(".ef"):
+        raise HTTPException(
+            status_code=400, detail="Invalid file extension; expected .ef"
+        )
+    success, cfg, err = ParserService.parse_config_content(req.config_file)
+    if not success:
+        raise HTTPException(status_code=400, detail=err)
     return CompileResponse(
-        success=True, parsed_config=parsed, message="Parsed successfully"
+        success=True, parsed_config=cfg, message="Parsed successfully"
     )
 
 
@@ -207,11 +220,17 @@ def compile_verbose(
     root.addHandler(handler)
     root.setLevel(logging.DEBUG)
     try:
-        parsed = _parse_config_content(req.filename, req.config_file)
+        if not req.filename.lower().endswith(".ef"):
+            raise HTTPException(
+                status_code=400, detail="Invalid file extension; expected .ef"
+            )
+        success, cfg, err = ParserService.parse_config_content(req.config_file)
+        if not success:
+            raise HTTPException(status_code=400, detail=err)
         handler.flush()
         logs = [line for line in log_stream.getvalue().splitlines() if line]
         return CompileResponse(
-            success=True, parsed_config=parsed, logs=logs, message="Parsed successfully"
+            success=True, parsed_config=cfg, logs=logs, message="Parsed successfully"
         )
     finally:
         root.removeHandler(handler)
@@ -234,6 +253,25 @@ def optimize(
     optimized_model = req.model_file  # echo for now
     return OptimizeResponse(
         success=True, optimized_model=optimized_model, optimization_report=report
+    )
+
+
+@app.post("/api/compile/dry-run", response_model=CompileResponse)
+def compile_dry_run(
+    req: CompileRequest, _: None = Depends(rate_limit_dep)
+) -> CompileResponse:
+    """Parse-only endpoint to satisfy CLI-API parity for --dry-run."""
+    if not req.filename.lower().endswith(".ef"):
+        raise HTTPException(
+            status_code=400, detail="Invalid file extension; expected .ef"
+        )
+    success, cfg, err = ParserService.parse_config_content(req.config_file)
+    if not success:
+        raise HTTPException(status_code=400, detail=err)
+    return CompileResponse(
+        success=True,
+        parsed_config=cfg,
+        message="Configuration parsed successfully (dry-run)",
     )
 
 
