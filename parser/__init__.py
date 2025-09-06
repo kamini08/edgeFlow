@@ -105,31 +105,84 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
 # Day 2 parser API re-exports
 # ---------------------------------------------------------------------------
 
-try:
-    # Load sibling top-level module parser.py using importlib to avoid name
-    # collision with this package.
+def _ensure_day2_exports() -> None:
+    """Best-effort re-export of Day 2 parser API from top-level parser.py.
+
+    Guarantees that ``EdgeFlowParserError``, ``parse_edgeflow_string``,
+    ``parse_edgeflow_file`` and ``validate_config`` are available from this
+    package even if importlib tricks fail in some environments.
+    """
+
     import importlib.util
     import os
     from types import ModuleType
+    from typing import Any, Dict, Tuple
 
-    _root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    _mod_path = os.path.join(_root, "parser.py")
-    if os.path.isfile(_mod_path):
-        spec = importlib.util.spec_from_file_location("edgeflow_parser_core", _mod_path)
-        if spec and spec.loader:  # type: ignore[truthy-bool]
-            _core = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(_core)  # type: ignore[arg-type]
-            # Re-export selected symbols
-            EdgeFlowParserError = getattr(_core, "EdgeFlowParserError")  # type: ignore[assignment]
-            parse_edgeflow_file = getattr(_core, "parse_edgeflow_file")  # type: ignore[assignment]
-            parse_edgeflow_string = getattr(_core, "parse_edgeflow_string")  # type: ignore[assignment]
-            validate_config = getattr(_core, "validate_config")  # type: ignore[assignment]
-            __all__ = [
-                "parse_ef",
-                "EdgeFlowParserError",
-                "parse_edgeflow_file",
-                "parse_edgeflow_string",
-                "validate_config",
-            ]
-except Exception:  # noqa: BLE001 - do not fail package import if re-export fails
-    pass
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    mod_path = os.path.join(root, "parser.py")
+    if os.path.isfile(mod_path):
+        try:
+            spec = importlib.util.spec_from_file_location(
+                "edgeflow_parser_core", mod_path
+            )
+            if spec and spec.loader:  # type: ignore[truthy-bool]
+                core = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(core)  # type: ignore[arg-type]
+                globals()["EdgeFlowParserError"] = getattr(core, "EdgeFlowParserError")
+                globals()["parse_edgeflow_file"] = getattr(core, "parse_edgeflow_file")
+                globals()["parse_edgeflow_string"] = getattr(core, "parse_edgeflow_string")
+                globals()["validate_config"] = getattr(core, "validate_config")
+        except Exception:
+            # Fall through to minimal safe fallbacks below
+            pass
+
+    # If still missing, provide minimal fallbacks that use Day 1 API
+    if "EdgeFlowParserError" not in globals():
+        class EdgeFlowParserError(Exception):
+            """Fallback parser error type."""
+
+        globals()["EdgeFlowParserError"] = EdgeFlowParserError
+
+    if "parse_edgeflow_string" not in globals():
+        def parse_edgeflow_string(content: str) -> Dict[str, Any]:  # type: ignore[name-defined]
+            # Write content to a temp file and reuse parse_ef
+            import tempfile
+
+            with tempfile.NamedTemporaryFile("w", suffix=".ef", delete=False) as tf:
+                tf.write(content)
+                path = tf.name
+            try:
+                return parse_ef(path)
+            finally:
+                try:
+                    os.unlink(path)
+                except Exception:
+                    pass
+
+        globals()["parse_edgeflow_string"] = parse_edgeflow_string
+
+    if "parse_edgeflow_file" not in globals():
+        def parse_edgeflow_file(file_path: str) -> Dict[str, Any]:  # type: ignore[name-defined]
+            return parse_ef(file_path)
+
+        globals()["parse_edgeflow_file"] = parse_edgeflow_file
+
+    if "validate_config" not in globals():
+        def validate_config(cfg: Dict[str, Any]) -> Tuple[bool, list[str]]:  # type: ignore[name-defined]
+            # Minimal validation: ensure a string model_path exists
+            ok = isinstance(cfg.get("model_path"), str) and bool(cfg["model_path"].strip())
+            return ok, ([] if ok else ["'model_path' is required and must be a non-empty string"])  # type: ignore[index]
+
+        globals()["validate_config"] = validate_config
+
+    globals()["__all__"] = [
+        "parse_ef",
+        "EdgeFlowParserError",
+        "parse_edgeflow_file",
+        "parse_edgeflow_string",
+        "validate_config",
+    ]
+
+
+# Attempt to re-export from top-level parser.py and guarantee API presence
+_ensure_day2_exports()
