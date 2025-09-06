@@ -9,6 +9,7 @@ Every CLI command MUST have a corresponding API endpoint. NO EXCEPTIONS.
 |------------|--------------|--------|
 | `python edgeflowc.py config.ef` | `POST /api/compile` | ✅ |
 | `python edgeflowc.py config.ef --verbose` | `POST /api/compile/verbose` | ✅ |
+| `python edgeflowc.py config.ef --dry-run` | `POST /api/compile/dry-run` | ✅ |
 | `python edgeflowc.py --version` | `GET /api/version` | ✅ |
 | `python edgeflowc.py --help` | `GET /api/help` | ✅ |
 
