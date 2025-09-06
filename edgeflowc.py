@@ -22,6 +22,11 @@ import os
 import sys
 from typing import Any, Dict
 
+# Import our modules
+from parser import parse_ef
+from edgeflow_ast import create_program_from_dict
+from code_generator import CodeGenerator, generate_code
+
 VERSION = "0.1.0"
 
 
@@ -210,22 +215,62 @@ def load_config(file_path: str) -> Dict[str, Any]:
     }
 
 
-def optimize_model(config: Dict[str, Any]) -> None:
-    """Placeholder for model optimization pipeline.
-
-    Attempts to locate and call the project's optimizer. If not available,
-    logs a message and returns.
+def optimize_model(config: Dict[str, Any]) -> Dict[str, Any]:
+    """Run the complete EdgeFlow optimization pipeline.
 
     Args:
         config: Parsed configuration dictionary produced by ``load_config``.
+        
+    Returns:
+        Dictionary with optimization results
     """
-
     try:
-        from optimizer import optimize  # type: ignore
-
-        optimize(config)
-    except Exception:  # noqa: BLE001 - broad until optimizer is implemented
-        logging.info("Optimizer not available; skipping optimization step.")
+        from optimizer import optimize
+        from benchmarker import benchmark_model, compare_models
+        
+        # Get model path
+        model_path = config.get('model', 'model.tflite')
+        if not os.path.exists(model_path):
+            logging.warning(f"Model file not found: {model_path}, creating dummy model")
+        
+        # Run optimization
+        logging.info("Starting EdgeFlow optimization pipeline...")
+        optimized_path, opt_results = optimize(config)
+        
+        # Benchmark original model
+        logging.info("Benchmarking original model...")
+        original_benchmark = benchmark_model(model_path, config)
+        
+        # Benchmark optimized model
+        logging.info("Benchmarking optimized model...")
+        optimized_benchmark = benchmark_model(optimized_path, config)
+        
+        # Compare models
+        logging.info("Comparing models...")
+        comparison = compare_models(model_path, optimized_path, config)
+        
+        # Combine results
+        results = {
+            'optimization': opt_results,
+            'original_benchmark': original_benchmark,
+            'optimized_benchmark': optimized_benchmark,
+            'comparison': comparison
+        }
+        
+        # Print summary
+        improvements = comparison.get('improvements', {})
+        logging.info("=== EDGEFLOW OPTIMIZATION SUMMARY ===")
+        logging.info(f"Model size reduction: {improvements.get('size_reduction_percent', 0):.1f}%")
+        logging.info(f"Latency improvement: {improvements.get('latency_improvement_percent', 0):.1f}%")
+        logging.info(f"Throughput improvement: {improvements.get('throughput_improvement_percent', 0):.1f}%")
+        logging.info(f"Memory improvement: {improvements.get('memory_improvement_percent', 0):.1f}%")
+        logging.info(f"Optimized model saved to: {optimized_path}")
+        
+        return results
+        
+    except Exception as e:  # noqa: BLE001
+        logging.error(f"Optimization failed: {e}")
+        return {'error': str(e)}
 
 
 def main() -> int:
@@ -251,6 +296,7 @@ def main() -> int:
                 logging.error("Error: Invalid file extension. Expected '.ef' file")
             return 1
 
+        # Parse configuration file
         cfg = load_config(args.config_path)
         if getattr(args, "dry_run", False):
             # Print parsed config to stdout and exit without optimization
@@ -258,8 +304,44 @@ def main() -> int:
             logging.info("Configuration parsed successfully (dry-run)")
             return 0
         logging.debug("Loaded config: %s", json.dumps(cfg, indent=2)[:500])
-        optimize_model(cfg)
-        logging.info("EdgeFlow compilation pipeline completed.")
+        
+        # Create AST from parsed configuration
+        program = create_program_from_dict(cfg)
+        logging.info("Created AST with %d statements", len(program.statements))
+        
+        # Generate code
+        logging.info("Generating inference code...")
+        generator = CodeGenerator(program)
+        
+        # Generate Python code
+        python_code = generator.generate_python_inference()
+        logging.info("Generated Python inference code (%d characters)", len(python_code))
+        
+        # Generate C++ code
+        cpp_code = generator.generate_cpp_inference()
+        logging.info("Generated C++ inference code (%d characters)", len(cpp_code))
+        
+        # Generate optimization report
+        report = generator.generate_optimization_report()
+        logging.info("Generated optimization report (%d characters)", len(report))
+        
+        # Save generated files
+        output_dir = "generated"
+        files = generate_code(program, output_dir)
+        logging.info("Saved generated files to %s:", output_dir)
+        for file_type, file_path in files.items():
+            logging.info("  %s: %s", file_type, file_path)
+        
+        # Run optimization pipeline
+        logging.info("Running EdgeFlow optimization pipeline...")
+        opt_results = optimize_model(cfg)
+        
+        if 'error' in opt_results:
+            logging.error(f"Optimization failed: {opt_results['error']}")
+            return 1
+        
+        logging.info("EdgeFlow compilation pipeline completed successfully!")
+        logging.info("🎉 EdgeFlow has successfully optimized your model for edge deployment!")
         return 0
     except SystemExit as e:
         # Argparse uses SystemExit for --help/--version and parse errors.

@@ -1,0 +1,217 @@
+[
+  {
+    "config": {
+      "model": "test_model.tflite",
+      "quantize": "int8",
+      "target_device": "raspberry_pi",
+      "deploy_path": "generated",
+      "optimize_for": "latency",
+      "memory_limit": 64,
+      "enable_fusion": true
+    },
+    "optimization": {
+      "original_size_mb": 4.291534423828125e-05,
+      "optimized_size_mb": 1.239776611328125e-05,
+      "size_reduction_percent": 71.11111111111111,
+      "applied_optimizations": [
+        "Applied INT8 quantization",
+        "Applied memory optimization (limit: 64MB)",
+        "Enabled operation fusion",
+        "Applied Raspberry Pi specific optimizations"
+      ],
+      "quantization_type": "int8",
+      "target_device": "raspberry_pi"
+    },
+    "original_benchmark": {
+      "model_path": "test_model.tflite",
+      "model_size_mb": 4.291534423828125e-05,
+      "device": "raspberry_pi",
+      "latency_ms": 35.0,
+      "throughput_fps": 24.0,
+      "memory_usage_mb": 0.0,
+      "optimize_for": "latency",
+      "status": "success"
+    },
+    "optimized_benchmark": {
+      "model_path": "generated/test_model_optimized.tflite",
+      "model_size_mb": 1.239776611328125e-05,
+      "device": "raspberry_pi",
+      "latency_ms": 35.0,
+      "throughput_fps": 24.0,
+      "memory_usage_mb": 0.0,
+      "optimize_for": "latency",
+      "status": "success"
+    },
+    "comparison": {
+      "original": {
+        "model_path": "test_model.tflite",
+        "model_size_mb": 4.291534423828125e-05,
+        "device": "raspberry_pi",
+        "latency_ms": 35.0,
+        "throughput_fps": 24.0,
+        "memory_usage_mb": 0.0,
+        "optimize_for": "latency",
+        "status": "success"
+      },
+      "optimized": {
+        "model_path": "generated/test_model_optimized.tflite",
+        "model_size_mb": 1.239776611328125e-05,
+        "device": "raspberry_pi",
+        "latency_ms": 35.0,
+        "throughput_fps": 24.0,
+        "memory_usage_mb": 0.0,
+        "optimize_for": "latency",
+        "status": "success"
+      },
+      "improvements": {
+        "size_reduction_percent": 71.1,
+        "latency_improvement_percent": 0.0,
+        "throughput_improvement_percent": 0.0
+      },
+      "summary": "Size reduced by 71.1%; Latency increased by 0.0%; Throughput decreased by 0.0%"
+    },
+    "status": "success"
+  },
+  {
+    "config": {
+      "model": "test_model.tflite",
+      "quantize": "float16",
+      "target_device": "jetson_nano",
+      "deploy_path": "generated",
+      "optimize_for": "memory",
+      "memory_limit": 128,
+      "enable_fusion": true
+    },
+    "optimization": {
+      "original_size_mb": 4.291534423828125e-05,
+      "optimized_size_mb": 2.09808349609375e-05,
+      "size_reduction_percent": 51.11111111111111,
+      "applied_optimizations": [
+        "Applied Float16 quantization",
+        "Enabled operation fusion",
+        "Applied Jetson Nano specific optimizations"
+      ],
+      "quantization_type": "float16",
+      "target_device": "jetson_nano"
+    },
+    "original_benchmark": {
+      "model_path": "test_model.tflite",
+      "model_size_mb": 4.291534423828125e-05,
+      "device": "jetson_nano",
+      "latency_ms": 27.5,
+      "throughput_fps": 36.0,
+      "memory_usage_mb": 0.0,
+      "optimize_for": "memory",
+      "status": "success"
+    },
+    "optimized_benchmark": {
+      "model_path": "generated/test_model_optimized.tflite",
+      "model_size_mb": 2.09808349609375e-05,
+      "device": "jetson_nano",
+      "latency_ms": 27.5,
+      "throughput_fps": 36.0,
+      "memory_usage_mb": 0.0,
+      "optimize_for": "memory",
+      "status": "success"
+    },
+    "comparison": {
+      "original": {
+        "model_path": "test_model.tflite",
+        "model_size_mb": 4.291534423828125e-05,
+        "device": "jetson_nano",
+        "latency_ms": 27.5,
+        "throughput_fps": 36.0,
+        "memory_usage_mb": 0.0,
+        "optimize_for": "memory",
+        "status": "success"
+      },
+      "optimized": {
+        "model_path": "generated/test_model_optimized.tflite",
+        "model_size_mb": 2.09808349609375e-05,
+        "device": "jetson_nano",
+        "latency_ms": 27.5,
+        "throughput_fps": 36.0,
+        "memory_usage_mb": 0.0,
+        "optimize_for": "memory",
+        "status": "success"
+      },
+      "improvements": {
+        "size_reduction_percent": 51.1,
+        "latency_improvement_percent": 0.0,
+        "throughput_improvement_percent": 0.0
+      },
+      "summary": "Size reduced by 51.1%; Latency increased by 0.0%; Throughput decreased by 0.0%"
+    },
+    "status": "success"
+  },
+  {
+    "config": {
+      "model": "test_model.tflite",
+      "quantize": "none",
+      "target_device": "cpu",
+      "deploy_path": "generated",
+      "optimize_for": "accuracy",
+      "memory_limit": 256,
+      "enable_fusion": false
+    },
+    "optimization": {
+      "original_size_mb": 4.291534423828125e-05,
+      "optimized_size_mb": 4.291534423828125e-05,
+      "size_reduction_percent": 0.0,
+      "applied_optimizations": [
+        "No quantization applied"
+      ],
+      "quantization_type": "none",
+      "target_device": "cpu"
+    },
+    "original_benchmark": {
+      "model_path": "test_model.tflite",
+      "model_size_mb": 4.291534423828125e-05,
+      "device": "cpu",
+      "latency_ms": 9.0,
+      "throughput_fps": 110.0,
+      "memory_usage_mb": 0.0,
+      "optimize_for": "accuracy",
+      "status": "success"
+    },
+    "optimized_benchmark": {
+      "model_path": "generated/test_model_optimized.tflite",
+      "model_size_mb": 4.291534423828125e-05,
+      "device": "cpu",
+      "latency_ms": 9.0,
+      "throughput_fps": 110.0,
+      "memory_usage_mb": 0.0,
+      "optimize_for": "accuracy",
+      "status": "success"
+    },
+    "comparison": {
+      "original": {
+        "model_path": "test_model.tflite",
+        "model_size_mb": 4.291534423828125e-05,
+        "device": "cpu",
+        "latency_ms": 9.0,
+        "throughput_fps": 110.0,
+        "memory_usage_mb": 0.0,
+        "optimize_for": "accuracy",
+        "status": "success"
+      },
+      "optimized": {
+        "model_path": "generated/test_model_optimized.tflite",
+        "model_size_mb": 4.291534423828125e-05,
+        "device": "cpu",
+        "latency_ms": 9.0,
+        "throughput_fps": 110.0,
+        "memory_usage_mb": 0.0,
+        "optimize_for": "accuracy",
+        "status": "success"
+      },
+      "improvements": {
+        "size_reduction_percent": 0.0,
+        "latency_improvement_percent": 0.0,
+        "throughput_improvement_percent": 0.0
+      },
+      "summary": "Size reduced by 0.0%; Latency increased by 0.0%; Throughput decreased by 0.0%"
+    },
+    "status": "success"
+  }
+]

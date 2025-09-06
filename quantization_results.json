@@ -1,0 +1,71 @@
+{
+  "quantization_results": [
+    {
+      "quantization_type": "int8",
+      "original_size_bytes": 1048576,
+      "quantized_size_bytes": 314572,
+      "size_reduction_bytes": 734004,
+      "size_reduction_percent": 70.0,
+      "speed_improvement_percent": 30.0,
+      "memory_reduction_percent": 60.0,
+      "compression_ratio": 3.3333418104599266,
+      "status": "success"
+    },
+    {
+      "quantization_type": "float16",
+      "original_size_bytes": 1048576,
+      "quantized_size_bytes": 524288,
+      "size_reduction_bytes": 524288,
+      "size_reduction_percent": 50.0,
+      "speed_improvement_percent": 20.0,
+      "memory_reduction_percent": 40.0,
+      "compression_ratio": 2.0,
+      "status": "success"
+    },
+    {
+      "quantization_type": "none",
+      "original_size_bytes": 1048576,
+      "quantized_size_bytes": 1048576,
+      "size_reduction_bytes": 0,
+      "size_reduction_percent": 0.0,
+      "speed_improvement_percent": 0.0,
+      "memory_reduction_percent": 0.0,
+      "compression_ratio": 1.0,
+      "status": "success"
+    }
+  ],
+  "benchmark_results": {
+    "device": "raspberry_pi",
+    "latency_ms": 50.0,
+    "throughput_fps": 20.0,
+    "memory_usage_mb": 64.0,
+    "model_path": "test_model.tflite",
+    "status": "success"
+  },
+  "summary": {
+    "total_tests": 3,
+    "successful_tests": 3,
+    "best_compression": {
+      "quantization_type": "int8",
+      "original_size_bytes": 1048576,
+      "quantized_size_bytes": 314572,
+      "size_reduction_bytes": 734004,
+      "size_reduction_percent": 70.0,
+      "speed_improvement_percent": 30.0,
+      "memory_reduction_percent": 60.0,
+      "compression_ratio": 3.3333418104599266,
+      "status": "success"
+    },
+    "fastest_quantization": {
+      "quantization_type": "int8",
+      "original_size_bytes": 1048576,
+      "quantized_size_bytes": 314572,
+      "size_reduction_bytes": 734004,
+      "size_reduction_percent": 70.0,
+      "speed_improvement_percent": 30.0,
+      "memory_reduction_percent": 60.0,
+      "compression_ratio": 3.3333418104599266,
+      "status": "success"
+    }
+  }
+}

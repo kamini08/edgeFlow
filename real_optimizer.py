@@ -1,4 +1,4 @@
-"""EdgeFlow Model Optimizer
+"""Real EdgeFlow Model Optimizer
 
 This implements actual TensorFlow Lite quantization and optimization
 for the EdgeFlow DSL compiler.
