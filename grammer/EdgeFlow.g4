@@ -16,11 +16,11 @@ statement
     ;
 
 modelStmt
-    : MODEL ':' STRING
+    : MODEL_PATH '=' STRING
     ;
 
 quantizeStmt
-    : QUANTIZE ':' quantType
+    : QUANTIZE '=' quantType
     ;
 
 quantType
@@ -30,24 +30,24 @@ quantType
     ;
 
 targetDeviceStmt
-    : TARGET_DEVICE ':' IDENTIFIER
+    : TARGET_DEVICE '=' IDENTIFIER
     ;
 
 deployPathStmt
-    : DEPLOY_PATH ':' STRING
+    : DEPLOY_PATH '=' STRING
     ;
 
 inputStreamStmt
-    : INPUT_STREAM ':' IDENTIFIER
+    : INPUT_STREAM '=' IDENTIFIER
     ;
 
 bufferSizeStmt
-    : BUFFER_SIZE ':' INTEGER
+    : BUFFER_SIZE '=' INTEGER
     ;
 
 // Lexer rules
 
-MODEL           : 'model';
+MODEL_PATH      : 'model_path';
 QUANTIZE        : 'quantize';
 TARGET_DEVICE   : 'target_device';
 DEPLOY_PATH     : 'deploy_path';

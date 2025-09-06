@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 
-
 class TestEndToEndIntegration:
     """End-to-end integration tests (CLI and optional API)."""
 
