@@ -81,17 +81,9 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
     else:
         result = {}
 
-    # Naive fill if result is empty or partial; supports simple k = v lines.
+    # Strict fill if result is empty or partial; supports simple k = v lines.
     if not result:
-        for line in raw_lines:
-            stripped = line.strip()
-            if not stripped or stripped.startswith("#"):
-                continue
-            if "=" in stripped:
-                key, value = stripped.split("=", 1)
-                k = key.strip()
-                v = value.strip().strip('"')
-                result[k] = v
+        result = _strict_kv_from_lines(raw_lines)
 
     # Attach raw data for debugging/traceability.
     result.setdefault("__source__", file_path)
@@ -203,3 +195,63 @@ def _ensure_day2_exports() -> None:
 
 # Attempt to re-export from top-level parser.py and guarantee API presence
 _ensure_day2_exports()
+
+
+def _strict_kv_from_lines(raw_lines: List[str]) -> Dict[str, Any]:
+    """Parse lines into key/value pairs with minimal validation.
+
+    - Skips blank and comment lines.
+    - Requires exactly one '=' per line (outside quotes).
+    - Requires non-empty key and value.
+    - Strips surrounding quotes on values.
+    - Raises EdgeFlowParserError on any syntax issue.
+    """
+
+    result: Dict[str, Any] = {}
+    errors: List[str] = []
+
+    for lineno, raw in enumerate(raw_lines, start=1):
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        in_s = False
+        in_d = False
+        eq_positions: List[int] = []
+        for idx, ch in enumerate(raw):
+            if ch == "'" and not in_d:
+                in_s = not in_s
+            elif ch == '"' and not in_s:
+                in_d = not in_d
+            elif ch == "=" and not in_s and not in_d:
+                eq_positions.append(idx)
+
+        if len(eq_positions) != 1:
+            errors.append(
+                f"Line {lineno}: syntax error - expected single '=' in assignment"
+            )
+            continue
+
+        eq = eq_positions[0]
+        key = raw[:eq].strip()
+        val = raw[eq + 1 :].strip()
+
+        if not key:
+            errors.append(f"Line {lineno}: syntax error - missing key before '='")
+            continue
+        if not val:
+            errors.append(f"Line {lineno}: syntax error - missing value after '='")
+            continue
+
+        if (val.startswith('"') and val.endswith('"')) or (
+            val.startswith("'") and val.endswith("'")
+        ):
+            val = val[1:-1]
+
+        result[key] = val
+
+    if errors:
+        err_type = globals().get("EdgeFlowParserError", Exception)
+        raise err_type("; ".join(errors))  # type: ignore[misc]
+
+    return result

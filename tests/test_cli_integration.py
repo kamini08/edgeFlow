@@ -12,7 +12,12 @@ class TestEndToEndIntegration:
     def test_cli_parser_integration(self):
         """Test CLI with parser end-to-end using --dry-run."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".ef", delete=False) as f:
-            f.write('\nmodel_path = "test.tflite"\nquantize = int8\n')
+            content = (
+                "\n"
+                "model_path = \"test.tflite\"\n"
+                "quantize = int8\n"
+            )
+            f.write(content)
             config_path = f.name
 
         try:
@@ -33,7 +38,11 @@ class TestEndToEndIntegration:
     def test_api_parser_integration(self):
         """Test API with parser end-to-end (requires running API)."""
         requests = pytest.importorskip("requests")
-        config_content = '\nmodel_path = "test.tflite"\nquantize = int8\n'
+        config_content = (
+            "\n"
+            "model_path = \"test.tflite\"\n"
+            "quantize = int8\n"
+        )
 
         response = requests.post(
             "http://localhost:8000/api/compile",
@@ -44,4 +53,3 @@ class TestEndToEndIntegration:
         data = response.json()
         assert data["success"] is True
         assert data["parsed_config"]["model_path"] == "test.tflite"
-
