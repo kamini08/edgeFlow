@@ -39,10 +39,11 @@ try:
     # They are produced using commands similar to:
     #   java -jar grammer/antlr-4.13.1-complete.jar \
     #        -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4
-    from antlr4 import CommonTokenStream, InputStream, error  # type: ignore
     from parser.EdgeFlowLexer import EdgeFlowLexer  # type: ignore
     from parser.EdgeFlowParser import EdgeFlowParser  # type: ignore
     from parser.EdgeFlowVisitor import EdgeFlowVisitor  # type: ignore
+
+    from antlr4 import CommonTokenStream, InputStream, error  # type: ignore
 
     ANTLR_AVAILABLE = True
 except Exception:  # noqa: BLE001 - allow fallback without ANTLR artifacts
