@@ -19,6 +19,8 @@ import json
 import logging
 import os
 from typing import Any, Dict
+import importlib.util
+import sys
 
 VERSION = "0.1.0"
 
@@ -67,6 +69,11 @@ def parse_arguments() -> argparse.Namespace:
         version=f"edgeflowc {VERSION}",
         help="Show version and exit",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Parse and validate config, print result, exit",
+    )
 
     args = parser.parse_args()
     return args
@@ -103,6 +110,49 @@ def validate_file_path(file_path: str) -> bool:
     return ext.lower() == ".ef"
 
 
+def _load_project_parser_module():
+    """Load the project's parser module safely despite stdlib name conflict.
+
+    Returns a module-like object that may expose Day 2 APIs
+    (parse_edgeflow_file, validate_config) or Day 1 API (parse_ef).
+    Prefers any test-provided sys.modules['parser'] to preserve monkeypatching.
+    """
+
+    if 'parser' in sys.modules:
+        return sys.modules['parser']
+
+    # Attempt to load package 'parser' from the repo (parser/__init__.py)
+    try:
+        import os
+
+        root = os.path.abspath(os.path.dirname(__file__))
+        pkg_init = os.path.join(root, 'parser', '__init__.py')
+        if os.path.isfile(pkg_init):
+            spec = importlib.util.spec_from_file_location('edgeflow_project_parser', pkg_init)
+            if spec and spec.loader:  # type: ignore[truthy-bool]
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)  # type: ignore[arg-type]
+                return mod
+    except Exception:
+        pass
+
+    # As a last resort, try loading top-level parser.py next to this file
+    try:
+        import os
+
+        mod_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'parser.py')
+        if os.path.isfile(mod_path):
+            spec = importlib.util.spec_from_file_location('edgeflow_parser_core', mod_path)
+            if spec and spec.loader:  # type: ignore[truthy-bool]
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)  # type: ignore[arg-type]
+                return mod
+    except Exception:
+        pass
+
+    return None
+
+
 def load_config(file_path: str) -> Dict[str, Any]:
     """Placeholder for loading and parsing EdgeFlow config.
 
@@ -117,19 +167,38 @@ def load_config(file_path: str) -> Dict[str, Any]:
         Dict[str, Any]: Parsed configuration dictionary.
     """
 
-    # Try using the dedicated parser if present.
-    try:
-        from parser import parse_ef  # type: ignore
+    # Prefer Day 2 parser API if available via local module loader.
+    mod = _load_project_parser_module()
+    if mod is not None:
+        try:
+            if hasattr(mod, 'parse_edgeflow_file') and hasattr(mod, 'validate_config'):
+                cfg = mod.parse_edgeflow_file(file_path)  # type: ignore[attr-defined]
+                is_valid, errors = mod.validate_config(cfg)  # type: ignore[attr-defined]
+                if not is_valid:
+                    logging.error("Configuration validation failed:")
+                    for err in errors:
+                        logging.error("  - %s", err)
+                    raise SystemExit(1)
+                return cfg
+        except SystemExit:
+            raise
+        except Exception as exc:
+            logging.debug("Day 2 parser failed (%s); trying Day 1 API", exc)
 
-        return parse_ef(file_path)
-    except Exception:  # noqa: BLE001 - broad until parser is implemented
-        # Fallback: best-effort minimal config to enable end-to-end flow.
-        with open(file_path, "r", encoding="utf-8") as f:
-            raw = f.read()
-        return {
-            "__source__": os.path.abspath(file_path),
-            "__raw__": raw,
-        }
+        # Back-compat: try Day 1 API if present
+        try:
+            if hasattr(mod, 'parse_ef'):
+                return mod.parse_ef(file_path)  # type: ignore[attr-defined]
+        except Exception:
+            pass
+
+    # Fallback: best-effort minimal config to enable end-to-end flow.
+    with open(file_path, "r", encoding="utf-8") as f:
+        raw = f.read()
+    return {
+        "__source__": os.path.abspath(file_path),
+        "__raw__": raw,
+    }
 
 
 def optimize_model(config: Dict[str, Any]) -> None:
@@ -174,6 +243,11 @@ def main() -> int:
             return 1
 
         cfg = load_config(args.config_path)
+        if getattr(args, "dry_run", False):
+            # Print parsed config to stdout and exit without optimization
+            print(json.dumps(cfg, indent=2))
+            logging.info("Configuration parsed successfully (dry-run)")
+            return 0
         logging.debug("Loaded config: %s", json.dumps(cfg, indent=2)[:500])
         optimize_model(cfg)
         logging.info("EdgeFlow compilation pipeline completed.")

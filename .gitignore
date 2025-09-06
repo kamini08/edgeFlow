@@ -1,3 +1,4 @@
+.venv/
 venv/
 grammer/antlr-4.13.1-complete.jar
 parser/EdgeFlow*
@@ -9,7 +10,9 @@ parser/.antlr/
 coverage.xml
 coverage.svg
 coverage/
+frontend/node_modules/
 frontend/coverage/
+frontend/tsconfig.tsbuildinfo
 backend/coverage/
 htmlcov/
 .pytest_cache/

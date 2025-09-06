@@ -99,3 +99,37 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
 
     logger.debug("Parsed EF config from %s: keys=%s", file_path, list(result.keys()))
     return result
+
+
+# ---------------------------------------------------------------------------
+# Day 2 parser API re-exports
+# ---------------------------------------------------------------------------
+
+try:
+    # Load sibling top-level module parser.py using importlib to avoid name
+    # collision with this package.
+    import importlib.util
+    import os
+    from types import ModuleType
+
+    _root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    _mod_path = os.path.join(_root, "parser.py")
+    if os.path.isfile(_mod_path):
+        spec = importlib.util.spec_from_file_location("edgeflow_parser_core", _mod_path)
+        if spec and spec.loader:  # type: ignore[truthy-bool]
+            _core = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(_core)  # type: ignore[arg-type]
+            # Re-export selected symbols
+            EdgeFlowParserError = getattr(_core, "EdgeFlowParserError")  # type: ignore[assignment]
+            parse_edgeflow_file = getattr(_core, "parse_edgeflow_file")  # type: ignore[assignment]
+            parse_edgeflow_string = getattr(_core, "parse_edgeflow_string")  # type: ignore[assignment]
+            validate_config = getattr(_core, "validate_config")  # type: ignore[assignment]
+            __all__ = [
+                "parse_ef",
+                "EdgeFlowParserError",
+                "parse_edgeflow_file",
+                "parse_edgeflow_string",
+                "validate_config",
+            ]
+except Exception:  # noqa: BLE001 - do not fail package import if re-export fails
+    pass
