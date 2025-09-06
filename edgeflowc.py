@@ -183,6 +183,11 @@ def load_config(file_path: str) -> Dict[str, Any]:
                     for err in errors:
                         logging.error("  - %s", err)
                     raise SystemExit(1)
+                # Add metadata keys that tests expect
+                with open(file_path, "r", encoding="utf-8") as f:
+                    raw = f.read()
+                cfg["__source__"] = os.path.abspath(file_path)
+                cfg["__raw__"] = raw
                 return cfg
         except SystemExit:
             raise
