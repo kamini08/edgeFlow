@@ -9,7 +9,7 @@ that supports ``key = value`` pairs and preserves the raw content.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, TYPE_CHECKING
 
 try:  # Attempt optional imports of generated artifacts
     # These files are expected when running:
@@ -106,23 +106,19 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 # Static type stubs so mypy sees these attributes on the package
-class EdgeFlowParserError(Exception):
-    """Parser error type (populated at runtime)."""
+if TYPE_CHECKING:
+    class EdgeFlowParserError(Exception):
+        ...
 
+    def parse_edgeflow_string(content: str) -> Dict[str, Any]:
+        ...
 
-def parse_edgeflow_string(content: str) -> Dict[str, Any]:  # type: ignore[empty-body]
-    """Parse EdgeFlow content string (populated at runtime)."""
-    ...
+    def parse_edgeflow_file(file_path: str) -> Dict[str, Any]:
+        ...
 
+    def validate_config(cfg: Dict[str, Any]) -> Tuple[bool, List[str]]:
+        ...
 
-def parse_edgeflow_file(file_path: str) -> Dict[str, Any]:  # type: ignore[empty-body]
-    """Parse EdgeFlow file path (populated at runtime)."""
-    ...
-
-
-def validate_config(cfg: Dict[str, Any]) -> Tuple[bool, List[str]]:  # type: ignore[empty-body]
-    """Validate config (populated at runtime)."""
-    ...
 
 def _ensure_day2_exports() -> None:
     """Best-effort re-export of Day 2 parser API from top-level parser.py.
@@ -156,7 +152,7 @@ def _ensure_day2_exports() -> None:
 
     # If still missing, provide minimal fallbacks that use Day 1 API
     if "EdgeFlowParserError" not in globals():
-        class _EdgeFlowParserError(EdgeFlowParserError):
+        class _EdgeFlowParserError(Exception):
             """Fallback parser error type."""
 
         globals()["EdgeFlowParserError"] = _EdgeFlowParserError
