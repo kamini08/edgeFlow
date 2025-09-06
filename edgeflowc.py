@@ -177,7 +177,7 @@ def load_config(file_path: str) -> Dict[str, Any]:
         try:
             if hasattr(mod, "parse_edgeflow_file") and hasattr(mod, "validate_config"):
                 cfg = mod.parse_edgeflow_file(file_path)  # type: ignore[attr-defined]
-                is_valid, errors = mod.validate_config(cfg)  # type: ignore[attr-defined]
+                is_valid, errors = mod.validate_config(cfg)  # type: ignore
                 if not is_valid:
                     logging.error("Configuration validation failed:")
                     for err in errors:

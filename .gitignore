@@ -19,3 +19,18 @@ htmlcov/
 .mypy_cache/
 backend/.pytest_cache/
 backend/.mypy_cache/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+**/__pycache__/
+
+# Virtual environments
+.venv2/
+frontend/.venv2/
+
+# Test and temporary files
+*.ef
+test_*.ef
+sample.ef

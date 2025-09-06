@@ -1,4 +1,3 @@
-import tempfile
 from parser import (
     EdgeFlowParserError,
     parse_edgeflow_file,
