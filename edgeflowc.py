@@ -15,12 +15,12 @@ Example:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import logging
 import os
-from typing import Any, Dict
-import importlib.util
 import sys
+from typing import Any, Dict
 
 VERSION = "0.1.0"
 
@@ -118,17 +118,19 @@ def _load_project_parser_module():
     Prefers any test-provided sys.modules['parser'] to preserve monkeypatching.
     """
 
-    if 'parser' in sys.modules:
-        return sys.modules['parser']
+    if "parser" in sys.modules:
+        return sys.modules["parser"]
 
     # Attempt to load package 'parser' from the repo (parser/__init__.py)
     try:
         import os
 
         root = os.path.abspath(os.path.dirname(__file__))
-        pkg_init = os.path.join(root, 'parser', '__init__.py')
+        pkg_init = os.path.join(root, "parser", "__init__.py")
         if os.path.isfile(pkg_init):
-            spec = importlib.util.spec_from_file_location('edgeflow_project_parser', pkg_init)
+            spec = importlib.util.spec_from_file_location(
+                "edgeflow_project_parser", pkg_init
+            )
             if spec and spec.loader:  # type: ignore[truthy-bool]
                 mod = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(mod)  # type: ignore[arg-type]
@@ -140,9 +142,11 @@ def _load_project_parser_module():
     try:
         import os
 
-        mod_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'parser.py')
+        mod_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "parser.py")
         if os.path.isfile(mod_path):
-            spec = importlib.util.spec_from_file_location('edgeflow_parser_core', mod_path)
+            spec = importlib.util.spec_from_file_location(
+                "edgeflow_parser_core", mod_path
+            )
             if spec and spec.loader:  # type: ignore[truthy-bool]
                 mod = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(mod)  # type: ignore[arg-type]
@@ -171,7 +175,7 @@ def load_config(file_path: str) -> Dict[str, Any]:
     mod = _load_project_parser_module()
     if mod is not None:
         try:
-            if hasattr(mod, 'parse_edgeflow_file') and hasattr(mod, 'validate_config'):
+            if hasattr(mod, "parse_edgeflow_file") and hasattr(mod, "validate_config"):
                 cfg = mod.parse_edgeflow_file(file_path)  # type: ignore[attr-defined]
                 is_valid, errors = mod.validate_config(cfg)  # type: ignore[attr-defined]
                 if not is_valid:
@@ -187,7 +191,7 @@ def load_config(file_path: str) -> Dict[str, Any]:
 
         # Back-compat: try Day 1 API if present
         try:
-            if hasattr(mod, 'parse_ef'):
+            if hasattr(mod, "parse_ef"):
                 return mod.parse_ef(file_path)  # type: ignore[attr-defined]
         except Exception:
             pass
