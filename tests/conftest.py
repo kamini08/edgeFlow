@@ -14,14 +14,14 @@ def _ensure_local_parser_package_shadowing() -> None:
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     if root not in sys.path:
         sys.path.insert(0, root)
-    pkg_init = os.path.join(root, 'parser', '__init__.py')
+    pkg_init = os.path.join(root, "parser", "__init__.py")
     if not os.path.isfile(pkg_init):
         return
-    spec = importlib.util.spec_from_file_location('parser', pkg_init)
+    spec = importlib.util.spec_from_file_location("parser", pkg_init)
     if spec and spec.loader:  # type: ignore[truthy-bool]
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)  # type: ignore[arg-type]
-        sys.modules['parser'] = mod
+        sys.modules["parser"] = mod
 
 
 _ensure_local_parser_package_shadowing()
