@@ -23,7 +23,7 @@
 - **buffer_size**: `32`
 - **optimize_for**: `latency`
 - **memory_limit**: `64`
-- **enable_fusion**: `True`
+- **enable_fusion**: `true`
 
 ## Generated Code Features
 
