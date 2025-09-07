@@ -163,11 +163,7 @@ def _load_project_parser_module():
 
 
 def load_config(file_path: str) -> Dict[str, Any]:
-    """Placeholder for loading and parsing EdgeFlow config.
-
-    Attempts to integrate with the project parser. If no parser is available,
-    returns a minimal configuration that contains the raw text and path to
-    unblock the pipeline during early development.
+    """Load and validate EdgeFlow configuration from file.
 
     Args:
         file_path: Path to the ``.ef`` configuration file.
@@ -175,44 +171,21 @@ def load_config(file_path: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Parsed configuration dictionary.
     """
-
-    # Prefer Day 2 parser API if available via local module loader.
-    mod = _load_project_parser_module()
-    if mod is not None:
-        try:
-            if hasattr(mod, "parse_edgeflow_file") and hasattr(mod, "validate_config"):
-                cfg = mod.parse_edgeflow_file(file_path)  # type: ignore[attr-defined]
-                is_valid, errors = mod.validate_config(cfg)  # type: ignore
-                if not is_valid:
-                    logging.error("Configuration validation failed:")
-                    for err in errors:
-                        logging.error("  - %s", err)
-                    raise SystemExit(1)
-                # Add metadata keys that tests expect
-                with open(file_path, "r", encoding="utf-8") as f:
-                    raw = f.read()
-                cfg["__source__"] = os.path.abspath(file_path)
-                cfg["__raw__"] = raw
-                return cfg
-        except SystemExit:
-            raise
-        except Exception as exc:
-            logging.debug("Day 2 parser failed (%s); trying Day 1 API", exc)
-
-        # Back-compat: try Day 1 API if present
-        try:
-            if hasattr(mod, "parse_ef"):
-                return mod.parse_ef(file_path)  # type: ignore[attr-defined]
-        except Exception:
-            pass
-
-    # Fallback: best-effort minimal config to enable end-to-end flow.
-    with open(file_path, "r", encoding="utf-8") as f:
-        raw = f.read()
-    return {
-        "__source__": os.path.abspath(file_path),
-        "__raw__": raw,
-    }
+    try:
+        # Use our working parser directly
+        config = parse_ef(file_path)
+        
+        # Basic validation
+        if not config.get('model'):
+            logging.error("Configuration validation failed:")
+            logging.error("  - 'model' is required and must be a non-empty string")
+            raise SystemExit(1)
+        
+        return config
+        
+    except Exception as exc:
+        logging.error("Failed to load configuration: %s", exc)
+        raise SystemExit(1)
 
 
 def optimize_model(config: Dict[str, Any]) -> Dict[str, Any]:

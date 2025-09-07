@@ -34,3 +34,29 @@ frontend/.venv2/
 *.ef
 test_*.ef
 sample.ef
+
+# Generated files and artifacts
+generated/
+*.tflite
+*.json
+test_model*
+mobilenet_v2.tflite
+
+# Temporary and cache files
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test results and reports
+test_results/
+benchmark_results/
+optimization_results/
