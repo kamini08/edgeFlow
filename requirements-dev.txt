@@ -5,3 +5,4 @@ flake8>=6.0
 isort>=5.12
 mypy>=1.0
 genbadge[all]>=1.1.1
+numpy>=1.24

@@ -60,3 +60,7 @@ Thumbs.db
 test_results/
 benchmark_results/
 optimization_results/
+
+# Models
+baseline_model*
+simple_model*
