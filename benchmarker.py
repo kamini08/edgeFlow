@@ -1,23 +1,128 @@
 """EdgeFlow Model Benchmarker
 
-This module provides comprehensive benchmarking and performance measurement
-for EdgeFlow models, including latency, memory usage, and throughput metrics.
+Day 3/4 Implementation (Team B):
+--------------------------------
+Provides *real* model size and latency benchmarking when TensorFlow Lite is
+available, with a graceful fallback to the earlier simulation-based metrics.
 
-The benchmarker helps prove that EdgeFlow optimizations actually improve
-performance on edge devices.
+Public low-level functions now exposed for the pipeline:
+    - ``get_model_size(model_path)``  -> float (MB)
+    - ``benchmark_latency(model_path, runs=100, warmup=1)`` -> float (ms)
+
+If TensorFlow (``tensorflow`` package) is not installed, or a model cannot be
+loaded, the module silently falls back to deterministic simulation so tests
+remain stable in lightweight environments (CI, dev containers, etc.).
+
+Real benchmarking logic:
+    * Loads the TFLite model with ``tf.lite.Interpreter``.
+    * Allocates tensors and inspects the first input tensor to derive shape & dtype.
+    * Performs one (configurable) warm-up inference.
+    * Measures average latency across N runs using ``time.perf_counter``.
+    * Computes an approximate throughput (FPS = 1000 / avg_latency_ms).
+
+The higher-level convenience functions ``benchmark_model`` and
+``compare_models`` retain their original signatures and output schema so the
+rest of the codebase (and existing tests) continue to work unchanged.
 """
 
 import os
 import time
-import json
 import logging
-from typing import Dict, Any, List, Optional
-from pathlib import Path
+from typing import Dict, Any, List, Optional, Tuple
+
+try:  # Optional heavy dependency
+    import tensorflow as _tf  # type: ignore
+    _TF_AVAILABLE = True
+except Exception:  # noqa: BLE001 - optional dependency
+    _TF_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
+def get_model_size(model_path: str) -> float:
+    """Return model size in megabytes.
+
+    Args:
+        model_path: Path to a file on disk
+    Returns:
+        Size in megabytes (float). Returns 0.0 if file missing.
+    """
+    try:
+        return os.path.getsize(model_path) / (1024 * 1024)
+    except OSError:
+        return 0.0
+
+
+def _generate_random_input(shape, dtype):  # type: ignore[no-untyped-def]
+    """Generate random input tensor matching shape/dtype for benchmarking."""
+    import numpy as np  # Local import to keep global namespace light
+
+    if dtype == np.float32:
+        return (np.random.random(shape).astype(np.float32) * 1.0)
+    if dtype == np.int8:
+        return np.random.randint(-128, 127, size=shape, dtype=np.int8)
+    if dtype == np.uint8:
+        return np.random.randint(0, 255, size=shape, dtype=np.uint8)
+    # Fallback: float32
+    return np.random.random(shape).astype(np.float32)
+
+
+def benchmark_latency(model_path: str, runs: int = 100, warmup: int = 1) -> Tuple[float, Optional[Dict[str, Any]]]:
+    """Benchmark average inference latency (ms) for a TFLite model.
+
+    Performs one or more warm-up runs followed by timed runs.
+
+    Args:
+        model_path: Path to a *.tflite model
+        runs: Number of timed inference iterations
+        warmup: Number of warm-up iterations (not timed)
+    Returns:
+        (avg_latency_ms, debug_metadata_dict_or_None)
+        If TensorFlow Lite is unavailable or model can't be loaded, returns (0.0, None)
+    """
+    if not _TF_AVAILABLE or not os.path.isfile(model_path):
+        return 0.0, None
+
+    try:  # Load interpreter
+        interpreter = _tf.lite.Interpreter(model_path=model_path)  # type: ignore[attr-defined]
+        interpreter.allocate_tensors()
+        input_details = interpreter.get_input_details()
+        if not input_details:
+            return 0.0, None
+        first_input = input_details[0]
+        shape = first_input.get("shape")
+        dtype = first_input.get("dtype")
+        index = first_input.get("index")
+        if shape is None or dtype is None or index is None:
+            return 0.0, None
+
+        # Warm-up
+        for _ in range(max(warmup, 0)):
+            data = _generate_random_input(shape, dtype)
+            interpreter.set_tensor(index, data)
+            interpreter.invoke()
+
+        # Timed runs
+        total = 0.0
+        for _ in range(max(runs, 1)):
+            data = _generate_random_input(shape, dtype)
+            start = time.perf_counter()
+            interpreter.set_tensor(index, data)
+            interpreter.invoke()
+            total += (time.perf_counter() - start) * 1000.0
+        avg_ms = total / max(runs, 1)
+        metadata = {
+            'input_shape': tuple(int(x) for x in shape),
+            'dtype': str(dtype),
+            'runs': runs,
+            'warmup': warmup,
+        }
+        return avg_ms, metadata
+    except Exception:  # noqa: BLE001
+        return 0.0, None
+
+
 class EdgeFlowBenchmarker:
-    """Comprehensive benchmarking for EdgeFlow models."""
+    """Comprehensive benchmarking for EdgeFlow models (real + simulated)."""
     
     def __init__(self, config: Dict[str, Any]):
         """Initialize benchmarker with EdgeFlow configuration.
@@ -31,31 +136,44 @@ class EdgeFlowBenchmarker:
         self.memory_limit = config.get('memory_limit', 64)
         
     def benchmark_model(self, model_path: str) -> Dict[str, Any]:
-        """Benchmark a single model.
-        
-        Args:
-            model_path: Path to the model file
-            
-        Returns:
-            Dictionary with benchmark results
-        """
+        """Benchmark a single model (real if possible, else simulation)."""
         logger.info(f"Benchmarking model: {model_path}")
-        
+
         if not os.path.exists(model_path):
             logger.warning(f"Model file not found: {model_path}")
             return self._create_dummy_benchmark(model_path)
-        
-        # Get model size
-        model_size_mb = os.path.getsize(model_path) / (1024 * 1024)
-        
-        # Simulate benchmarking based on device and optimization goals
-        results = self._simulate_benchmark(model_path, model_size_mb)
-        
+
+        model_size_mb = get_model_size(model_path)
+
+        # Attempt real latency measurement
+        latency_ms, meta = benchmark_latency(model_path)
+        used_real = latency_ms > 0.0
+
+        if used_real:
+            throughput_fps = 1000.0 / latency_ms if latency_ms > 0 else 0.0
+            memory_usage_mb = round(min(model_size_mb * 2, self.memory_limit), 2)
+            results = {
+                'model_path': model_path,
+                'model_size_mb': round(model_size_mb, 3),
+                'device': self.target_device,
+                'latency_ms': round(latency_ms, 2),
+                'throughput_fps': round(throughput_fps, 2),
+                'memory_usage_mb': memory_usage_mb,
+                'optimize_for': self.optimize_for,
+                'status': 'success',
+                'mode': 'real',
+            }
+            if meta:
+                results['details'] = meta
+        else:
+            # Simulation fallback
+            results = self._simulate_benchmark(model_path, model_size_mb)
+            results['mode'] = 'simulation'
+
         logger.info(f"Benchmark complete: {model_path}")
-        logger.info(f"  Latency: {results['latency_ms']:.1f}ms")
-        logger.info(f"  Throughput: {results['throughput_fps']:.1f} FPS")
-        logger.info(f"  Memory: {results['memory_usage_mb']:.1f} MB")
-        
+        logger.info(f"  Latency: {results['latency_ms']:.2f} ms ({results.get('mode')})")
+        logger.info(f"  Throughput: {results['throughput_fps']:.2f} FPS")
+        logger.info(f"  Memory: {results['memory_usage_mb']:.2f} MB")
         return results
     
     def compare_models(self, original_path: str, optimized_path: str) -> Dict[str, Any]:
@@ -209,28 +327,19 @@ class EdgeFlowBenchmarker:
         return "; ".join(summary_parts) if summary_parts else "No significant improvements"
 
 def benchmark_model(model_path: str, config: Dict[str, Any]) -> Dict[str, Any]:
-    """Benchmark a single model.
-    
-    Args:
-        model_path: Path to the model file
-        config: EdgeFlow configuration
-        
-    Returns:
-        Benchmark results dictionary
-    """
+    """Benchmark wrapper retaining original public API."""
     benchmarker = EdgeFlowBenchmarker(config)
     return benchmarker.benchmark_model(model_path)
 
 def compare_models(original_path: str, optimized_path: str, config: Dict[str, Any]) -> Dict[str, Any]:
-    """Compare two models.
-    
-    Args:
-        original_path: Path to original model
-        optimized_path: Path to optimized model
-        config: EdgeFlow configuration
-        
-    Returns:
-        Comparison results dictionary
-    """
+    """Compare two models (original vs optimized)."""
     benchmarker = EdgeFlowBenchmarker(config)
     return benchmarker.compare_models(original_path, optimized_path)
+
+__all__ = [
+    'get_model_size',
+    'benchmark_latency',
+    'benchmark_model',
+    'compare_models',
+    'EdgeFlowBenchmarker',
+]
