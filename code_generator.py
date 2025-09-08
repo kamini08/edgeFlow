@@ -205,7 +205,9 @@ class CodeGenerator(ASTVisitor):
         code += '        """Initialize the inference engine."""\n'
         code += f'        self.model_path = model_path or "{model_path}"\n'
         code += f"        self.buffer_size = {buffer_size}\n"
-        code += f"        self.memory_limit = {memory_limit} * 1024 * 1024  # Convert MB to bytes\n"
+        code += (
+            f"        self.memory_limit = {memory_limit} * 1024 * 1024\n"  # MB to bytes
+        )
         code += f'        self.optimize_for = "{optimize_for}"\n'
         code += "        self.interpreter = None\n"
         code += "        self.input_details = None\n"
@@ -301,7 +303,10 @@ class CodeGenerator(ASTVisitor):
             code += "            # Load image from file\n"
             code += "            image = cv2.imread(input_data)\n"
             code += "            if image is None:\n"
-            code += '                raise ValueError(f"Could not load image: {input_data}")\n'
+            code += (
+                "                raise ValueError("
+                'f"Could not load image: {input_data}")\n'
+            )
             code += "        else:\n"
             code += "            image = input_data\n"
             code += "        \n"
@@ -426,7 +431,10 @@ class CodeGenerator(ASTVisitor):
         code += (
             '    parser = argparse.ArgumentParser(description="EdgeFlow Inference")\n'
         )
-        code += '    parser.add_argument("--input", required=True, help="Input data path")\n'
+        code += (
+            '    parser.add_argument("--input", required=True, '
+            'help="Input data path")\n'
+        )
         code += '    parser.add_argument("--model", help="Model path override")\n'
         code += (
             '    parser.add_argument("--benchmark", action="store_true", '
@@ -474,7 +482,8 @@ class CodeGenerator(ASTVisitor):
         code += "    std::unique_ptr<tflite::Interpreter> interpreter_;\n"
         code += "    std::unique_ptr<tflite::FlatBufferModel> model_;\n"
         code += f'    int buffer_size_ = {self.config.get("buffer_size", 32)};\n'
-        code += f'    int memory_limit_ = {self.config.get("memory_limit", 64)} * 1024 * 1024;\n'
+        mem_limit = self.config.get("memory_limit", 64)
+        code += f"    int memory_limit_ = {mem_limit} * 1024 * 1024;\n"
         code += "    \n"
         code += "public:\n"
         code += "    EdgeFlowInference(const std::string& model_path);\n"

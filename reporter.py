@@ -134,9 +134,7 @@ def generate_recommendations(improvements: Dict[str, float]) -> str:
     speedup = improvements.get("speedup", 0.0)
 
     if size_red >= 70:
-        recs.append(
-            "- Excellent size reduction achieved! Model is now highly suitable for edge deployment"
-        )
+        recs.append("- Excellent size reduction! Model highly suitable for edge")
     elif size_red >= 50:
         recs.append(
             "- Good size reduction achieved; consider further quantization or pruning"
@@ -209,7 +207,7 @@ Generated: {timestamp}
 
 ✨ **Model successfully optimized using EdgeFlow DSL** ✨
 
-The EdgeFlow compiler has successfully optimized your model with the following impressive results:
+EdgeFlow successfully optimized your model with these results:
 
 - **Size Reduction**: {improvements['size_reduction']:.1f}%
 - **Speed Improvement**: {improvements['speedup']:.1f}x faster
@@ -228,7 +226,7 @@ The EdgeFlow compiler has successfully optimized your model with the following i
 | **Model Size** | {unoptimized_stats['size_mb']:.2f} MB | \
         {optimized_stats['size_mb']:.2f} MB | ↓ {improvements['size_reduction']:.1f}% |
 | **Inference Latency** | {unoptimized_stats['latency_ms']:.2f} ms | \
-        {optimized_stats['latency_ms']:.2f} ms | ↓ {improvements['latency_reduction']:.1f}% |
+{optimized_stats['latency_ms']:.2f} ms | ↓ {improvements['latency_reduction']:.1f}% |
 | **Throughput** | {1000/float(unoptimized_stats['latency_ms']):.1f} fps | \
         {1000/float(optimized_stats['latency_ms']):.1f} fps | \
         ↑ {improvements['throughput_increase']:.1f}% |
@@ -244,7 +242,8 @@ The EdgeFlow compiler has successfully optimized your model with the following i
 ### Technique Applied
 - **Quantization**: INT8 quantization applied
 - **Target Device**: {config.get('target_device', 'Generic') if config else 'Generic'}
-- **Optimization Goal**: {config.get('optimize_for', 'Balanced') if config else 'Balanced'}
+- **Optimization Goal**: \
+{config.get('optimize_for', 'Balanced') if config else 'Balanced'}
 
 ### Benefits Achieved
 1. **Reduced Storage Requirements**: Your model now requires \
@@ -283,7 +282,11 @@ def generate_json_report(
     config: Optional[Dict[str, Any]] = None,
     output_path: str = "report.json",
 ) -> str:
-    """Generate machine-readable JSON report for API consumption."""
+    """Generate machine-readable JSON report for API consumption.
+
+    Returns:
+        JSON string containing the report data
+    """
     # Validate minimal fields
     required_fields = ["size_mb", "latency_ms"]
     for field in required_fields:
@@ -299,7 +302,12 @@ def generate_json_report(
         "timestamp": datetime.now().isoformat(),
     }
 
-    output = Path(output_path)
-    output.write_text(json.dumps(payload, indent=2))
-    logger.info("JSON report successfully generated: %s", output)
-    return str(output)
+    json_content = json.dumps(payload, indent=2)
+
+    # Optionally write to file if output_path is provided
+    if output_path:
+        output = Path(output_path)
+        output.write_text(json_content)
+        logger.info("JSON report successfully generated: %s", output)
+
+    return json_content

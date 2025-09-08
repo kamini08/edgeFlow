@@ -83,7 +83,9 @@ def benchmark_latency(model_path: str, runs: int = 100, warmup: int = 1) -> Tupl
         return 0.0, None
 
     try:  # Load interpreter
-        interpreter = _tf.lite.Interpreter(model_path=model_path)  # type: ignore[attr-defined]
+        interpreter = _tf.lite.Interpreter(  # type: ignore[attr-defined]
+            model_path=model_path
+        )
         interpreter.allocate_tensors()
         input_details = interpreter.get_input_details()
         if not input_details:

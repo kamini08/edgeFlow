@@ -115,7 +115,7 @@ class EdgeFlowOptimizer:
         try:
             created_baseline = False
 
-            # If we have a Keras source OR the baseline .tflite is missing, (re)create baseline
+            # If we have Keras source OR baseline is missing, recreate
             if keras_source and (
                 not os.path.exists(model_path)
                 or keras_source.endswith((".h5", ".keras"))
@@ -188,9 +188,7 @@ class EdgeFlowOptimizer:
                 if os.path.isdir(model_path):
                     converter = tf.lite.TFLiteConverter.from_saved_model(model_path)
                 else:
-                    logger.warning(
-                        "Cannot perform quantization without a valid source graph; falling back"
-                    )
+                    logger.warning("Cannot quantize without valid source; falling back")
                     return self._fallback_optimization(config)
 
             # Apply quantization strategy
