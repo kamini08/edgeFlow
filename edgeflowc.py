@@ -20,10 +20,10 @@ import json
 import logging
 import os
 import sys
-from typing import Any, Dict
 
 # Import our modules
 from parser import parse_ef  # Backward-compatible name
+from typing import Any, Dict
 
 try:  # Prefer Day 2 API if present
     from parser import parse_edgeflow_file as _parse_edgeflow_file  # type: ignore

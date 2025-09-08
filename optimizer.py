@@ -6,8 +6,7 @@ for the EdgeFlow DSL compiler.
 
 import logging
 import os
-import tempfile
-from typing import Any, Dict, Tuple, Optional, Iterable, List
+from typing import Any, Dict, Iterable, List, Tuple
 
 import numpy as np
 
@@ -114,7 +113,6 @@ class EdgeFlowOptimizer:
             return self._fallback_optimization(config)
 
         try:
-            baseline_tflite_path = model_path
             created_baseline = False
 
             # If we have a Keras source OR the baseline .tflite is missing, (re)create baseline
@@ -149,7 +147,8 @@ class EdgeFlowOptimizer:
             ):
                 if quantize != "none" and not keras_source:
                     logger.warning(
-                        "Quantization requested (%s) but no keras_model provided; skipping real quantization",
+                        "Quantization requested (%s) but no keras_model provided; "
+                        "skipping real quantization",
                         quantize,
                     )
                 # Return baseline metrics only (copy file to denote optimized output)
@@ -210,7 +209,9 @@ class EdgeFlowOptimizer:
                 if len(shape_tuple) == 0:
                     shape_tuple = (1, 224, 224, 3)
 
-                def representative_dataset() -> Iterable[List[np.ndarray]]:  # type: ignore[override]
+                def representative_dataset() -> (
+                    Iterable[List[np.ndarray]]
+                ):  # type: ignore[override]
                     for _ in range(100):
                         yield [np.random.random(shape_tuple).astype(np.float32)]
 
