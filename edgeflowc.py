@@ -25,9 +25,15 @@ from typing import Any, Dict
 # Import our modules
 from parser import parse_ef  # Backward-compatible name
 try:  # Prefer Day 2 API if present
-    from parser import parse_edgeflow_file as _parse_edgeflow_file
+    from parser import parse_edgeflow_file as _parse_edgeflow_file  # type: ignore
 except Exception:  # noqa: BLE001
+<<<<<<< HEAD
     _parse_edgeflow_file = None
+=======
+    _parse_edgeflow_file = None  # type: ignore
+
+from code_generator import CodeGenerator, generate_code
+>>>>>>> f63b4e3 (fix: resolve CI linting issues)
 from edgeflow_ast import create_program_from_dict
 from code_generator import CodeGenerator, generate_code
 
@@ -177,7 +183,7 @@ def load_config(file_path: str) -> Dict[str, Any]:
     """
     try:
         # Prefer modern parser API if available
-        if _parse_edgeflow_file:
+        if _parse_edgeflow_file is not None:
             config = _parse_edgeflow_file(file_path)
         else:
             config = parse_ef(file_path)

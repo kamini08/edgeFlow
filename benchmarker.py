@@ -171,7 +171,9 @@ class EdgeFlowBenchmarker:
             results['mode'] = 'simulation'
 
         logger.info(f"Benchmark complete: {model_path}")
-        logger.info(f"  Latency: {results['latency_ms']:.2f} ms ({results.get('mode')})")
+        logger.info(
+            f"  Latency: {results['latency_ms']:.2f} ms ({results.get('mode')})"
+        )
         logger.info(f"  Throughput: {results['throughput_fps']:.2f} FPS")
         logger.info(f"  Memory: {results['memory_usage_mb']:.2f} MB")
         return results
@@ -337,9 +339,18 @@ def compare_models(original_path: str, optimized_path: str, config: Dict[str, An
     return benchmarker.compare_models(original_path, optimized_path)
 
 __all__ = [
+<<<<<<< HEAD
     'get_model_size',
     'benchmark_latency',
     'benchmark_model',
     'compare_models',
     'EdgeFlowBenchmarker',
 ]
+=======
+    "get_model_size",
+    "benchmark_latency",
+    "benchmark_model",
+    "compare_models",
+    "EdgeFlowBenchmarker",
+]
+>>>>>>> f63b4e3 (fix: resolve CI linting issues)
