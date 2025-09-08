@@ -124,7 +124,7 @@ def parse_ef(file_path: str) -> Dict[str, Any]:
             tokens = CommonTokenStream(lexer)
             parser = EdgeFlowParser(tokens)  # type: ignore[call-arg]
             tree = parser.program()  # type: ignore[attr-defined]
-            
+
             # Visit the tree to collect data
             visitor = CollectVisitor()
             visitor.visit(tree)
