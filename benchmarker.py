@@ -175,7 +175,9 @@ class EdgeFlowBenchmarker:
             results["mode"] = "simulation"
 
         logger.info(f"Benchmark complete: {model_path}")
-        logger.info(f"  Latency: {results['latency_ms']:.2f} ms ({results.get('mode')})")
+        logger.info(
+            f"  Latency: {results['latency_ms']:.2f} ms ({results.get('mode')})"
+        )
         logger.info(f"  Throughput: {results['throughput_fps']:.2f} FPS")
         logger.info(f"  Memory: {results['memory_usage_mb']:.2f} MB")
         return results
