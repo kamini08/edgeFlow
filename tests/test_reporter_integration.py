@@ -27,7 +27,7 @@ class TestReporterIntegration:
                 text=True,
             )
 
-            # Basic sanity: process should exit (0 or non-zero tolerated in CI simulation)
+            # Process should exit (0 or non-zero tolerated in CI)
             assert result.returncode in (0, 1, 2)
 
             # Check that report was generated
