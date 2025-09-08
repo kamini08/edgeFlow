@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import io
+import json
 import logging
 from datetime import datetime, timezone
 from parser import parse_ef  # type: ignore
@@ -259,7 +260,10 @@ def optimize(
     }
 
     # Generate JSON report using reporter module
-    json_report = generate_json_report(unoptimized_stats, optimized_stats, req.config)
+    json_report_str = generate_json_report(
+        unoptimized_stats, optimized_stats, req.config
+    )
+    json_report_dict = json.loads(json_report_str)
 
     # Add quantization and target device info
     report = {
@@ -268,7 +272,7 @@ def optimize(
         "optimize_for": req.config.get("optimize_for"),
         "original_size_mb": size_mb,
         "estimated_size_mb": optimized_size_mb,
-        **json_report,  # Include full reporter metrics
+        **json_report_dict,  # Include full reporter metrics
     }
 
     optimized_model = req.model_file  # echo for now

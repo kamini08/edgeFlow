@@ -96,11 +96,11 @@ class EdgeFlowOptimizer:
           2. Keras model source (via ``keras_model`` config key). We generate a
              baseline float32 TFLite plus an optimized (quantized) variant.
         """
-        model_path = config.get('model', 'model.tflite')
-        keras_source = config.get('keras_model')  # Optional
-        quantize = str(config.get('quantize', 'none')).lower()
-        target_device = config.get('target_device', 'cpu')
-        input_shape = config.get('input_shape', '1,224,224,3')
+        model_path = config.get("model", "model.tflite")
+        keras_source = config.get("keras_model")  # Optional
+        quantize = str(config.get("quantize", "none")).lower()
+        target_device = config.get("target_device", "cpu")
+        input_shape = config.get("input_shape", "1,224,224,3")
 
         logger.info("Starting optimization")
         logger.info("  baseline model: %s", model_path)
@@ -118,13 +118,20 @@ class EdgeFlowOptimizer:
             created_baseline = False
 
             # If we have a Keras source OR the baseline .tflite is missing, (re)create baseline
-            if keras_source and (not os.path.exists(model_path) or keras_source.endswith(('.h5', '.keras'))):
-                logger.info("Converting Keras model to baseline TFLite: %s", keras_source)
+            if keras_source and (
+                not os.path.exists(model_path)
+                or keras_source.endswith((".h5", ".keras"))
+            ):
+                logger.info(
+                    "Converting Keras model to baseline TFLite: %s", keras_source
+                )
                 keras_model = tf.keras.models.load_model(keras_source)
-                baseline_converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
+                baseline_converter = tf.lite.TFLiteConverter.from_keras_model(
+                    keras_model
+                )
                 baseline_converter.optimizations = []  # pure float32 baseline
                 baseline_tflite = baseline_converter.convert()
-                with open(model_path, 'wb') as f:
+                with open(model_path, "wb") as f:
                     f.write(baseline_tflite)
                 created_baseline = True
             elif not os.path.exists(model_path):
@@ -135,29 +142,41 @@ class EdgeFlowOptimizer:
                 created_baseline = True
 
             # If quantization is none or we lack a source for true re-quantization
-            if quantize in ('none', 'off') or (quantize in ('int8', 'float16') and not keras_source and not created_baseline):
-                if quantize != 'none' and not keras_source:
-                    logger.warning("Quantization requested (%s) but no keras_model provided; skipping real quantization", quantize)
+            if quantize in ("none", "off") or (
+                quantize in ("int8", "float16")
+                and not keras_source
+                and not created_baseline
+            ):
+                if quantize != "none" and not keras_source:
+                    logger.warning(
+                        "Quantization requested (%s) but no keras_model provided; skipping real quantization",
+                        quantize,
+                    )
                 # Return baseline metrics only (copy file to denote optimized output)
-                optimized_path = model_path.replace('.tflite', '_optimized.tflite')
+                optimized_path = model_path.replace(".tflite", "_optimized.tflite")
                 if not os.path.exists(optimized_path):
                     try:
-                        with open(model_path, 'rb') as src, open(optimized_path, 'wb') as dst:
+                        with open(model_path, "rb") as src, open(
+                            optimized_path, "wb"
+                        ) as dst:
                             dst.write(src.read())
                     except Exception as copy_err:  # noqa: BLE001
-                        logger.warning("Failed to duplicate model for optimized output: %s", copy_err)
+                        logger.warning(
+                            "Failed to duplicate model for optimized output: %s",
+                            copy_err,
+                        )
 
                 original_size = os.path.getsize(model_path)
                 optimized_size = os.path.getsize(optimized_path)
                 return optimized_path, {
-                    'original_size': original_size,
-                    'optimized_size': optimized_size,
-                    'size_reduction_bytes': original_size - optimized_size,
-                    'size_reduction_percent': 0.0,
-                    'quantization_type': 'none',
-                    'target_device': target_device,
-                    'optimizations_applied': [],
-                    'note': 'Quantization skipped (no source model)'
+                    "original_size": original_size,
+                    "optimized_size": optimized_size,
+                    "size_reduction_bytes": original_size - optimized_size,
+                    "size_reduction_percent": 0.0,
+                    "quantization_type": "none",
+                    "target_device": target_device,
+                    "optimizations_applied": [],
+                    "note": "Quantization skipped (no source model)",
                 }
 
             # Real quantization path (need a source model already loaded above)
@@ -170,11 +189,13 @@ class EdgeFlowOptimizer:
                 if os.path.isdir(model_path):
                     converter = tf.lite.TFLiteConverter.from_saved_model(model_path)
                 else:
-                    logger.warning("Cannot perform quantization without a valid source graph; falling back")
+                    logger.warning(
+                        "Cannot perform quantization without a valid source graph; falling back"
+                    )
                     return self._fallback_optimization(config)
 
             # Apply quantization strategy
-            if quantize == 'int8':
+            if quantize == "int8":
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
                 converter.target_spec.supported_ops = [
                     tf.lite.OpsSet.TFLITE_BUILTINS_INT8
@@ -183,7 +204,9 @@ class EdgeFlowOptimizer:
                 converter.inference_output_type = tf.int8
 
                 # Representative dataset with proper input shape handling
-                shape_tuple = tuple(int(x) for x in str(input_shape).split(',') if x.strip())
+                shape_tuple = tuple(
+                    int(x) for x in str(input_shape).split(",") if x.strip()
+                )
                 if len(shape_tuple) == 0:
                     shape_tuple = (1, 224, 224, 3)
 
@@ -192,39 +215,50 @@ class EdgeFlowOptimizer:
                         yield [np.random.random(shape_tuple).astype(np.float32)]
 
                 converter.representative_dataset = representative_dataset
-            elif quantize == 'float16':
+            elif quantize == "float16":
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
                 converter.target_spec.supported_types = [tf.float16]
             else:  # Should not reach due to earlier guard
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
             # Device-specific optimizations
-            if target_device == 'raspberry_pi':
+            if target_device == "raspberry_pi":
                 converter.target_spec.supported_ops = [
                     tf.lite.OpsSet.TFLITE_BUILTINS,
                     tf.lite.OpsSet.SELECT_TF_OPS,
                 ]
 
             optimized_tflite = converter.convert()
-            optimized_path = model_path.replace('.tflite', '_optimized.tflite')
-            with open(optimized_path, 'wb') as f:
+            optimized_path = model_path.replace(".tflite", "_optimized.tflite")
+            with open(optimized_path, "wb") as f:
                 f.write(optimized_tflite)
 
             original_size = os.path.getsize(model_path)
             optimized_size = os.path.getsize(optimized_path)
-            size_reduction = ((original_size - optimized_size) / original_size) * 100 if original_size else 0.0
+            size_reduction = (
+                ((original_size - optimized_size) / original_size) * 100
+                if original_size
+                else 0.0
+            )
 
-            logger.info("Optimization complete: %s -> %s (%.1f%% smaller)", model_path, optimized_path, size_reduction)
+            logger.info(
+                "Optimization complete: %s -> %s (%.1f%% smaller)",
+                model_path,
+                optimized_path,
+                size_reduction,
+            )
 
             return optimized_path, {
-                'original_size': original_size,
-                'optimized_size': optimized_size,
-                'size_reduction_bytes': original_size - optimized_size,
-                'size_reduction_percent': size_reduction,
-                'quantization_type': quantize,
-                'target_device': target_device,
-                'optimizations_applied': self._get_applied_optimizations(quantize, target_device),
-                'input_shape': input_shape,
+                "original_size": original_size,
+                "optimized_size": optimized_size,
+                "size_reduction_bytes": original_size - optimized_size,
+                "size_reduction_percent": size_reduction,
+                "quantization_type": quantize,
+                "target_device": target_device,
+                "optimizations_applied": self._get_applied_optimizations(
+                    quantize, target_device
+                ),
+                "input_shape": input_shape,
             }
         except Exception as e:  # noqa: BLE001
             logger.error("Real optimization failed: %s", e)
