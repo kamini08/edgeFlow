@@ -4,15 +4,16 @@ This implements actual TensorFlow Lite quantization and optimization
 for the EdgeFlow DSL compiler.
 """
 
-import os
 import logging
-import tempfile
-from typing import Dict, Any, Tuple, Optional, Iterable, List
+import os
+from typing import Any, Dict, Iterable, List, Tuple
+
 import numpy as np
 
 # Try to import TensorFlow, fall back to simulation if not available
 try:
     import tensorflow as tf
+
     TENSORFLOW_AVAILABLE = True
 except ImportError:
     TENSORFLOW_AVAILABLE = False
@@ -20,68 +21,69 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 class EdgeFlowOptimizer:
     """Real EdgeFlow model optimizer with TensorFlow Lite integration."""
-    
+
     def __init__(self):
         self.tf_available = TENSORFLOW_AVAILABLE
         if self.tf_available:
             # Configure TensorFlow for edge devices
             tf.config.threading.set_inter_op_parallelism_threads(1)
             tf.config.threading.set_intra_op_parallelism_threads(1)
-    
+
     def create_test_model(self, model_path: str) -> bool:
         """Create a real test model for optimization."""
         if not self.tf_available:
             # Create a dummy file
-            with open(model_path, 'w') as f:
+            with open(model_path, "w") as f:
                 f.write("dummy_model")
             return True
-        
+
         try:
             # Create a simple MobileNet-like model
-            model = tf.keras.Sequential([
-                tf.keras.layers.Input(shape=(224, 224, 3)),
-                tf.keras.layers.Conv2D(32, 3, activation='relu'),
-                tf.keras.layers.MaxPooling2D(2),
-                tf.keras.layers.Conv2D(64, 3, activation='relu'),
-                tf.keras.layers.MaxPooling2D(2),
-                tf.keras.layers.Conv2D(128, 3, activation='relu'),
-                tf.keras.layers.GlobalAveragePooling2D(),
-                tf.keras.layers.Dense(1000, activation='softmax')
-            ])
-            
+            model = tf.keras.Sequential(
+                [
+                    tf.keras.layers.Input(shape=(224, 224, 3)),
+                    tf.keras.layers.Conv2D(32, 3, activation="relu"),
+                    tf.keras.layers.MaxPooling2D(2),
+                    tf.keras.layers.Conv2D(64, 3, activation="relu"),
+                    tf.keras.layers.MaxPooling2D(2),
+                    tf.keras.layers.Conv2D(128, 3, activation="relu"),
+                    tf.keras.layers.GlobalAveragePooling2D(),
+                    tf.keras.layers.Dense(1000, activation="softmax"),
+                ]
+            )
+
             # Compile and train briefly
             model.compile(
-                optimizer='adam',
-                loss='categorical_crossentropy',
-                metrics=['accuracy']
+                optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"]
             )
-            
+
             # Generate dummy training data
             x_train = np.random.random((100, 224, 224, 3)).astype(np.float32)
             y_train = np.random.random((100, 1000)).astype(np.float32)
-            
+
             # Train for 1 epoch
             model.fit(x_train, y_train, epochs=1, verbose=0)
-            
+
             # Convert to TensorFlow Lite
             converter = tf.lite.TFLiteConverter.from_keras_model(model)
             converter.optimizations = [tf.lite.Optimize.DEFAULT]
-            
+
             tflite_model = converter.convert()
-            
+
             # Save the model
-            with open(model_path, 'wb') as f:
+            with open(model_path, "wb") as f:
                 f.write(tflite_model)
-            
+
             logger.info(f"Created real test model: {model_path}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Failed to create test model: {e}")
             return False
-    
+
     def optimize_model(self, config: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
         """Optimize a model using real TensorFlow Lite quantization.
 
@@ -111,7 +113,6 @@ class EdgeFlowOptimizer:
             return self._fallback_optimization(config)
 
         try:
-            baseline_tflite_path = model_path
             created_baseline = False
 
             # If we have a Keras source OR the baseline .tflite is missing, (re)create baseline
@@ -146,7 +147,8 @@ class EdgeFlowOptimizer:
             ):
                 if quantize != "none" and not keras_source:
                     logger.warning(
-                        "Quantization requested (%s) but no keras_model provided; skipping real quantization",
+                        "Quantization requested (%s) but no keras_model provided; "
+                        "skipping real quantization",
                         quantize,
                     )
                 # Return baseline metrics only (copy file to denote optimized output)
@@ -194,23 +196,22 @@ class EdgeFlowOptimizer:
             # Apply quantization strategy
             if quantize == "int8":
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
-                converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+                converter.target_spec.supported_ops = [
+                    tf.lite.OpsSet.TFLITE_BUILTINS_INT8
+                ]
                 converter.inference_input_type = tf.int8
                 converter.inference_output_type = tf.int8
 
-<<<<<<< HEAD
-                # Representative dataset
-                shape_tuple = tuple(int(x) for x in str(input_shape).split(',') if x.strip())
-=======
                 # Representative dataset with proper input shape handling
                 shape_tuple = tuple(
                     int(x) for x in str(input_shape).split(",") if x.strip()
                 )
->>>>>>> f63b4e3 (fix: resolve CI linting issues)
                 if len(shape_tuple) == 0:
                     shape_tuple = (1, 224, 224, 3)
 
-                def representative_dataset() -> Iterable[List[np.ndarray]]:  # type: ignore[override]
+                def representative_dataset() -> (
+                    Iterable[List[np.ndarray]]
+                ):  # type: ignore[override]
                     for _ in range(100):
                         yield [np.random.random(shape_tuple).astype(np.float32)]
 
@@ -221,15 +222,11 @@ class EdgeFlowOptimizer:
             else:  # Should not reach due to earlier guard
                 converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
-<<<<<<< HEAD
-            if target_device == 'raspberry_pi':
-=======
             # Device-specific optimizations
             if target_device == "raspberry_pi":
->>>>>>> f63b4e3 (fix: resolve CI linting issues)
                 converter.target_spec.supported_ops = [
                     tf.lite.OpsSet.TFLITE_BUILTINS,
-                    tf.lite.OpsSet.SELECT_TF_OPS
+                    tf.lite.OpsSet.SELECT_TF_OPS,
                 ]
 
             optimized_tflite = converter.convert()
@@ -267,70 +264,76 @@ class EdgeFlowOptimizer:
         except Exception as e:  # noqa: BLE001
             logger.error("Real optimization failed: %s", e)
             return self._fallback_optimization(config)
-    
+
     def _get_applied_optimizations(self, quantize: str, target_device: str) -> list:
         """Get list of applied optimizations."""
-        optimizations = ['default_optimizations']
-        
-        if quantize == 'int8':
-            optimizations.extend(['int8_quantization', 'representative_dataset'])
-        elif quantize == 'float16':
-            optimizations.append('float16_quantization')
-        
-        if target_device == 'raspberry_pi':
-            optimizations.append('raspberry_pi_optimizations')
-        
+        optimizations = ["default_optimizations"]
+
+        if quantize == "int8":
+            optimizations.extend(["int8_quantization", "representative_dataset"])
+        elif quantize == "float16":
+            optimizations.append("float16_quantization")
+
+        if target_device == "raspberry_pi":
+            optimizations.append("raspberry_pi_optimizations")
+
         return optimizations
-    
-    def _fallback_optimization(self, config: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+
+    def _fallback_optimization(
+        self, config: Dict[str, Any]
+    ) -> Tuple[str, Dict[str, Any]]:
         """Fallback to simulation when TensorFlow is not available."""
-        model_path = config.get('model', 'model.tflite')
-        quantize = config.get('quantize', 'none')
-        target_device = config.get('target_device', 'cpu')
-        
+        model_path = config.get("model", "model.tflite")
+        quantize = config.get("quantize", "none")
+        target_device = config.get("target_device", "cpu")
+
         # Create dummy optimized model
-        optimized_path = model_path.replace('.tflite', '_optimized.tflite')
-        with open(optimized_path, 'w') as f:
+        optimized_path = model_path.replace(".tflite", "_optimized.tflite")
+        with open(optimized_path, "w") as f:
             f.write("optimized_model")
-        
+
         # Simulate realistic improvements
         base_size = 1000000  # 1MB base size
-        if quantize == 'int8':
+        if quantize == "int8":
             size_reduction = 0.75  # 75% reduction
-        elif quantize == 'float16':
-            size_reduction = 0.5   # 50% reduction
+        elif quantize == "float16":
+            size_reduction = 0.5  # 50% reduction
         else:
-            size_reduction = 0.1   # 10% reduction
-        
+            size_reduction = 0.1  # 10% reduction
+
         optimized_size = int(base_size * (1 - size_reduction))
-        
+
         results = {
-            'original_size': base_size,
-            'optimized_size': optimized_size,
-            'size_reduction_bytes': base_size - optimized_size,
-            'size_reduction_percent': size_reduction * 100,
-            'quantization_type': quantize,
-            'target_device': target_device,
-            'optimizations_applied': self._get_applied_optimizations(quantize, target_device),
-            'simulation_mode': True
+            "original_size": base_size,
+            "optimized_size": optimized_size,
+            "size_reduction_bytes": base_size - optimized_size,
+            "size_reduction_percent": size_reduction * 100,
+            "quantization_type": quantize,
+            "target_device": target_device,
+            "optimizations_applied": self._get_applied_optimizations(
+                quantize, target_device
+            ),
+            "simulation_mode": True,
         }
-        
-        logger.info(f"Fallback optimization complete (simulation mode)")
+
+        logger.info("Fallback optimization complete (simulation mode)")
         return optimized_path, results
+
 
 def optimize(config: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
     """Main optimization function."""
     optimizer = EdgeFlowOptimizer()
     return optimizer.optimize_model(config)
 
+
 if __name__ == "__main__":
     # Test the real optimizer
     test_config = {
-        'model': 'test_model.tflite',
-        'quantize': 'int8',
-        'target_device': 'raspberry_pi'
+        "model": "test_model.tflite",
+        "quantize": "int8",
+        "target_device": "raspberry_pi",
     }
-    
+
     optimized_path, results = optimize(test_config)
     print(f"Optimized model: {optimized_path}")
     print(f"Results: {results}")
