@@ -178,7 +178,9 @@ class TestParseEfLegacy:
 
         try:
             result = parse_ef(path)
-            assert result["model_path"] == "legacy.tflite"
+            assert (
+                result["model"] == "legacy.tflite"
+            )  # Parser converts model_path to model
         finally:
             os.unlink(path)
 
