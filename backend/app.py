@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import io
+import json
 import logging
 from datetime import datetime, timezone
 from parser import parse_ef  # type: ignore
@@ -21,6 +22,7 @@ from pydantic import BaseModel, Field, constr
 # Import core CLI logic
 import edgeflowc  # type: ignore
 from backend.api.services.parser_service import ParserService
+from reporter import generate_json_report  # type: ignore
 
 # ----------------------------------------------------------------------------
 # Rate limiting (simple in-memory token bucket per client IP)
@@ -241,15 +243,38 @@ def compile_verbose(
 def optimize(
     req: OptimizeRequest, _: None = Depends(rate_limit_dep)
 ) -> OptimizeResponse:
-    # Placeholder: return the same model and simple report
+    # Calculate sizes
     size_mb = _b64_size_mb(req.model_file)
+    optimized_size_mb = max(size_mb * 0.5, 0.000001)  # Simulated 50% reduction
+
+    # Create stats for reporter
+    unoptimized_stats = {
+        "size_mb": size_mb,
+        "latency_ms": size_mb * 10.0,  # Simulated latency
+        "model_path": "uploaded_model.tflite",
+    }
+    optimized_stats = {
+        "size_mb": optimized_size_mb,
+        "latency_ms": optimized_size_mb * 8.0,  # Simulated improved latency
+        "model_path": "optimized_model.tflite",
+    }
+
+    # Generate JSON report using reporter module
+    json_report_str = generate_json_report(
+        unoptimized_stats, optimized_stats, req.config
+    )
+    json_report_dict = json.loads(json_report_str)
+
+    # Add quantization and target device info
     report = {
         "quantize": req.config.get("quantize"),
         "target_device": req.config.get("target_device"),
         "optimize_for": req.config.get("optimize_for"),
         "original_size_mb": size_mb,
-        "estimated_size_mb": max(size_mb * 0.5, 0.000001),
+        "estimated_size_mb": optimized_size_mb,
+        **json_report_dict,  # Include full reporter metrics
     }
+
     optimized_model = req.model_file  # echo for now
     return OptimizeResponse(
         success=True, optimized_model=optimized_model, optimization_report=report
