@@ -117,7 +117,7 @@ class TestParserIntegration:
     def test_parser_with_cli(self, tmp_path: Path, monkeypatch):
         """Test parser integration via CLI load path (no subprocess)."""
         p = tmp_path / "c.ef"
-        p.write_text('model_path = "x.tflite"\nquantize = int8\n', encoding="utf-8")
+        p.write_text('model = "x.tflite"\nquantize = int8\n', encoding="utf-8")
 
         # Use CLI's load_config directly to avoid dependency on optimizer
         import importlib
@@ -126,5 +126,5 @@ class TestParserIntegration:
 
         importlib.reload(edgeflowc)
         cfg = edgeflowc.load_config(str(p))
-        assert cfg["model_path"] == "x.tflite"
+        assert cfg["model"] == "x.tflite"
         assert cfg["quantize"] == "int8"

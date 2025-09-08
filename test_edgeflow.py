@@ -4,11 +4,10 @@ This is the main test file for EdgeFlow DSL functionality.
 Run this to verify that EdgeFlow is working correctly.
 """
 
-import json
 from parser import parse_ef
 
 from code_generator import generate_code
-from edgeflow_ast import create_program_from_dict, print_ast
+from edgeflow_ast import create_program_from_dict
 
 
 def test_edgeflow_dsl():
@@ -22,14 +21,13 @@ def test_edgeflow_dsl():
     print("\n📝 Test 1: Parsing EdgeFlow DSL...")
     config = parse_ef("sample_config.ef")
     print("✅ DSL parsing successful!")
-    print(
-        f"   Parsed {len([k for k in config.keys() if not k.startswith('__')])} configuration parameters"
-    )
+    num_params = len([k for k in config.keys() if not k.startswith("__")])
+    print(f"   Parsed {num_params} configuration parameters")
 
     # Test 2: Create AST
     print("\n🌳 Test 2: Creating Abstract Syntax Tree...")
     program = create_program_from_dict(config)
-    print(f"✅ AST creation successful!")
+    print("✅ AST creation successful!")
     print(f"   Created AST with {len(program.statements)} statements")
 
     # Test 3: Generate Code
