@@ -22,7 +22,8 @@ import os
 import sys
 from ast import Dict
 from parser import parse_ef  # Backward-compatible name
-from typing import Any, Dict as DictType
+from typing import Any
+from typing import Dict as DictType
 
 # Import our modules
 from optimizer import optimize
