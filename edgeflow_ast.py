@@ -142,7 +142,7 @@ class ConditionalStatement(Statement):
 
 @dataclass
 class PipelineStatement(Statement):
-    """Pipeline statement: pipeline: { preprocess, inference, postprocess }"""
+    """Represents a pipeline statement: pipeline: { preprocess, inference, postprocess }"""
 
     steps: List[str]
 

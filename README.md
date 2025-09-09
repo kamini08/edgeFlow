@@ -15,7 +15,7 @@ Overview
 Example `.ef`
 -------------
 
-```
+```bash
 model_path = "path/to/model.tflite"
 output_path = "path/to/optimized_model.tflite"
 quantize = int8
@@ -29,13 +29,13 @@ Installation
 - Python 3.11 (CI target)
 - Install runtime dependencies:
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
 For development (linting, tests, coverage, hooks):
 
-```
+```bash
 pip install -r requirements-dev.txt
 ```
 
@@ -44,19 +44,19 @@ Usage
 
 Basic:
 
-```
+```bash
 python edgeflowc.py path/to/config.ef
 ```
 
 Verbose:
 
-```
+```bash
 python edgeflowc.py path/to/config.ef --verbose
 ```
 
 Help and Version:
 
-```
+```bash
 python edgeflowc.py --help
 python edgeflowc.py --version
 ```
@@ -66,14 +66,14 @@ Expected Behavior
 
 - Missing file:
 
-```
+```bash
 python edgeflowc.py non_existent.ef
 # Error: File 'non_existent.ef' not found
 ```
 
 - Wrong extension:
 
-```
+```bash
 python edgeflowc.py invalid.txt
 # Error: Invalid file extension. Expected '.ef' file
 ```
@@ -96,7 +96,7 @@ Prereqs:
 
 Generate Python parser/lexer into the `parser/` package:
 
-```
+```bash
 java -jar grammer/antlr-4.13.1-complete.jar -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4
 ```
 
@@ -107,7 +107,7 @@ Running the Compiler
 
 Parse a `.ef` config and run the (placeholder) optimization pipeline:
 
-```
+```bash
 python edgeflowc.py path/to/config.ef
 ```
 
@@ -116,7 +116,7 @@ python edgeflowc.py path/to/config.ef
 Architecture
 ------------
 
-```
+```bash
 edgeFlow/
 ├── edgeflowc.py          # CLI entry point (this repo)
 ├── parser/               # ANTLR-generated modules + wrapper (__init__.py)
@@ -143,13 +143,13 @@ Development
 
 Set up pre-commit hooks:
 
-```
+```bash
 pre-commit install
 ```
 
 Run linters and type checks:
 
-```
+```bash
 black .
 isort --profile black .
 flake8 .
@@ -158,7 +158,7 @@ mypy --ignore-missing-imports .
 
 Run tests with coverage:
 
-```
+```bash
 pytest -q --cov=edgeflowc --cov-report=term-missing
 ```
 
@@ -195,7 +195,7 @@ Frontend (Next.js + TS):
 
 Local run (Docker):
 
-```
+```bash
 docker-compose up --build
 # Backend: http://localhost:8000/docs
 # Frontend: http://localhost:3000

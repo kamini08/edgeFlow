@@ -12,30 +12,30 @@
     "test:e2e": "echo 'E2E placeholder'"
   },
   "dependencies": {
+    "axios": "1.7.7",
     "next": "14.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "axios": "1.7.7",
     "recharts": "2.10.4"
   },
   "devDependencies": {
+    "@babel/preset-env": "7.26.9",
+    "@babel/preset-react": "7.26.3",
+    "@babel/preset-typescript": "7.26.0",
+    "@testing-library/jest-dom": "^6.4.6",
+    "@testing-library/react": "14.2.1",
+    "@types/jest": "29.5.12",
     "@types/node": "20.12.12",
     "@types/react": "18.2.79",
     "@types/react-dom": "18.2.25",
-    "typescript": "5.5.4",
+    "autoprefixer": "10.4.20",
+    "babel-jest": "29.7.0",
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.5",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
-    "@types/jest": "29.5.12",
-    "babel-jest": "29.7.0",
-    "@babel/preset-env": "7.26.9",
-    "@babel/preset-react": "7.26.3",
-    "@babel/preset-typescript": "7.26.0",
-    "@testing-library/react": "14.2.1",
-    "@testing-library/jest-dom": "6.4.6",
-    "tailwindcss": "3.4.10",
     "postcss": "8.4.47",
-    "autoprefixer": "10.4.20"
+    "tailwindcss": "3.4.10",
+    "typescript": "5.5.4"
   }
 }
