@@ -42,6 +42,7 @@ generated/
 test_model*
 mobilenet_v2.tflite
 
+
 # Temporary and cache files
 *.log
 *.tmp

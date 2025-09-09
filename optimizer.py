@@ -424,7 +424,15 @@ class EdgeFlowOptimizer:
         optimizations = ["default_optimizations"]
 
         if quantize == "int8":
-            optimizations.extend(["int8_quantization", "representative_dataset"])
+            optimizations.extend(
+                [
+                    "int8_quantization",
+                    "representative_dataset",
+                    "conv_batchnorm_fusion",
+                    "activation_fusion",
+                    "kernel_fusion",
+                ]
+            )
         elif quantize == "float16":
             optimizations.append("float16_quantization")
 
