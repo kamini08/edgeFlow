@@ -35,6 +35,10 @@ try:  # Optional heavy dependency
     _TF_AVAILABLE = True
 except Exception:  # noqa: BLE001 - optional dependency
     _TF_AVAILABLE = False
+import os
+import time
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +143,14 @@ class EdgeFlowBenchmarker:
         
     def benchmark_model(self, model_path: str) -> Dict[str, Any]:
         """Benchmark a single model (real if possible, else simulation)."""
+        """Benchmark a single model.
+
+        Args:
+            model_path: Path to the model file
+
+        Returns:
+            Dictionary with benchmark results
+        """
         logger.info(f"Benchmarking model: {model_path}")
 
         if not os.path.exists(model_path):
@@ -172,12 +184,22 @@ class EdgeFlowBenchmarker:
             results = self._simulate_benchmark(model_path, model_size_mb)
             results['mode'] = 'simulation'
 
+        # Get model size
+        model_size_mb = os.path.getsize(model_path) / (1024 * 1024)
+
+        # Simulate benchmarking based on device and optimization goals
+        results = self._simulate_benchmark(model_path, model_size_mb)
+
         logger.info(f"Benchmark complete: {model_path}")
         logger.info(
             f"  Latency: {results['latency_ms']:.2f} ms ({results.get('mode')})"
         )
         logger.info(f"  Throughput: {results['throughput_fps']:.2f} FPS")
         logger.info(f"  Memory: {results['memory_usage_mb']:.2f} MB")
+        logger.info(f"  Latency: {results['latency_ms']:.1f}ms")
+        logger.info(f"  Throughput: {results['throughput_fps']:.1f} FPS")
+        logger.info(f"  Memory: {results['memory_usage_mb']:.1f} MB")
+
         return results
     
     def compare_models(self, original_path: str, optimized_path: str) -> Dict[str, Any]:
@@ -332,11 +354,35 @@ class EdgeFlowBenchmarker:
 
 def benchmark_model(model_path: str, config: Dict[str, Any]) -> Dict[str, Any]:
     """Benchmark wrapper retaining original public API."""
+    """Benchmark a single model.
+
+    Args:
+        model_path: Path to the model file
+        config: EdgeFlow configuration
+
+    Returns:
+        Benchmark results dictionary
+    """
     benchmarker = EdgeFlowBenchmarker(config)
     return benchmarker.benchmark_model(model_path)
 
 def compare_models(original_path: str, optimized_path: str, config: Dict[str, Any]) -> Dict[str, Any]:
     """Compare two models (original vs optimized)."""
+
+
+def compare_models(
+    original_path: str, optimized_path: str, config: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Compare two models.
+
+    Args:
+        original_path: Path to original model
+        optimized_path: Path to optimized model
+        config: EdgeFlow configuration
+
+    Returns:
+        Comparison results dictionary
+    """
     benchmarker = EdgeFlowBenchmarker(config)
     return benchmarker.compare_models(original_path, optimized_path)
 

@@ -20,10 +20,12 @@ import json
 import logging
 import os
 import sys
+from ast import Dict
+from parser import parse_ef  # Backward-compatible name
+from typing import Any, Dict as DictType
 
 # Import our modules
-from parser import parse_ef  # Backward-compatible name
-from typing import Any, Dict
+from optimizer import optimize
 
 try:  # Prefer Day 2 API if present
     from parser import parse_edgeflow_file as _parse_edgeflow_file  # type: ignore
@@ -33,6 +35,7 @@ except Exception:  # noqa: BLE001
 from code_generator import CodeGenerator, generate_code
 from edgeflow_ast import create_program_from_dict
 from reporter import generate_report
+from validator import validate_edgeflow_config, validate_model_compatibility
 
 VERSION = "0.1.0"
 
@@ -169,7 +172,7 @@ def _load_project_parser_module():
     return None
 
 
-def load_config(file_path: str) -> Dict[str, Any]:
+def load_config(file_path: str) -> DictType[str, Any]:
     """Load and validate EdgeFlow configuration from file.
 
     Args:
@@ -185,12 +188,24 @@ def load_config(file_path: str) -> Dict[str, Any]:
         else:
             config = parse_ef(file_path)
 
-        # Basic validation
-        if not config.get("model"):
+        # Comprehensive semantic validation
+        is_valid, errors = validate_edgeflow_config(config)
+        if not is_valid:
             logging.error("Configuration validation failed:")
-            logging.error("  - 'model' is required and must be a non-empty string")
+            for error in errors:
+                logging.error(f"  - {error}")
             raise SystemExit(1)
 
+        # Model compatibility validation
+        model_path = config.get("model")
+        if model_path:
+            is_compatible, warnings = validate_model_compatibility(model_path, config)
+            if warnings:
+                logging.warning("Model compatibility warnings:")
+                for warning in warnings:
+                    logging.warning(f"  - {warning}")
+
+        logging.info("Configuration validation passed")
         return config
 
     except Exception as exc:
@@ -198,7 +213,7 @@ def load_config(file_path: str) -> Dict[str, Any]:
         raise SystemExit(1)
 
 
-def optimize_model(config: Dict[str, Any]) -> Dict[str, Any]:
+def optimize_model(config: DictType[str, Any]) -> DictType[str, Any]:
     """Run the full Day 3/4 pipeline: benchmark -> optimize -> benchmark.
 
     This reorders the earlier logic so we always capture baseline metrics
