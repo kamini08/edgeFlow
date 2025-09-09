@@ -227,8 +227,8 @@ EdgeFlow successfully optimized your model with these results:
         {optimized_stats['size_mb']:.2f} MB | ↓ {improvements['size_reduction']:.1f}% |
 | **Inference Latency** | {unoptimized_stats['latency_ms']:.2f} ms | \
 {optimized_stats['latency_ms']:.2f} ms | ↓ {improvements['latency_reduction']:.1f}% |
-| **Throughput** | {1000/float(unoptimized_stats['latency_ms']):.1f} fps | \
-        {1000/float(optimized_stats['latency_ms']):.1f} fps | \
+| **Throughput** | {1000/float(unoptimized_stats['latency_ms']) if unoptimized_stats['latency_ms'] > 0 else 0:.1f} fps | \
+        {1000/float(optimized_stats['latency_ms']) if optimized_stats['latency_ms'] > 0 else 0:.1f} fps | \
         ↑ {improvements['throughput_increase']:.1f}% |
 
 ## Size Comparison

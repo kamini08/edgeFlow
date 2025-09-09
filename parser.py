@@ -332,6 +332,8 @@ def validate_config(config: Dict[str, Any]) -> Tuple[bool, List[str]]:
       - batch_size: optional int >= 1
       - compression_ratio: optional float 0.0..1.0
       - enable_pruning: optional bool
+      - pruning_sparsity: optional float 0.0..1.0
+      - enable_operator_fusion: optional bool
       - quantize: optional identifier: one of {int8, float16, none}
       - optimize_for: optional identifier: one of {latency, size, balanced}
 
@@ -378,6 +380,17 @@ def validate_config(config: Dict[str, Any]) -> Tuple[bool, List[str]]:
 
     if "enable_pruning" in config and not isinstance(config["enable_pruning"], bool):
         errors.append("'enable_pruning' must be a boolean")
+
+    if "pruning_sparsity" in config:
+        ps = config["pruning_sparsity"]
+        if not (isinstance(ps, float) or isinstance(ps, int)):
+            errors.append("'pruning_sparsity' must be a number between 0 and 1")
+        else:
+            if not (0.0 <= float(ps) <= 1.0):
+                errors.append("'pruning_sparsity' must be between 0 and 1")
+
+    if "enable_operator_fusion" in config and not isinstance(config["enable_operator_fusion"], bool):
+        errors.append("'enable_operator_fusion' must be a boolean")
 
     if "quantize" in config:
         q = str(config["quantize"]).lower()
