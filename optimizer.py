@@ -12,9 +12,10 @@ import numpy as np
 
 # Try to import TensorFlow, fall back to simulation if not available
 try:
-    import tensorflow as tf
+    import tensorflow as tf  # noqa: F401
+
     # Import TensorFlow Model Optimization toolkit for pruning
-    import tensorflow_model_optimization as tfmot
+    import tensorflow_model_optimization as tfmot  # type: ignore  # noqa: F401
 
     TENSORFLOW_AVAILABLE = True
 except ImportError:
@@ -30,58 +31,60 @@ class EdgeFlowOptimizer:
     def __init__(self):
         # Re-check TensorFlow availability at runtime
         try:
-            import tensorflow as tf
-            import tensorflow_model_optimization as tfmot
+            import tensorflow as tf  # noqa: F811
+            import tensorflow_model_optimization as tfmot  # noqa: F811
+
             self.tf_available = True
             self.tf = tf
             self.tfmot = tfmot
-            
+
             # Configure TensorFlow for edge devices
             tf.config.threading.set_inter_op_parallelism_threads(1)
             tf.config.threading.set_intra_op_parallelism_threads(1)
             logger.info("TensorFlow Model Optimization initialized successfully")
-            
+
         except ImportError as e:
             self.tf_available = False
             logger.warning(f"TensorFlow not available: {e}, using simulation mode")
 
     def apply_pruning(self, model, pruning_params: Dict[str, Any]):
         """Apply structured pruning to reduce model size.
-        
+
         Args:
             model: Keras model to prune
             pruning_params: Dictionary containing pruning configuration
                 - sparsity: Target sparsity (0.0 to 1.0)
                 - structured: Whether to use structured pruning
-        
+
         Returns:
             Pruned model
         """
         if not self.tf_available:
             logger.warning("TensorFlow not available, skipping pruning")
             return model
-            
+
         try:
-            sparsity = pruning_params.get('sparsity', 0.5)
-            structured = pruning_params.get('structured', True)
-            
+            sparsity = pruning_params.get("sparsity", 0.5)
+            structured = pruning_params.get("structured", True)
+
             logger.info(f"Applying pruning with {sparsity*100:.1f}% sparsity")
-            
+
             if structured:
                 # Structured pruning - removes entire filters/channels
                 pruning_schedule = self.tfmot.sparsity.keras.ConstantSparsity(
-                    target_sparsity=sparsity,
-                    begin_step=0
+                    target_sparsity=sparsity, begin_step=0
                 )
-                
+
                 def apply_pruning_to_layer(layer):
                     # Apply pruning to Conv2D and Dense layers
-                    if isinstance(layer, (self.tf.keras.layers.Conv2D, self.tf.keras.layers.Dense)):
+                    if isinstance(
+                        layer, (self.tf.keras.layers.Conv2D, self.tf.keras.layers.Dense)
+                    ):
                         return self.tfmot.sparsity.keras.prune_low_magnitude(
                             layer, pruning_schedule=pruning_schedule
                         )
                     return layer
-                    
+
                 pruned_model = self.tf.keras.models.clone_model(
                     model, clone_function=apply_pruning_to_layer
                 )
@@ -91,61 +94,61 @@ class EdgeFlowOptimizer:
                     initial_sparsity=0.0,
                     final_sparsity=sparsity,
                     begin_step=0,
-                    end_step=1000
+                    end_step=1000,
                 )
-                
+
                 pruned_model = self.tfmot.sparsity.keras.prune_low_magnitude(
                     model, pruning_schedule=pruning_schedule
                 )
-            
+
             # Copy weights to pruned model
             pruned_model.set_weights(model.get_weights())
-            
+
             logger.info("Pruning applied successfully")
             return pruned_model
-            
+
         except Exception as e:
             logger.warning(f"Pruning failed: {e}, using original model")
             return model
 
     def apply_operator_fusion(self, converter):
         """Apply operator fusion optimizations to TFLite converter.
-        
+
         Args:
             converter: TFLite converter instance
-            
+
         Returns:
             Modified converter with fusion optimizations
         """
         if not self.tf_available:
             logger.warning("TensorFlow not available, skipping operator fusion")
             return converter
-            
+
         try:
             logger.info("Applying operator fusion optimizations")
-            
+
             # Enable all available optimizations including operator fusion
             converter.optimizations = [self.tf.lite.Optimize.DEFAULT]
-            
+
             # Enable experimental optimizations that include more aggressive fusion
             converter._experimental_new_converter = True
             converter._experimental_new_quantizer = True
-            
+
             # Configure for maximum operator fusion
             converter.target_spec.supported_ops = [
                 self.tf.lite.OpsSet.TFLITE_BUILTINS,
-                self.tf.lite.OpsSet.SELECT_TF_OPS  # Allow TF ops for better fusion
+                self.tf.lite.OpsSet.SELECT_TF_OPS,  # Allow TF ops for better fusion
             ]
-            
+
             # Enable MLIR-based conversion for better optimization
             try:
                 converter.experimental_enable_resource_variables = True
             except AttributeError:
                 pass  # Not available in all TF versions
-            
+
             logger.info("Operator fusion optimizations configured")
             return converter
-            
+
         except Exception as e:
             logger.warning(f"Operator fusion configuration failed: {e}")
             return converter
@@ -211,19 +214,20 @@ class EdgeFlowOptimizer:
              is provided. Otherwise quantization becomes a no-op and we simply
              report metrics / copy the model.
           2. Keras model source (via ``keras_model`` config key). We generate a
-             baseline float32 TFLite plus an optimized (quantized + pruned + fused) variant.
+             baseline float32 TFLite plus an optimized (quantized + pruned + fused)
+             variant.
         """
         model_path = config.get("model", "model.tflite")
         keras_source = config.get("keras_model")  # Optional
         quantize = str(config.get("quantize", "none")).lower()
         target_device = config.get("target_device", "cpu")
         input_shape = config.get("input_shape", "1,224,224,3")
-        
+
         # Pruning configuration
         enable_pruning = config.get("enable_pruning", False)
         pruning_sparsity = config.get("pruning_sparsity", 0.5)
-        
-        # Operator fusion configuration  
+
+        # Operator fusion configuration
         enable_operator_fusion = config.get("enable_operator_fusion", True)
 
         logger.info("Starting optimization")
@@ -252,15 +256,15 @@ class EdgeFlowOptimizer:
                     "Converting Keras model to baseline TFLite: %s", keras_source
                 )
                 keras_model = self.tf.keras.models.load_model(keras_source)
-                
+
                 # Apply pruning if enabled
                 if enable_pruning:
                     pruning_params = {
-                        'sparsity': pruning_sparsity,
-                        'structured': True  # Use structured pruning for better hardware support
+                        "sparsity": pruning_sparsity,
+                        "structured": True,  # Use structured pruning for better hardware
                     }
                     keras_model = self.apply_pruning(keras_model, pruning_params)
-                
+
                 baseline_converter = self.tf.lite.TFLiteConverter.from_keras_model(
                     keras_model
                 )
@@ -319,13 +323,10 @@ class EdgeFlowOptimizer:
             # Load Keras model again if needed for optimization
             if keras_source and not keras_model:
                 keras_model = self.tf.keras.models.load_model(keras_source)
-                
+
                 # Apply pruning if enabled
                 if enable_pruning:
-                    pruning_params = {
-                        'sparsity': pruning_sparsity,
-                        'structured': True
-                    }
+                    pruning_params = {"sparsity": pruning_sparsity, "structured": True}
                     keras_model = self.apply_pruning(keras_model, pruning_params)
 
             if keras_model:
@@ -333,7 +334,9 @@ class EdgeFlowOptimizer:
             else:
                 # Last resort attempt to treat model_path as saved model dir
                 if os.path.isdir(model_path):
-                    converter = self.tf.lite.TFLiteConverter.from_saved_model(model_path)
+                    converter = self.tf.lite.TFLiteConverter.from_saved_model(
+                        model_path
+                    )
                 else:
                     logger.warning("Cannot quantize without valid source; falling back")
                     return self._fallback_optimization(config)
@@ -417,9 +420,13 @@ class EdgeFlowOptimizer:
             logger.error("Real optimization failed: %s", e)
             return self._fallback_optimization(config)
 
-    def _get_applied_optimizations(self, quantize: str, target_device: str, 
-                                   enable_pruning: bool = False, 
-                                   enable_operator_fusion: bool = False) -> list:
+    def _get_applied_optimizations(
+        self,
+        quantize: str,
+        target_device: str,
+        enable_pruning: bool = False,
+        enable_operator_fusion: bool = False,
+    ) -> list:
         """Get list of applied optimizations."""
         optimizations = ["default_optimizations"]
 
@@ -438,7 +445,7 @@ class EdgeFlowOptimizer:
 
         if enable_pruning:
             optimizations.extend(["structured_pruning", "weight_sparsity"])
-            
+
         if enable_operator_fusion:
             optimizations.extend(["operator_fusion", "graph_optimization"])
 
@@ -466,15 +473,17 @@ class EdgeFlowOptimizer:
         # Simulate realistic improvements
         base_size = 1000000  # 1MB base size
         size_reduction = 0.1  # Base 10% reduction
-        
+
         if quantize == "int8":
             size_reduction += 0.65  # 65% additional reduction
         elif quantize == "float16":
-            size_reduction += 0.4   # 40% additional reduction
-            
+            size_reduction += 0.4  # 40% additional reduction
+
         if enable_pruning:
-            size_reduction += pruning_sparsity * 0.3  # Additional reduction from pruning
-            
+            size_reduction += (
+                pruning_sparsity * 0.3
+            )  # Additional reduction from pruning
+
         if enable_operator_fusion:
             size_reduction += 0.05  # 5% additional reduction from fusion
 

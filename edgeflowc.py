@@ -20,13 +20,11 @@ import json
 import logging
 import os
 import sys
-from ast import Dict
 from parser import parse_ef  # Backward-compatible name
 from typing import Any
 from typing import Dict as DictType
 
 # Import our modules
-from optimizer import optimize
 
 try:  # Prefer Day 2 API if present
     from parser import parse_edgeflow_file as _parse_edgeflow_file  # type: ignore
@@ -35,6 +33,7 @@ except Exception:  # noqa: BLE001
 
 from code_generator import CodeGenerator, generate_code
 from edgeflow_ast import create_program_from_dict
+from edgeflow_ir import FusionPass, IRBuilder, IRGraph, QuantizationPass, SchedulingPass
 from reporter import generate_report
 from validator import validate_edgeflow_config, validate_model_compatibility
 
@@ -275,6 +274,67 @@ def optimize_model(config: DictType[str, Any]) -> DictType[str, Any]:
         return {"error": str(e)}
 
 
+def apply_ir_transformations(
+    ir_graph: IRGraph, config: DictType[str, Any]
+) -> DictType[str, Any]:
+    """Apply IR transformations to optimize the pipeline.
+
+    Args:
+        ir_graph: The IR graph to transform
+        config: Configuration dictionary
+
+    Returns:
+        Dictionary with transformation results and metadata
+    """
+    try:
+        passes_applied = 0
+        transformations = []
+
+        # Apply quantization pass if requested
+        quantize = config.get("quantize", "none")
+        if quantize in ("int8", "float16"):
+            logging.info("Applying quantization pass...")
+            quant_pass = QuantizationPass()
+            ir_graph = quant_pass.transform(ir_graph)
+            passes_applied += 1
+            transformations.append(f"quantization_{quantize}")
+
+        # Apply fusion pass if enabled
+        if config.get("enable_fusion", False):
+            logging.info("Applying fusion pass...")
+            fusion_pass = FusionPass()
+            ir_graph = fusion_pass.transform(ir_graph)
+            passes_applied += 1
+            transformations.append("operation_fusion")
+
+        # Apply scheduling pass for device-specific optimization
+        target_device = config.get("target_device", "cpu")
+        if target_device != "cpu":
+            logging.info("Applying scheduling pass for %s...", target_device)
+            schedule_pass = SchedulingPass()
+            ir_graph = schedule_pass.transform(ir_graph)
+            passes_applied += 1
+            transformations.append(f"scheduling_{target_device}")
+
+        # Validate the transformed graph
+        is_valid, errors = ir_graph.validate_graph()
+        if not is_valid:
+            logging.warning("IR graph validation failed: %s", errors)
+
+        return {
+            "passes_applied": passes_applied,
+            "transformations": transformations,
+            "nodes": len(ir_graph.nodes),
+            "edges": len(ir_graph.edges),
+            "is_valid": is_valid,
+            "validation_errors": errors if not is_valid else [],
+        }
+
+    except Exception as e:
+        logging.error("IR transformation failed: %s", e)
+        return {"passes_applied": 0, "transformations": [], "error": str(e)}
+
+
 def main() -> int:
     """Main entry point for EdgeFlow compiler.
 
@@ -311,9 +371,24 @@ def main() -> int:
         program = create_program_from_dict(cfg)
         logging.info("Created AST with %d statements", len(program.statements))
 
+        # Build IR from AST
+        logging.info("Building Intermediate Representation...")
+        ir_builder = IRBuilder()
+        ir_graph = ir_builder.build_from_config(cfg)
+        logging.info(
+            "Created IR graph with %d nodes and %d edges",
+            len(ir_graph.nodes),
+            len(ir_graph.edges),
+        )
+
+        # Apply IR transformations
+        logging.info("Applying IR transformations...")
+        ir_info = apply_ir_transformations(ir_graph, cfg)
+        logging.info("Applied %d optimization passes", ir_info.get("passes_applied", 0))
+
         # Generate code
         logging.info("Generating inference code...")
-        generator = CodeGenerator(program)
+        generator = CodeGenerator(program, ir_graph)
 
         # Generate Python code
         python_code = generator.generate_python_inference()
@@ -321,9 +396,17 @@ def main() -> int:
             "Generated Python inference code (%d characters)", len(python_code)
         )
 
-        # Generate C++ code
-        cpp_code = generator.generate_cpp_inference()
-        logging.info("Generated C++ inference code (%d characters)", len(cpp_code))
+        # Generate IR-based C++ code for bare-metal/embedded Linux
+        cpp_code = generator.generate_ir_based_code("cpp")
+        logging.info("Generated IR-based C++ inference code (%d characters)", len(cpp_code))
+
+        # Generate ONNX Runtime wrapper
+        onnx_code = generator.generate_ir_based_code("onnx")
+        logging.info("Generated ONNX Runtime wrapper (%d characters)", len(onnx_code))
+
+        # Generate TensorRT wrapper
+        tensorrt_code = generator.generate_ir_based_code("tensorrt")
+        logging.info("Generated TensorRT wrapper (%d characters)", len(tensorrt_code))
 
         # Generate optimization report
         report = generator.generate_optimization_report()
@@ -331,7 +414,27 @@ def main() -> int:
 
         # Save generated files
         output_dir = "generated"
-        files = generate_code(program, output_dir)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Save all generated code files
+        files = {}
+        files["python"] = os.path.join(output_dir, "inference.py")
+        files["cpp"] = os.path.join(output_dir, "inference.cpp")
+        files["onnx"] = os.path.join(output_dir, "inference_onnx.py")
+        files["tensorrt"] = os.path.join(output_dir, "inference_tensorrt.py")
+        files["report"] = os.path.join(output_dir, "optimization_report.md")
+        
+        with open(files["python"], "w") as f:
+            f.write(python_code)
+        with open(files["cpp"], "w") as f:
+            f.write(cpp_code)
+        with open(files["onnx"], "w") as f:
+            f.write(onnx_code)
+        with open(files["tensorrt"], "w") as f:
+            f.write(tensorrt_code)
+        with open(files["report"], "w") as f:
+            f.write(report)
+        
         logging.info("Saved generated files to %s:", output_dir)
         for file_type, file_path in files.items():
             logging.info("  %s: %s", file_type, file_path)
