@@ -35,7 +35,9 @@ from code_generator import CodeGenerator, generate_code
 from edgeflow_ast import create_program_from_dict
 from edgeflow_ir import FusionPass, IRBuilder, IRGraph, QuantizationPass, SchedulingPass
 from reporter import generate_report
-from validator import validate_edgeflow_config, validate_model_compatibility
+from validator import validate_edgeflow_config, validate_model_compatibility, EdgeFlowValidator
+from fast_compile import fast_compile_config, FastCompileResult
+from explainability_reporter import generate_explainability_report
 
 VERSION = "0.1.0"
 
@@ -88,6 +90,16 @@ def parse_arguments() -> argparse.Namespace:
         "--dry-run",
         action="store_true",
         help="Parse and validate config, print result, exit",
+    )
+    parser.add_argument(
+        "--fast-compile",
+        action="store_true",
+        help="Perform fast compilation with immediate feedback (no heavy processing)",
+    )
+    parser.add_argument(
+        "--explain",
+        action="store_true",
+        help="Generate detailed explainability report",
     )
 
     args = parser.parse_args()
@@ -172,11 +184,12 @@ def _load_project_parser_module():
     return None
 
 
-def load_config(file_path: str) -> DictType[str, Any]:
+def load_config(file_path: str, use_early_validation: bool = True) -> DictType[str, Any]:
     """Load and validate EdgeFlow configuration from file.
 
     Args:
         file_path: Path to the ``.ef`` configuration file.
+        use_early_validation: Whether to use fast early validation
 
     Returns:
         Dict[str, Any]: Parsed configuration dictionary.
@@ -187,6 +200,17 @@ def load_config(file_path: str) -> DictType[str, Any]:
             config = _parse_edgeflow_file(file_path)
         else:
             config = parse_ef(file_path)
+
+        # Early validation for fast feedback
+        if use_early_validation:
+            validator = EdgeFlowValidator()
+            is_valid, errors = validator.early_validation(config)
+            if not is_valid:
+                logging.error("Early validation failed:")
+                for error in errors:
+                    logging.error(f"  - {error}")
+                raise SystemExit(1)
+            logging.info("Early validation passed")
 
         # Comprehensive semantic validation
         is_valid, errors = validate_edgeflow_config(config)
@@ -360,6 +384,36 @@ def main() -> int:
 
         # Parse configuration file
         cfg = load_config(args.config_path)
+        
+        # Handle fast compile mode
+        if getattr(args, "fast_compile", False):
+            logging.info("Running fast compilation...")
+            fast_result = fast_compile_config(cfg)
+            
+            if not fast_result.success:
+                logging.error("Fast compilation failed:")
+                for error in fast_result.errors:
+                    logging.error(f"  - {error}")
+                return 1
+            
+            logging.info("✅ Fast compilation successful!")
+            logging.info(f"⚡ Compile time: {fast_result.compile_time_ms:.2f}ms")
+            
+            if fast_result.warnings:
+                logging.warning("⚠️ Warnings:")
+                for warning in fast_result.warnings:
+                    logging.warning(f"  - {warning}")
+            
+            # Print estimated impact
+            impact = fast_result.estimated_impact
+            logging.info("📊 Estimated optimization impact:")
+            logging.info(f"  Size reduction: {impact.get('estimated_size_reduction_percent', 0):.1f}%")
+            logging.info(f"  Speed improvement: {impact.get('estimated_speed_improvement_factor', 1.0):.1f}x")
+            logging.info(f"  Memory reduction: {impact.get('estimated_memory_reduction_percent', 0):.1f}%")
+            logging.info(f"  Confidence: {impact.get('optimization_confidence', 0.8)*100:.0f}%")
+            
+            return 0
+        
         if getattr(args, "dry_run", False):
             # Print parsed config to stdout and exit without optimization
             print(json.dumps(cfg, indent=2))
@@ -499,6 +553,30 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001
             logging.error("❌ Failed to generate report: %s", e)
             logging.debug("Report generation exception", exc_info=True)
+
+        # Generate explainability report if requested
+        if getattr(args, "explain", False):
+            try:
+                logging.info("\n🧠 Generating explainability report...")
+                
+                # Prepare data for explainability report
+                optimization_results = opt_results.get("optimization", {})
+                benchmark_comparison = opt_results.get("comparison", {})
+                
+                explainability_report = generate_explainability_report(
+                    cfg, optimization_results, ir_info, benchmark_comparison
+                )
+                
+                # Save explainability report
+                explainability_path = os.path.join(output_dir, "explainability_report.md")
+                with open(explainability_path, "w") as f:
+                    f.write(explainability_report)
+                
+                logging.info("✅ Explainability report generated: %s", explainability_path)
+                
+            except Exception as e:  # noqa: BLE001
+                logging.error("❌ Failed to generate explainability report: %s", e)
+                logging.debug("Explainability report generation exception", exc_info=True)
 
         logging.info("EdgeFlow compilation pipeline completed successfully!")
         logging.info(
