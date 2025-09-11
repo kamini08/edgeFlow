@@ -24,7 +24,7 @@ class EdgeFlowValidator:
     def __init__(self):
         self.supported_devices = {
             "raspberry_pi",
-            "jetson_nano", 
+            "jetson_nano",
             "jetson_xavier",
             "cortex_m4",
             "cortex_m7",
@@ -35,17 +35,20 @@ class EdgeFlowValidator:
         self.supported_input_streams = {"camera", "file", "stream", "sensor"}
         self.supported_optimization_goals = {"latency", "memory", "size", "balanced"}
         self.supported_fusion_options = {True, False, "true", "false"}
-        
+
         # Model format support
         self.supported_model_formats = {
-            ".tflite", ".lite",  # TensorFlow Lite
-            ".h5", ".keras",     # Keras
-            ".pth", ".pt",       # PyTorch
-            ".onnx",             # ONNX
-            ".pb",               # TensorFlow SavedModel
-            ".json",             # TensorFlow.js
+            ".tflite",
+            ".lite",  # TensorFlow Lite
+            ".h5",
+            ".keras",  # Keras
+            ".pth",
+            ".pt",  # PyTorch
+            ".onnx",  # ONNX
+            ".pb",  # TensorFlow SavedModel
+            ".json",  # TensorFlow.js
         }
-        
+
         # Device-specific constraints
         self.device_constraints = {
             "raspberry_pi": {"max_memory_mb": 2048, "max_model_size_mb": 100},
@@ -103,39 +106,41 @@ class EdgeFlowValidator:
 
     def early_validation(self, config: Dict[str, Any]) -> Tuple[bool, List[str]]:
         """Perform fast, early validation before heavy processing.
-        
+
         This method performs lightweight checks that can quickly identify
         configuration issues without loading models or performing expensive
         operations.
-        
+
         Args:
             config: Parsed EdgeFlow configuration dictionary
-            
+
         Returns:
             Tuple of (is_valid, list_of_critical_errors)
         """
         errors: List[str] = []
-        
+
         try:
             # Fast syntax and basic validation
             self._validate_required_fields(config, errors)
             self._validate_device_compatibility(config, errors)
             self._validate_quantization(config, errors)
             self._validate_optimization_params(config, errors)
-            
+
             # Quick model path validation (without loading file)
             model_path = config.get("model")
             if model_path:
                 if not isinstance(model_path, str):
-                    errors.append(f"Model path must be a string, got: {type(model_path)}")
+                    errors.append(
+                        f"Model path must be a string, got: {type(model_path)}"
+                    )
                 elif not model_path.strip():
                     errors.append("Model path cannot be empty")
                 elif not os.path.exists(model_path):
                     errors.append(f"Model file not found: {model_path}")
-                    
+
         except Exception as e:
             errors.append(f"Early validation error: {str(e)}")
-            
+
         return len(errors) == 0, errors
 
     def _validate_required_fields(
@@ -162,7 +167,7 @@ class EdgeFlowValidator:
         # Check if it's a supported model format
         model_ext = os.path.splitext(model_path)[1].lower()
         if model_ext not in self.supported_model_formats:
-            supported_formats = ', '.join(sorted(self.supported_model_formats))
+            supported_formats = ", ".join(sorted(self.supported_model_formats))
             errors.append(
                 f"Unsupported model format: {model_ext}. Supported: {supported_formats}"
             )
@@ -172,23 +177,23 @@ class EdgeFlowValidator:
         try:
             file_size = os.path.getsize(model_path)
             file_size_mb = file_size / (1024 * 1024)
-            
+
             if file_size < 1024:  # Less than 1KB
                 errors.append(f"Model file too small (likely corrupted): {model_path}")
                 return
-                
+
             # Check against device-specific constraints
             device = config.get("target_device", "cpu")
             device_constraint = self.device_constraints.get(
                 device, self.device_constraints["cpu"]
             )
-            
+
             if file_size_mb > device_constraint["max_model_size_mb"]:
                 max_size = device_constraint["max_model_size_mb"]
                 errors.append(
                     f"Model file too large for {device}: {file_size_mb:.1f}MB > {max_size}MB"
                 )
-                
+
         except OSError as e:
             errors.append(f"Cannot access model file: {model_path} - {str(e)}")
 
@@ -197,7 +202,7 @@ class EdgeFlowValidator:
         quantize = config.get("quantize", "none")
 
         if quantize not in self.supported_quantization:
-            supported_quant = ', '.join(self.supported_quantization)
+            supported_quant = ", ".join(self.supported_quantization)
             errors.append(
                 f"Unsupported quantization type: {quantize}. Supported: {supported_quant}"
             )
@@ -205,10 +210,10 @@ class EdgeFlowValidator:
         # Check quantization compatibility with model format and device
         model_path = config.get("model")
         device = config.get("target_device", "cpu")
-        
+
         if quantize in ("int8", "float16") and model_path:
             model_ext = os.path.splitext(model_path)[1].lower()
-            
+
             # INT8 quantization works best with certain formats
             int8_formats = {".tflite", ".h5", ".keras", ".onnx"}
             if quantize == "int8" and model_ext not in int8_formats:
@@ -216,7 +221,7 @@ class EdgeFlowValidator:
                     f"INT8 quantization works best with TensorFlow Lite/Keras/ONNX models, "
                     f"got: {model_ext}"
                 )
-                
+
             # FLOAT16 has device-specific limitations
             if quantize == "float16" and device == "cortex_m4":
                 errors.append(
@@ -230,7 +235,7 @@ class EdgeFlowValidator:
         device = config.get("target_device", "cpu")
 
         if device not in self.supported_devices:
-            supported_devices = ', '.join(sorted(self.supported_devices))
+            supported_devices = ", ".join(sorted(self.supported_devices))
             errors.append(
                 f"Unsupported target device: {device}. Supported: {supported_devices}"
             )
@@ -240,7 +245,7 @@ class EdgeFlowValidator:
         device_constraint = self.device_constraints.get(device)
         if not device_constraint:
             return
-            
+
         # Check memory limit against device constraints
         memory_limit = config.get("memory_limit")
         if memory_limit is not None:
@@ -259,7 +264,7 @@ class EdgeFlowValidator:
         input_stream = config.get("input_stream", "file")
 
         if input_stream not in self.supported_input_streams:
-            supported_streams = ', '.join(self.supported_input_streams)
+            supported_streams = ", ".join(self.supported_input_streams)
             errors.append(
                 f"Unsupported input stream: {input_stream}. Supported: {supported_streams}"
             )
@@ -284,7 +289,7 @@ class EdgeFlowValidator:
         optimize_for = config.get("optimize_for", "balanced")
 
         if optimize_for not in self.supported_optimization_goals:
-            supported_goals = ', '.join(self.supported_optimization_goals)
+            supported_goals = ", ".join(self.supported_optimization_goals)
             errors.append(
                 f"Unsupported optimization goal: {optimize_for}. Supported: {supported_goals}"
             )
