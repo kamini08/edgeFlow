@@ -234,6 +234,29 @@ class IRGraph:
                 for node_type in NodeType
             },
         }
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert the IR graph to a dictionary representation."""
+        return {
+            "nodes": [
+                {
+                    "id": node.node_id,
+                    "node_type": node.node_type.value if node.node_type else "unknown",
+                    "dependencies": list(getattr(node, 'dependencies', [])),
+                    "metadata": getattr(node, 'metadata', {})
+                }
+                for node in self.nodes.values()
+            ],
+            "edges": [
+                {
+                    "from": edge[0],
+                    "to": edge[1]
+                }
+                for edge in self.edges
+            ],
+            "execution_order": list(self.execution_order),
+            "optimization_passes": list(self.optimization_passes)
+        }
 
 
 class IRTransformation(ABC):
@@ -275,16 +298,23 @@ class QuantizationPass(IRTransformation):
 
                 graph.add_node(quantize_node)
 
-                # Insert quantization before model
+                # Get all dependencies of the model node before making changes
+                dependencies_to_update = list(model_node.dependencies)
+                
+                # Add edge from quantize to model
                 graph.add_edge(quantize_id, model_node.node_id)
 
-                # Update dependencies - collect first, then modify
-                deps_to_update = list(model_node.dependencies)
-                for dep in deps_to_update:
-                    graph.add_edge(dep, quantize_id)
-                    # Remove old edge
+                # Update all dependencies to point to quantize instead of model
+                for dep in dependencies_to_update:
+                    # Only add edge if it's not the quantize node itself (avoid self-loops)
+                    if dep != quantize_id:
+                        graph.add_edge(dep, quantize_id)
+                    
+                    # Remove the old edge from dependency to model
                     if (dep, model_node.node_id) in graph.edges:
                         graph.edges.remove((dep, model_node.node_id))
+                    
+                    # Update node dependency relationships
                     model_node.dependencies.discard(dep)
                     if dep in graph.nodes:
                         graph.nodes[dep].dependents.discard(model_node.node_id)
@@ -312,7 +342,7 @@ class FusionPass(IRTransformation):
             fusion_enabled = model_node.properties.get("enable_fusion", False)
             fusion_id = f"fusion_{model_node.node_id}"
 
-            # Check if fusion node already exists
+            # Check if fusion node already exists and fusion is enabled
             if fusion_enabled and fusion_id not in graph.nodes:
                 fusion_node = FusionNode(
                     node_id=fusion_id,
@@ -325,16 +355,22 @@ class FusionPass(IRTransformation):
 
                 graph.add_node(fusion_node)
 
-                # Insert fusion after model
+                # Get all dependents of the model node before making changes
+                dependents_to_update = list(model_node.dependents)
+                
+                # Add edge from model to fusion
                 graph.add_edge(model_node.node_id, fusion_id)
 
-                # Update dependents
-                deps_to_update = list(model_node.dependents)
-                for dep in deps_to_update:
+                # Update all dependents to point to fusion instead of model
+                for dep in dependents_to_update:
+                    # Add edge from fusion to dependent
                     graph.add_edge(fusion_id, dep)
-                    # Remove old edge
+                    
+                    # Remove the old edge from model to dependent
                     if (model_node.node_id, dep) in graph.edges:
                         graph.edges.remove((model_node.node_id, dep))
+                    
+                    # Update node dependency relationships
                     model_node.dependents.discard(dep)
                     if dep in graph.nodes:
                         graph.nodes[dep].dependencies.discard(model_node.node_id)
@@ -375,16 +411,22 @@ class SchedulingPass(IRTransformation):
 
                 graph.add_node(schedule_node)
 
-                # Insert scheduling after model
+                # Get all dependents of the model node before making changes
+                dependents_to_update = list(model_node.dependents)
+                
+                # Add edge from model to schedule
                 graph.add_edge(model_node.node_id, schedule_id)
 
-                # Update dependents
-                deps_to_update = list(model_node.dependents)
-                for dep in deps_to_update:
+                # Update all dependents to point to schedule instead of model
+                for dep in dependents_to_update:
+                    # Add edge from schedule to dependent
                     graph.add_edge(schedule_id, dep)
-                    # Remove old edge
+                    
+                    # Remove the old edge from model to dependent
                     if (model_node.node_id, dep) in graph.edges:
                         graph.edges.remove((model_node.node_id, dep))
+                    
+                    # Update node dependency relationships
                     model_node.dependents.discard(dep)
                     if dep in graph.nodes:
                         graph.nodes[dep].dependencies.discard(model_node.node_id)

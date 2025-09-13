@@ -1,0 +1,16 @@
+{
+  "model_file": "resnet50_keras.h5",
+  "model_type": "ResNet50",
+  "size_bytes": 102967424,
+  "size_mb": 98.2,
+  "framework": "keras",
+  "format": "h5",
+  "input_shape": [
+    1,
+    224,
+    224,
+    3
+  ],
+  "output_classes": 1000,
+  "description": "Pre-trained ResNet50 model on ImageNet"
+}

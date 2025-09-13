@@ -1,0 +1,16 @@
+{
+  "model_file": "mobilenet_v2_keras.h5",
+  "model_type": "MobileNet V2",
+  "size_bytes": 14536120,
+  "size_mb": 13.86,
+  "framework": "keras",
+  "format": "h5",
+  "input_shape": [
+    1,
+    224,
+    224,
+    3
+  ],
+  "output_classes": 1000,
+  "description": "Pre-trained MobileNet V2 model on ImageNet"
+}

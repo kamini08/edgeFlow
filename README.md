@@ -97,7 +97,8 @@ Prereqs:
 Generate Python parser/lexer into the `parser/` package:
 
 ```bash
-java -jar grammer/antlr-4.13.1-complete.jar -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4
+
+
 ```
 
 After generation, `parser/` contains `EdgeFlowLexer.py`, `EdgeFlowParser.py`, `EdgeFlowVisitor.py`, etc. The CLI automatically uses them when present; otherwise it falls back to a simple line-based parser.
