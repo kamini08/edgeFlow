@@ -347,11 +347,11 @@ def validate_config(config: Dict[str, Any]) -> Tuple[bool, List[str]]:
     errors: List[str] = []
 
     # Required for production, but allow flexibility for simple test configs
-    model_path = config.get("model_path")
+    model_path = config.get("model_path") or config.get("model")
     if model_path is not None and (
         not isinstance(model_path, str) or not model_path.strip()
     ):
-        errors.append("'model_path' must be a non-empty string when specified")
+        errors.append("'model_path' or 'model' must be a non-empty string when specified")
     elif model_path is None:
         # Allow simple test configs like {"x": 1}, but require model_path for
         # empty or production configs
@@ -362,7 +362,7 @@ def validate_config(config: Dict[str, Any]) -> Tuple[bool, List[str]]:
         is_empty = len(config) == 0
 
         if is_empty or (not has_metadata and not is_simple_test):
-            errors.append("'model_path' is required and must be a non-empty string")
+            errors.append("'model_path' or 'model' is required and must be a non-empty string")
 
     # Optional validations
     if "batch_size" in config:

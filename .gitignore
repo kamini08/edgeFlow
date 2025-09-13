@@ -65,3 +65,10 @@ optimization_results/
 # Models
 baseline_model*
 simple_model*
+*.h5
+*.h5_info.txt
+
+# Frontend build files
+frontend/.next/
+frontend/out/
+frontend/build/
