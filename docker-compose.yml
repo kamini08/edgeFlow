@@ -1,71 +1,23 @@
-version: '3.8'
-
 services:
-  edgeflow-compiler:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: edgeflow:latest
-    container_name: edgeflow-compiler
-    volumes:
-      - ./models:/app/models
-      - ./outputs:/app/outputs
-      - ./configs:/app/configs
-      - ./device_specs:/app/device_specs
-      - ./logs:/app/logs
-    environment:
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - PYTHONUNBUFFERED=1
-      - TF_CPP_MIN_LOG_LEVEL=2
-    networks:
-      - edgeflow-network
-
-  edgeflow-api:
+  backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    image: edgeflow-api:latest
-    container_name: edgeflow-api
     ports:
       - "8000:8000"
     volumes:
-      - ./models:/app/models
-      - ./outputs:/app/outputs
-      - ./device_specs:/app/device_specs
+      - ./backend:/app/backend
+      - ./edgeflowc.py:/app/edgeflowc.py
+      - ./parser:/app/parser
+      - ./optimizer.py:/app/optimizer.py
     environment:
-      - API_KEY=${API_KEY:-development}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
-    networks:
-      - edgeflow-network
-    depends_on:
-      - edgeflow-compiler
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - PYTHONUNBUFFERED=1
 
-  edgeflow-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    image: edgeflow-frontend:latest
-    container_name: edgeflow-frontend
+  frontend:
+    build: ./frontend
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-    networks:
-      - edgeflow-network
+      - NEXT_PUBLIC_API_URL=http://backend:8000
     depends_on:
-      - edgeflow-api
-
-networks:
-  edgeflow-network:
-    driver: bridge
-
-volumes:
-  model-cache:
-    driver: local
-  output-cache:
-    driver: local
+      - backend
