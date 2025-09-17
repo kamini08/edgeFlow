@@ -421,20 +421,20 @@ def main() -> int:
                         "No model_path/model specified in config; skipping check"
                     )
                 else:
-                    should_optimize, report = perform_initial_check(
+                    should_optimize, compat_report = perform_initial_check(
                         model_path, cfg, getattr(args, "device_spec_file", None)
                     )
                     print(f"   Device: {cfg.get('target_device', 'generic')}")
-                    print(f"   Fit Score: {report.estimated_fit_score:.1f}/100")
+                    print(f"   Fit Score: {compat_report.estimated_fit_score:.1f}/100")
 
                     if getattr(args, "check_only", False):
-                        if report.issues:
+                        if compat_report.issues:
                             print("\n\N{WARNING SIGN}  Issues found:")
-                            for issue in report.issues:
+                            for issue in compat_report.issues:
                                 print(f"   - {issue}")
-                        if report.recommendations:
+                        if compat_report.recommendations:
                             print("\n\N{ELECTRIC LIGHT BULB} Recommendations:")
-                            for rec in report.recommendations:
+                            for rec in compat_report.recommendations:
                                 print(f"   - {rec}")
                         return 0
 
