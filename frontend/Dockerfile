@@ -1,5 +1,5 @@
 # Build stage
-FROM node:16-alpine as builder
+FROM node:18-alpine as builder
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:16-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
@@ -34,4 +34,3 @@ HEALTHCHECK --interval=30s --timeout=3s CMD node -e "require('http').get('http:/
 
 # Start application
 CMD ["npm", "start"]
-

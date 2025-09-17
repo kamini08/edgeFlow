@@ -20,12 +20,16 @@ class TestDockerIntegration:
 
     def test_docker_build(self, docker_manager):
         """Test Docker image building."""
-        success = docker_manager.build_image(tag="edgeflow:test", build_args={"TEST_BUILD": "true"})
+        success = docker_manager.build_image(
+            tag="edgeflow:test", build_args={"TEST_BUILD": "true"}
+        )
         assert success
 
     def test_docker_compose_services(self):
         """Test docker-compose configuration."""
-        result = subprocess.run(["docker-compose", "config"], capture_output=True, text=True)
+        result = subprocess.run(
+            ["docker-compose", "config"], capture_output=True, text=True
+        )
         if result.returncode != 0:
             pytest.skip("docker-compose not available in environment")
         output = result.stdout
@@ -49,4 +53,3 @@ class TestDockerIntegration:
     def test_full_pipeline_in_docker(self, docker_manager):
         """Placeholder for running full pipeline in Docker."""
         assert True
-

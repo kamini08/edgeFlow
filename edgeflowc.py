@@ -439,9 +439,12 @@ def main() -> int:
         cfg = load_config(args.config_path)
 
         # Optional: run inside Docker
-        if getattr(args, 'docker', False):
+        if getattr(args, "docker", False):
             try:
-                from docker_manager import DockerManager, validate_docker_setup  # lazy import
+                from docker_manager import (
+                    DockerManager,
+                    validate_docker_setup,
+                )  # lazy import
             except Exception as exc:  # noqa: BLE001
                 logging.error("Docker support not available: %s", exc)
                 return 1
@@ -452,7 +455,7 @@ def main() -> int:
                 return 1
 
             manager = DockerManager()
-            if getattr(args, 'docker_build', False):
+            if getattr(args, "docker_build", False):
                 logging.info("Building Docker image: %s", args.docker_tag)
                 ok = manager.build_image(tag=args.docker_tag, build_args={})
                 if not ok:
@@ -461,20 +464,25 @@ def main() -> int:
 
             model_path = cfg.get("model_path") or cfg.get("model") or ""
             if not model_path:
-                logging.error("No model or model_path defined in config; cannot run in Docker")
+                logging.error(
+                    "No model or model_path defined in config; cannot run in Docker"
+                )
                 return 1
 
             result = manager.run_optimization_pipeline(
                 config_file=args.config_path,
                 model_path=model_path,
-                device_spec_file=getattr(args, 'device_spec_file', None),
+                device_spec_file=getattr(args, "device_spec_file", None),
                 output_dir="./outputs",
-                image=getattr(args, 'docker_tag', 'edgeflow:latest'),
+                image=getattr(args, "docker_tag", "edgeflow:latest"),
             )
             if not result.get("success"):
                 logging.error("Docker run failed: %s", result.get("error"))
                 return 1
-            logging.info("Docker optimization completed. Outputs at %s", result.get("output_path"))
+            logging.info(
+                "Docker optimization completed. Outputs at %s",
+                result.get("output_path"),
+            )
             return 0
 
         # Initial device compatibility check (gate-keeping)
