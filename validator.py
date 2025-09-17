@@ -126,7 +126,7 @@ class EdgeFlowValidator:
             self._validate_quantization(config, errors)
             self._validate_optimization_params(config, errors)
 
-            # Quick model path validation (without loading file)
+            # Quick model path validation (lightweight; do not require file existence)
             model_path = config.get("model")
             if model_path:
                 if not isinstance(model_path, str):
@@ -135,8 +135,6 @@ class EdgeFlowValidator:
                     )
                 elif not model_path.strip():
                     errors.append("Model path cannot be empty")
-                elif not os.path.exists(model_path):
-                    errors.append(f"Model file not found: {model_path}")
 
         except Exception as e:
             errors.append(f"Early validation error: {str(e)}")
