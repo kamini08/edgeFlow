@@ -34,10 +34,14 @@ except Exception:  # noqa: BLE001
 from code_generator import CodeGenerator, generate_code
 from edgeflow_ast import create_program_from_dict
 from edgeflow_ir import FusionPass, IRBuilder, IRGraph, QuantizationPass, SchedulingPass
-from reporter import generate_report
-from validator import validate_edgeflow_config, validate_model_compatibility, EdgeFlowValidator
-from fast_compile import fast_compile_config, FastCompileResult
 from explainability_reporter import generate_explainability_report
+from fast_compile import FastCompileResult, fast_compile_config
+from reporter import generate_report
+from validator import (
+    EdgeFlowValidator,
+    validate_edgeflow_config,
+    validate_model_compatibility,
+)
 
 VERSION = "0.1.0"
 
@@ -103,15 +107,19 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     # Compatibility check flags
-    check_group = parser.add_argument_group('Compatibility check options')
+    check_group = parser.add_argument_group("Compatibility check options")
     check_group.add_argument(
-        '--check-only', action='store_true', help='Only perform compatibility check without optimization'
+        "--check-only",
+        action="store_true",
+        help="Only perform compatibility check without optimization",
     )
     check_group.add_argument(
-        '--device-spec-file', help='Path to custom device specifications (CSV/JSON)'
+        "--device-spec-file", help="Path to custom device specifications (CSV/JSON)"
     )
     check_group.add_argument(
-        '--skip-check', action='store_true', help='Skip compatibility check and proceed directly to optimization'
+        "--skip-check",
+        action="store_true",
+        help="Skip compatibility check and proceed directly to optimization",
     )
 
     args = parser.parse_args()
@@ -196,7 +204,9 @@ def _load_project_parser_module():
     return None
 
 
-def load_config(file_path: str, use_early_validation: bool = True) -> DictType[str, Any]:
+def load_config(
+    file_path: str, use_early_validation: bool = True
+) -> DictType[str, Any]:
     """Load and validate EdgeFlow configuration from file.
 
     Args:
@@ -398,22 +408,26 @@ def main() -> int:
         cfg = load_config(args.config_path)
 
         # Initial device compatibility check (gate-keeping)
-        if not getattr(args, 'skip_check', False):
+        if not getattr(args, "skip_check", False):
             try:
                 from initial_check import perform_initial_check
 
-                print("\N{LEFT-POINTING MAGNIFYING GLASS} Performing initial compatibility check...")
+                print(
+                    "\N{LEFT-POINTING MAGNIFYING GLASS} Performing initial compatibility check..."
+                )
                 model_path = cfg.get("model_path") or cfg.get("model")
                 if not model_path:
-                    logging.warning("No model_path/model specified in config; skipping check")
+                    logging.warning(
+                        "No model_path/model specified in config; skipping check"
+                    )
                 else:
                     should_optimize, report = perform_initial_check(
-                        model_path, cfg, getattr(args, 'device_spec_file', None)
+                        model_path, cfg, getattr(args, "device_spec_file", None)
                     )
                     print(f"   Device: {cfg.get('target_device', 'generic')}")
                     print(f"   Fit Score: {report.estimated_fit_score:.1f}/100")
 
-                    if getattr(args, 'check_only', False):
+                    if getattr(args, "check_only", False):
                         if report.issues:
                             print("\n\N{WARNING SIGN}  Issues found:")
                             for issue in report.issues:
@@ -430,36 +444,44 @@ def main() -> int:
                         return 0
             except Exception as exc:  # noqa: BLE001
                 logging.warning("Initial check failed or not available: %s", exc)
-        
+
         # Handle fast compile mode
         if getattr(args, "fast_compile", False):
             logging.info("Running fast compilation...")
             fast_result = fast_compile_config(cfg)
-            
+
             if not fast_result.success:
                 logging.error("Fast compilation failed:")
                 for error in fast_result.errors:
                     logging.error(f"  - {error}")
                 return 1
-            
+
             logging.info("✅ Fast compilation successful!")
             logging.info(f"⚡ Compile time: {fast_result.compile_time_ms:.2f}ms")
-            
+
             if fast_result.warnings:
                 logging.warning("⚠️ Warnings:")
                 for warning in fast_result.warnings:
                     logging.warning(f"  - {warning}")
-            
+
             # Print estimated impact
             impact = fast_result.estimated_impact
             logging.info("📊 Estimated optimization impact:")
-            logging.info(f"  Size reduction: {impact.get('estimated_size_reduction_percent', 0):.1f}%")
-            logging.info(f"  Speed improvement: {impact.get('estimated_speed_improvement_factor', 1.0):.1f}x")
-            logging.info(f"  Memory reduction: {impact.get('estimated_memory_reduction_percent', 0):.1f}%")
-            logging.info(f"  Confidence: {impact.get('optimization_confidence', 0.8)*100:.0f}%")
-            
+            logging.info(
+                f"  Size reduction: {impact.get('estimated_size_reduction_percent', 0):.1f}%"
+            )
+            logging.info(
+                f"  Speed improvement: {impact.get('estimated_speed_improvement_factor', 1.0):.1f}x"
+            )
+            logging.info(
+                f"  Memory reduction: {impact.get('estimated_memory_reduction_percent', 0):.1f}%"
+            )
+            logging.info(
+                f"  Confidence: {impact.get('optimization_confidence', 0.8)*100:.0f}%"
+            )
+
             return 0
-        
+
         if getattr(args, "dry_run", False):
             # Print parsed config to stdout and exit without optimization
             print(json.dumps(cfg, indent=2))
@@ -498,7 +520,9 @@ def main() -> int:
 
         # Generate IR-based C++ code for bare-metal/embedded Linux
         cpp_code = generator.generate_ir_based_code("cpp")
-        logging.info("Generated IR-based C++ inference code (%d characters)", len(cpp_code))
+        logging.info(
+            "Generated IR-based C++ inference code (%d characters)", len(cpp_code)
+        )
 
         # Generate ONNX Runtime wrapper
         onnx_code = generator.generate_ir_based_code("onnx")
@@ -515,7 +539,7 @@ def main() -> int:
         # Save generated files
         output_dir = "generated"
         os.makedirs(output_dir, exist_ok=True)
-        
+
         # Save all generated code files
         files = {}
         files["python"] = os.path.join(output_dir, "inference.py")
@@ -523,7 +547,7 @@ def main() -> int:
         files["onnx"] = os.path.join(output_dir, "inference_onnx.py")
         files["tensorrt"] = os.path.join(output_dir, "inference_tensorrt.py")
         files["report"] = os.path.join(output_dir, "optimization_report.md")
-        
+
         with open(files["python"], "w") as f:
             f.write(python_code)
         with open(files["cpp"], "w") as f:
@@ -534,7 +558,7 @@ def main() -> int:
             f.write(tensorrt_code)
         with open(files["report"], "w") as f:
             f.write(report)
-        
+
         logging.info("Saved generated files to %s:", output_dir)
         for file_type, file_path in files.items():
             logging.info("  %s: %s", file_type, file_path)
@@ -604,25 +628,31 @@ def main() -> int:
         if getattr(args, "explain", False):
             try:
                 logging.info("\n🧠 Generating explainability report...")
-                
+
                 # Prepare data for explainability report
                 optimization_results = opt_results.get("optimization", {})
                 benchmark_comparison = opt_results.get("comparison", {})
-                
+
                 explainability_report = generate_explainability_report(
                     cfg, optimization_results, ir_info, benchmark_comparison
                 )
-                
+
                 # Save explainability report
-                explainability_path = os.path.join(output_dir, "explainability_report.md")
+                explainability_path = os.path.join(
+                    output_dir, "explainability_report.md"
+                )
                 with open(explainability_path, "w") as f:
                     f.write(explainability_report)
-                
-                logging.info("✅ Explainability report generated: %s", explainability_path)
-                
+
+                logging.info(
+                    "✅ Explainability report generated: %s", explainability_path
+                )
+
             except Exception as e:  # noqa: BLE001
                 logging.error("❌ Failed to generate explainability report: %s", e)
-                logging.debug("Explainability report generation exception", exc_info=True)
+                logging.debug(
+                    "Explainability report generation exception", exc_info=True
+                )
 
         logging.info("EdgeFlow compilation pipeline completed successfully!")
         logging.info(

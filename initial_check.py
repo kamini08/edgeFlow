@@ -7,12 +7,12 @@ Determines if optimization is necessary based on device constraints.
 
 from __future__ import annotations
 
-from typing import Dict, Any, Tuple, Optional, List
-from pathlib import Path
 import logging
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-from device_specs import DeviceSpecManager, DeviceSpec
+from device_specs import DeviceSpec, DeviceSpecManager
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,9 @@ class InitialChecker:
     @staticmethod
     def _is_quantized_by_name(model_path: str) -> bool:
         name = Path(model_path).name.lower()
-        return any(k in name for k in ["int8", "quant", "uint8"]) or name.endswith(".tflite")
+        return any(k in name for k in ["int8", "quant", "uint8"]) or name.endswith(
+            ".tflite"
+        )
 
     def profile_model(self, model_path: str) -> ModelProfile:
         """Profile a model to extract its characteristics.
@@ -119,7 +121,10 @@ class InitialChecker:
 
         # Quantization preference/compatibility
         desired_quant = str(config.get("quantize", "none")).lower()
-        if desired_quant != "none" and desired_quant not in device.supported_quantizations:
+        if (
+            desired_quant != "none"
+            and desired_quant not in device.supported_quantizations
+        ):
             issues.append(
                 f"Device does not support requested quantization '{desired_quant}'"
             )
@@ -128,14 +133,22 @@ class InitialChecker:
             )
 
         # If model is unquantized and device strongly prefers int8 (e.g., Coral)
-        if (not profile.quantized) and ("int8" in device.supported_quantizations) and device.tpu_available:
+        if (
+            (not profile.quantized)
+            and ("int8" in device.supported_quantizations)
+            and device.tpu_available
+        ):
             recs.append("Quantize to int8 to leverage TPU acceleration")
 
         fit = self._calculate_fit_score(profile, device)
 
         compatible = len(issues) == 0
         # Require optimization if not compatible or fit score is modest (<70)
-        requires_opt = (not compatible) or (fit < 70.0) or (desired_quant != "none" and not profile.quantized)
+        requires_opt = (
+            (not compatible)
+            or (fit < 70.0)
+            or (desired_quant != "none" and not profile.quantized)
+        )
 
         return CompatibilityReport(
             compatible=compatible,
@@ -145,15 +158,29 @@ class InitialChecker:
             estimated_fit_score=round(fit, 2),
         )
 
-    def _calculate_fit_score(self, model_profile: ModelProfile, device_spec: DeviceSpec) -> float:
+    def _calculate_fit_score(
+        self, model_profile: ModelProfile, device_spec: DeviceSpec
+    ) -> float:
         """Calculate how well a model fits on a device (0-100)."""
         # Score components with simple caps
-        size_score = max(0.0, min(100.0, (device_spec.max_model_size_mb / max(model_profile.file_size_mb, 1e-6)) * 20.0))
+        size_score = max(
+            0.0,
+            min(
+                100.0,
+                (device_spec.max_model_size_mb / max(model_profile.file_size_mb, 1e-6))
+                * 20.0,
+            ),
+        )
         # RAM: use safe budget of 70% device RAM
         safe_ram = max(device_spec.ram_mb * 0.7, 1.0)
-        ram_score = max(0.0, min(100.0, (safe_ram / max(model_profile.estimated_ram_mb, 1e-6)) * 40.0))
+        ram_score = max(
+            0.0,
+            min(100.0, (safe_ram / max(model_profile.estimated_ram_mb, 1e-6)) * 40.0),
+        )
         # Accelerator bonus
-        accel_bonus = 10.0 if (device_spec.tpu_available or device_spec.gpu_available) else 0.0
+        accel_bonus = (
+            10.0 if (device_spec.tpu_available or device_spec.gpu_available) else 0.0
+        )
         # Baseline headroom
         base = 20.0
         score = min(100.0, base + size_score + ram_score + accel_bonus)
@@ -174,4 +201,3 @@ def perform_initial_check(
     report = checker.check_compatibility(model_path, target, config)
     # Proceed with optimization if report suggests optimization is needed
     return report.requires_optimization, report
-
