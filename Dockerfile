@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget \
     git \
-    openjdk-11-jre-headless \
+    default-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
 # Download ANTLR
@@ -28,7 +28,7 @@ WORKDIR /app
 
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y \
-    openjdk-11-jre-headless \
+    default-jre-headless \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -57,4 +57,3 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Default command
 ENTRYPOINT ["python", "edgeflowc.py"]
 CMD ["--help"]
-
