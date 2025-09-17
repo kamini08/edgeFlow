@@ -33,3 +33,16 @@ export const fastCompile = (config_file: string, filename: string) =>
 export const getVersion = () => api.get("/api/version").then((r) => r.data);
 export const getHelp = () => api.get("/api/help").then((r) => r.data);
 export const getHealth = () => api.get("/api/health").then((r) => r.data);
+
+export const checkCompatibility = (modelFile: File | null, config: any, deviceSpecFile?: string) => {
+  if (modelFile) {
+    const form = new FormData();
+    form.append("model", modelFile);
+    form.append("config", JSON.stringify(config || {}));
+    if (deviceSpecFile) form.append("device_spec_file", deviceSpecFile);
+    return api.post("/api/check/upload", form, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data);
+  }
+  return api
+    .post("/api/check", { model_path: config?.model_path || config?.model, config, device_spec_file: deviceSpecFile })
+    .then((r) => r.data);
+};

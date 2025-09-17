@@ -102,6 +102,18 @@ def parse_arguments() -> argparse.Namespace:
         help="Generate detailed explainability report",
     )
 
+    # Compatibility check flags
+    check_group = parser.add_argument_group('Compatibility check options')
+    check_group.add_argument(
+        '--check-only', action='store_true', help='Only perform compatibility check without optimization'
+    )
+    check_group.add_argument(
+        '--device-spec-file', help='Path to custom device specifications (CSV/JSON)'
+    )
+    check_group.add_argument(
+        '--skip-check', action='store_true', help='Skip compatibility check and proceed directly to optimization'
+    )
+
     args = parser.parse_args()
     return args
 
@@ -384,6 +396,40 @@ def main() -> int:
 
         # Parse configuration file
         cfg = load_config(args.config_path)
+
+        # Initial device compatibility check (gate-keeping)
+        if not getattr(args, 'skip_check', False):
+            try:
+                from initial_check import perform_initial_check
+
+                print("\N{LEFT-POINTING MAGNIFYING GLASS} Performing initial compatibility check...")
+                model_path = cfg.get("model_path") or cfg.get("model")
+                if not model_path:
+                    logging.warning("No model_path/model specified in config; skipping check")
+                else:
+                    should_optimize, report = perform_initial_check(
+                        model_path, cfg, getattr(args, 'device_spec_file', None)
+                    )
+                    print(f"   Device: {cfg.get('target_device', 'generic')}")
+                    print(f"   Fit Score: {report.estimated_fit_score:.1f}/100")
+
+                    if getattr(args, 'check_only', False):
+                        if report.issues:
+                            print("\n\N{WARNING SIGN}  Issues found:")
+                            for issue in report.issues:
+                                print(f"   - {issue}")
+                        if report.recommendations:
+                            print("\n\N{ELECTRIC LIGHT BULB} Recommendations:")
+                            for rec in report.recommendations:
+                                print(f"   - {rec}")
+                        return 0
+
+                    if not should_optimize:
+                        print("\N{CHECK MARK} Model already fits device constraints!")
+                        print("   Skipping optimization phase...")
+                        return 0
+            except Exception as exc:  # noqa: BLE001
+                logging.warning("Initial check failed or not available: %s", exc)
         
         # Handle fast compile mode
         if getattr(args, "fast_compile", False):

@@ -13,6 +13,7 @@ Every CLI command MUST have a corresponding API endpoint. NO EXCEPTIONS.
 | `python edgeflowc.py config.ef --dry-run` | `POST /api/compile/dry-run` | ✅ |
 | `python edgeflowc.py --version` | `GET /api/version` | ✅ |
 | `python edgeflowc.py --help` | `GET /api/help` | ✅ |
+| `python edgeflowc.py config.ef --check-only` | `POST /api/check` | ✅ |
 
 Enforcement:
 
