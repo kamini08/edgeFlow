@@ -24,7 +24,8 @@ RUN npm ci --only=production || npm install --only=production
 
 # Copy built application
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
+# Public folder is optional; create empty dir for consistency
+RUN mkdir -p ./public
 
 # Expose port
 EXPOSE 3000

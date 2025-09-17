@@ -26,12 +26,16 @@ class TestDockerIntegration:
         assert success
 
     def test_docker_compose_services(self):
-        """Test docker-compose configuration."""
+        """Test docker compose configuration (v2 preferred)."""
         result = subprocess.run(
-            ["docker-compose", "config"], capture_output=True, text=True
+            ["docker", "compose", "config"], capture_output=True, text=True
         )
         if result.returncode != 0:
-            pytest.skip("docker-compose not available in environment")
+            result = subprocess.run(
+                ["docker-compose", "config"], capture_output=True, text=True
+            )
+            if result.returncode != 0:
+                pytest.skip("docker compose not available in environment")
         output = result.stdout
         assert "edgeflow-compiler" in output
         assert "edgeflow-api" in output
