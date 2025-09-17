@@ -1,37 +1,20 @@
-# Build stage
-FROM node:16-alpine as builder
-
+FROM node:18-alpine AS deps
 WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy package files
-COPY package*.json ./
-RUN npm ci || npm install
-
-# Copy source code
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Build application
 RUN npm run build
 
-# Production stage
-FROM node:16-alpine
-
+FROM node:18-alpine AS runner
 WORKDIR /app
-
-# Install production dependencies only
-COPY package*.json ./
-RUN npm ci --only=production || npm install --only=production
-
-# Copy built application
+ENV NODE_ENV=production
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-
-# Expose port
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.js ./next.config.js
 EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s CMD node -e "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
-# Start application
-CMD ["npm", "start"]
-
+CMD ["npm", "run", "start"]

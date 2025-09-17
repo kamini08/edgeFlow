@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -19,12 +19,6 @@ COPY edgeflow_ast.py /app/edgeflow_ast.py
 COPY code_generator.py /app/code_generator.py
 COPY benchmarker.py /app/benchmarker.py
 COPY reporter.py /app/reporter.py
-COPY device_specs.py /app/device_specs.py
-COPY initial_check.py /app/initial_check.py
 
 EXPOSE 8000
-
-# Health check endpoint
-HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8000/api/health || exit 1
-
 CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000"]
