@@ -10,7 +10,7 @@ It supports multiple backends:
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Set, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from edgeflow_ast import (
     ASTVisitor,
@@ -36,6 +36,7 @@ from edgeflow_ast import (
 # Import IR classes for advanced code generation
 try:
     from edgeflow_ir import IRGraph, NodeType
+
     IR_AVAILABLE = True
 except ImportError:
     IR_AVAILABLE = False
@@ -78,9 +79,9 @@ class CodeGenerator(ASTVisitor):
         """Generate target-specific code from IR graph."""
         if not IR_AVAILABLE or not self.ir_graph:
             return self.generate_cpp_inference()  # Fallback to AST-based generation
-        
+
         self.target_backend = target_backend
-        
+
         if target_backend == "cpp":
             return self._generate_cpp_from_ir()
         elif target_backend == "onnx":
@@ -525,263 +526,267 @@ class CodeGenerator(ASTVisitor):
 
     def _generate_cpp_header(self) -> str:
         """Generate C++ header with includes and namespace."""
-        code = '// EdgeFlow Generated C++ Inference Code\n'
-        code += '// Generated from IR graph for bare-metal/embedded Linux\n\n'
-        code += '#include <iostream>\n'
-        code += '#include <vector>\n'
-        code += '#include <memory>\n'
-        code += '#include <chrono>\n'
-        code += '#include <fstream>\n'
-        code += '#include <cstring>\n\n'
-        code += '// TensorFlow Lite C++ API\n'
+        code = "// EdgeFlow Generated C++ Inference Code\n"
+        code += "// Generated from IR graph for bare-metal/embedded Linux\n\n"
+        code += "#include <iostream>\n"
+        code += "#include <vector>\n"
+        code += "#include <memory>\n"
+        code += "#include <chrono>\n"
+        code += "#include <fstream>\n"
+        code += "#include <cstring>\n\n"
+        code += "// TensorFlow Lite C++ API\n"
         code += '#include "tensorflow/lite/interpreter.h"\n'
         code += '#include "tensorflow/lite/kernels/register.h"\n'
         code += '#include "tensorflow/lite/model.h"\n\n'
-        code += 'namespace edgeflow {\n\n'
+        code += "namespace edgeflow {\n\n"
         return code
 
     def _generate_cpp_includes(self) -> str:
         """Generate C++ includes for I/O handling."""
-        code = '// I/O Handling includes\n'
-        code += '#ifdef CAMERA_INPUT\n'
-        code += '#include <opencv2/opencv.hpp>\n'
-        code += '#endif\n\n'
-        code += '#ifdef DISPLAY_OUTPUT\n'
-        code += '#include <opencv2/opencv.hpp>\n'
-        code += '#endif\n\n'
-        code += '#ifdef NETWORK_STREAMING\n'
-        code += '#include <zmq.hpp>\n'
-        code += '#endif\n\n'
+        code = "// I/O Handling includes\n"
+        code += "#ifdef CAMERA_INPUT\n"
+        code += "#include <opencv2/opencv.hpp>\n"
+        code += "#endif\n\n"
+        code += "#ifdef DISPLAY_OUTPUT\n"
+        code += "#include <opencv2/opencv.hpp>\n"
+        code += "#endif\n\n"
+        code += "#ifdef NETWORK_STREAMING\n"
+        code += "#include <zmq.hpp>\n"
+        code += "#endif\n\n"
         return code
 
     def _generate_cpp_io_handling(self) -> str:
         """Generate C++ I/O handling code."""
-        code = 'class IOHandler {\n'
-        code += 'public:\n'
-        code += '    IOHandler() = default;\n'
-        code += '    virtual ~IOHandler() = default;\n\n'
-        
+        code = "class IOHandler {\n"
+        code += "public:\n"
+        code += "    IOHandler() = default;\n"
+        code += "    virtual ~IOHandler() = default;\n\n"
+
         # Camera input
-        code += '#ifdef CAMERA_INPUT\n'
-        code += '    bool init_camera(int device_id = 0) {\n'
-        code += '        cap.open(device_id);\n'
-        code += '        return cap.isOpened();\n'
-        code += '    }\n\n'
-        code += '    std::vector<float> capture_frame() {\n'
-        code += '        cv::Mat frame;\n'
-        code += '        cap >> frame;\n'
-        code += '        // Convert to model input format\n'
-        code += '        return preprocess_frame(frame);\n'
-        code += '    }\n\n'
-        code += 'private:\n'
-        code += '    cv::VideoCapture cap;\n'
-        code += '#endif\n\n'
-        
+        code += "#ifdef CAMERA_INPUT\n"
+        code += "    bool init_camera(int device_id = 0) {\n"
+        code += "        cap.open(device_id);\n"
+        code += "        return cap.isOpened();\n"
+        code += "    }\n\n"
+        code += "    std::vector<float> capture_frame() {\n"
+        code += "        cv::Mat frame;\n"
+        code += "        cap >> frame;\n"
+        code += "        // Convert to model input format\n"
+        code += "        return preprocess_frame(frame);\n"
+        code += "    }\n\n"
+        code += "private:\n"
+        code += "    cv::VideoCapture cap;\n"
+        code += "#endif\n\n"
+
         # Display output
-        code += '#ifdef DISPLAY_OUTPUT\n'
-        code += '    void display_result(const std::vector<float>& result) {\n'
-        code += '        // Convert result to display format\n'
-        code += '        cv::Mat display_frame = postprocess_result(result);\n'
+        code += "#ifdef DISPLAY_OUTPUT\n"
+        code += "    void display_result(const std::vector<float>& result) {\n"
+        code += "        // Convert result to display format\n"
+        code += "        cv::Mat display_frame = postprocess_result(result);\n"
         code += '        cv::imshow("EdgeFlow Output", display_frame);\n'
-        code += '        cv::waitKey(1);\n'
-        code += '    }\n'
-        code += '#endif\n\n'
-        
+        code += "        cv::waitKey(1);\n"
+        code += "    }\n"
+        code += "#endif\n\n"
+
         # Network streaming
-        code += '#ifdef NETWORK_STREAMING\n'
-        code += '    bool init_network(const std::string& endpoint) {\n'
-        code += '        context = std::make_unique<zmq::context_t>();\n'
-        code += '        socket = std::make_unique<zmq::socket_t>(*context, ZMQ_PUB);\n'
-        code += '        socket->bind(endpoint);\n'
-        code += '        return true;\n'
-        code += '    }\n\n'
-        code += '    void stream_result(const std::vector<float>& result) {\n'
-        code += '        // Serialize and send result\n'
-        code += '        std::string data = serialize_result(result);\n'
-        code += '        zmq::message_t message(data.size());\n'
-        code += '        memcpy(message.data(), data.c_str(), data.size());\n'
-        code += '        socket->send(message, zmq::send_flags::dontwait);\n'
-        code += '    }\n\n'
-        code += 'private:\n'
-        code += '    std::unique_ptr<zmq::context_t> context;\n'
-        code += '    std::unique_ptr<zmq::socket_t> socket;\n'
-        code += '#endif\n\n'
-        
-        code += '    std::vector<float> preprocess_frame(const cv::Mat& frame) {\n'
-        code += '        // Implement frame preprocessing\n'
-        code += '        return std::vector<float>();\n'
-        code += '    }\n\n'
-        code += '    cv::Mat postprocess_result(const std::vector<float>& result) {\n'
-        code += '        // Implement result postprocessing\n'
-        code += '        return cv::Mat();\n'
-        code += '    }\n\n'
-        code += '    std::string serialize_result(const std::vector<float>& result) {\n'
-        code += '        // Implement result serialization\n'
-        code += '        return std::string();\n'
-        code += '    }\n'
-        code += '};\n\n'
+        code += "#ifdef NETWORK_STREAMING\n"
+        code += "    bool init_network(const std::string& endpoint) {\n"
+        code += "        context = std::make_unique<zmq::context_t>();\n"
+        code += "        socket = std::make_unique<zmq::socket_t>(*context, ZMQ_PUB);\n"
+        code += "        socket->bind(endpoint);\n"
+        code += "        return true;\n"
+        code += "    }\n\n"
+        code += "    void stream_result(const std::vector<float>& result) {\n"
+        code += "        // Serialize and send result\n"
+        code += "        std::string data = serialize_result(result);\n"
+        code += "        zmq::message_t message(data.size());\n"
+        code += "        memcpy(message.data(), data.c_str(), data.size());\n"
+        code += "        socket->send(message, zmq::send_flags::dontwait);\n"
+        code += "    }\n\n"
+        code += "private:\n"
+        code += "    std::unique_ptr<zmq::context_t> context;\n"
+        code += "    std::unique_ptr<zmq::socket_t> socket;\n"
+        code += "#endif\n\n"
+
+        code += "    std::vector<float> preprocess_frame(const cv::Mat& frame) {\n"
+        code += "        // Implement frame preprocessing\n"
+        code += "        return std::vector<float>();\n"
+        code += "    }\n\n"
+        code += "    cv::Mat postprocess_result(const std::vector<float>& result) {\n"
+        code += "        // Implement result postprocessing\n"
+        code += "        return cv::Mat();\n"
+        code += "    }\n\n"
+        code += "    std::string serialize_result(const std::vector<float>& result) {\n"
+        code += "        // Implement result serialization\n"
+        code += "        return std::string();\n"
+        code += "    }\n"
+        code += "};\n\n"
         return code
 
     def _generate_cpp_inference_engine(self) -> str:
         """Generate C++ inference engine from IR graph."""
-        code = 'class EdgeFlowInferenceEngine {\n'
-        code += 'public:\n'
-        code += '    EdgeFlowInferenceEngine(const std::string& model_path) {\n'
-        code += '        load_model(model_path);\n'
-        code += '        io_handler = std::make_unique<IOHandler>();\n'
-        code += '    }\n\n'
-        
+        code = "class EdgeFlowInferenceEngine {\n"
+        code += "public:\n"
+        code += "    EdgeFlowInferenceEngine(const std::string& model_path) {\n"
+        code += "        load_model(model_path);\n"
+        code += "        io_handler = std::make_unique<IOHandler>();\n"
+        code += "    }\n\n"
+
         # Model loading
-        code += '    bool load_model(const std::string& model_path) {\n'
-        code += '        model = tflite::FlatBufferModel::BuildFromFile(model_path.c_str());\n'
-        code += '        if (!model) return false;\n\n'
-        code += '        tflite::ops::builtin::BuiltinOpResolver resolver;\n'
-        code += '        tflite::InterpreterBuilder builder(*model, resolver);\n'
-        code += '        builder(&interpreter);\n'
-        code += '        if (!interpreter) return false;\n\n'
-        code += '        interpreter->AllocateTensors();\n'
-        code += '        return true;\n'
-        code += '    }\n\n'
-        
+        code += "    bool load_model(const std::string& model_path) {\n"
+        code += "        model = tflite::FlatBufferModel::BuildFromFile(model_path.c_str());\n"
+        code += "        if (!model) return false;\n\n"
+        code += "        tflite::ops::builtin::BuiltinOpResolver resolver;\n"
+        code += "        tflite::InterpreterBuilder builder(*model, resolver);\n"
+        code += "        builder(&interpreter);\n"
+        code += "        if (!interpreter) return false;\n\n"
+        code += "        interpreter->AllocateTensors();\n"
+        code += "        return true;\n"
+        code += "    }\n\n"
+
         # Inference method
-        code += '    std::vector<float> predict(const std::vector<float>& input) {\n'
-        code += '        auto start = std::chrono::high_resolution_clock::now();\n\n'
-        code += '        // Copy input to model\n'
-        code += '        float* input_ptr = interpreter->typed_input_tensor<float>(0);\n'
-        code += '        std::memcpy(input_ptr, input.data(), input.size() * sizeof(float));\n\n'
-        code += '        // Run inference\n'
-        code += '        interpreter->Invoke();\n\n'
-        code += '        // Get output\n'
-        code += '        float* output_ptr = interpreter->typed_output_tensor<float>(0);\n'
-        code += '        int output_size = interpreter->output_tensor(0)->bytes / sizeof(float);\n'
-        code += '        std::vector<float> result(output_ptr, output_ptr + output_size);\n\n'
-        code += '        auto end = std::chrono::high_resolution_clock::now();\n'
-        code += '        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);\n'
+        code += "    std::vector<float> predict(const std::vector<float>& input) {\n"
+        code += "        auto start = std::chrono::high_resolution_clock::now();\n\n"
+        code += "        // Copy input to model\n"
+        code += (
+            "        float* input_ptr = interpreter->typed_input_tensor<float>(0);\n"
+        )
+        code += "        std::memcpy(input_ptr, input.data(), input.size() * sizeof(float));\n\n"
+        code += "        // Run inference\n"
+        code += "        interpreter->Invoke();\n\n"
+        code += "        // Get output\n"
+        code += (
+            "        float* output_ptr = interpreter->typed_output_tensor<float>(0);\n"
+        )
+        code += "        int output_size = interpreter->output_tensor(0)->bytes / sizeof(float);\n"
+        code += "        std::vector<float> result(output_ptr, output_ptr + output_size);\n\n"
+        code += "        auto end = std::chrono::high_resolution_clock::now();\n"
+        code += "        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);\n"
         code += '        std::cout << "Inference time: " << duration.count() << " μs" << std::endl;\n\n'
-        code += '        return result;\n'
-        code += '    }\n\n'
-        
-        code += 'private:\n'
-        code += '    std::unique_ptr<tflite::FlatBufferModel> model;\n'
-        code += '    std::unique_ptr<tflite::Interpreter> interpreter;\n'
-        code += '    std::unique_ptr<IOHandler> io_handler;\n'
-        code += '};\n\n'
+        code += "        return result;\n"
+        code += "    }\n\n"
+
+        code += "private:\n"
+        code += "    std::unique_ptr<tflite::FlatBufferModel> model;\n"
+        code += "    std::unique_ptr<tflite::Interpreter> interpreter;\n"
+        code += "    std::unique_ptr<IOHandler> io_handler;\n"
+        code += "};\n\n"
         return code
 
     def _generate_cpp_main(self) -> str:
         """Generate C++ main function."""
-        code = '} // namespace edgeflow\n\n'
-        code += 'int main(int argc, char* argv[]) {\n'
-        code += '    if (argc < 2) {\n'
+        code = "} // namespace edgeflow\n\n"
+        code += "int main(int argc, char* argv[]) {\n"
+        code += "    if (argc < 2) {\n"
         code += '        std::cerr << "Usage: " << argv[0] << " <model_path> [input_data]" << std::endl;\n'
-        code += '        return 1;\n'
-        code += '    }\n\n'
-        code += '    std::string model_path = argv[1];\n'
-        code += '    edgeflow::EdgeFlowInferenceEngine engine(model_path);\n\n'
-        code += '    // Initialize I/O\n'
-        code += '#ifdef CAMERA_INPUT\n'
-        code += '    if (!engine.io_handler->init_camera()) {\n'
+        code += "        return 1;\n"
+        code += "    }\n\n"
+        code += "    std::string model_path = argv[1];\n"
+        code += "    edgeflow::EdgeFlowInferenceEngine engine(model_path);\n\n"
+        code += "    // Initialize I/O\n"
+        code += "#ifdef CAMERA_INPUT\n"
+        code += "    if (!engine.io_handler->init_camera()) {\n"
         code += '        std::cerr << "Failed to initialize camera" << std::endl;\n'
-        code += '        return 1;\n'
-        code += '    }\n'
-        code += '#endif\n\n'
-        code += '    // Run inference loop\n'
-        code += '    while (true) {\n'
-        code += '#ifdef CAMERA_INPUT\n'
-        code += '        auto input = engine.io_handler->capture_frame();\n'
-        code += '#else\n'
-        code += '        // Use dummy input for testing\n'
-        code += '        std::vector<float> input(224 * 224 * 3, 0.5f);\n'
-        code += '#endif\n\n'
-        code += '        auto result = engine.predict(input);\n\n'
-        code += '#ifdef DISPLAY_OUTPUT\n'
-        code += '        engine.io_handler->display_result(result);\n'
-        code += '#endif\n\n'
-        code += '#ifdef NETWORK_STREAMING\n'
-        code += '        engine.io_handler->stream_result(result);\n'
-        code += '#endif\n\n'
-        code += '        // Break on key press or after N iterations\n'
-        code += '        static int iterations = 0;\n'
-        code += '        if (++iterations > 100) break;\n'
-        code += '    }\n\n'
-        code += '    return 0;\n'
-        code += '}\n'
+        code += "        return 1;\n"
+        code += "    }\n"
+        code += "#endif\n\n"
+        code += "    // Run inference loop\n"
+        code += "    while (true) {\n"
+        code += "#ifdef CAMERA_INPUT\n"
+        code += "        auto input = engine.io_handler->capture_frame();\n"
+        code += "#else\n"
+        code += "        // Use dummy input for testing\n"
+        code += "        std::vector<float> input(224 * 224 * 3, 0.5f);\n"
+        code += "#endif\n\n"
+        code += "        auto result = engine.predict(input);\n\n"
+        code += "#ifdef DISPLAY_OUTPUT\n"
+        code += "        engine.io_handler->display_result(result);\n"
+        code += "#endif\n\n"
+        code += "#ifdef NETWORK_STREAMING\n"
+        code += "        engine.io_handler->stream_result(result);\n"
+        code += "#endif\n\n"
+        code += "        // Break on key press or after N iterations\n"
+        code += "        static int iterations = 0;\n"
+        code += "        if (++iterations > 100) break;\n"
+        code += "    }\n\n"
+        code += "    return 0;\n"
+        code += "}\n"
         return code
 
     def _generate_onnx_inference_class(self) -> str:
         """Generate ONNX Runtime inference class."""
-        code = 'class EdgeFlowONNXInference:\n'
+        code = "class EdgeFlowONNXInference:\n"
         code += '    """EdgeFlow inference engine using ONNX Runtime."""\n\n'
-        code += '    def __init__(self, model_path: str):\n'
-        code += '        self.model_path = model_path\n'
-        code += '        self.session = None\n'
-        code += '        self.input_name = None\n'
-        code += '        self.output_name = None\n'
-        code += '        self._load_model()\n\n'
-        code += '    def _load_model(self):\n'
+        code += "    def __init__(self, model_path: str):\n"
+        code += "        self.model_path = model_path\n"
+        code += "        self.session = None\n"
+        code += "        self.input_name = None\n"
+        code += "        self.output_name = None\n"
+        code += "        self._load_model()\n\n"
+        code += "    def _load_model(self):\n"
         code += '        """Load ONNX model."""\n'
         code += '        providers = ["CPUExecutionProvider"]\n'
         code += '        if ort.get_device() == "GPU":\n'
         code += '            providers.insert(0, "CUDAExecutionProvider")\n'
-        code += '        \n'
-        code += '        self.session = ort.InferenceSession(self.model_path, providers=providers)\n'
-        code += '        self.input_name = self.session.get_inputs()[0].name\n'
-        code += '        self.output_name = self.session.get_outputs()[0].name\n\n'
-        code += '    def predict(self, input_data: np.ndarray) -> np.ndarray:\n'
+        code += "        \n"
+        code += "        self.session = ort.InferenceSession(self.model_path, providers=providers)\n"
+        code += "        self.input_name = self.session.get_inputs()[0].name\n"
+        code += "        self.output_name = self.session.get_outputs()[0].name\n\n"
+        code += "    def predict(self, input_data: np.ndarray) -> np.ndarray:\n"
         code += '        """Run inference."""\n'
-        code += '        return self.session.run([self.output_name], {self.input_name: input_data})[0]\n\n'
+        code += "        return self.session.run([self.output_name], {self.input_name: input_data})[0]\n\n"
         return code
 
     def _generate_tensorrt_inference_class(self) -> str:
         """Generate TensorRT inference class."""
-        code = 'class EdgeFlowTensorRTInference:\n'
+        code = "class EdgeFlowTensorRTInference:\n"
         code += '    """EdgeFlow inference engine using TensorRT."""\n\n'
-        code += '    def __init__(self, model_path: str):\n'
-        code += '        self.model_path = model_path\n'
-        code += '        self.engine = None\n'
-        code += '        self.context = None\n'
-        code += '        self._load_engine()\n\n'
-        code += '    def _load_engine(self):\n'
+        code += "    def __init__(self, model_path: str):\n"
+        code += "        self.model_path = model_path\n"
+        code += "        self.engine = None\n"
+        code += "        self.context = None\n"
+        code += "        self._load_engine()\n\n"
+        code += "    def _load_engine(self):\n"
         code += '        """Load TensorRT engine."""\n'
-        code += '        logger = trt.Logger(trt.Logger.WARNING)\n'
+        code += "        logger = trt.Logger(trt.Logger.WARNING)\n"
         code += '        with open(self.model_path, "rb") as f:\n'
-        code += '            runtime = trt.Runtime(logger)\n'
-        code += '            self.engine = runtime.deserialize_cuda_engine(f.read())\n'
-        code += '        self.context = self.engine.create_execution_context()\n\n'
-        code += '    def predict(self, input_data: np.ndarray) -> np.ndarray:\n'
+        code += "            runtime = trt.Runtime(logger)\n"
+        code += "            self.engine = runtime.deserialize_cuda_engine(f.read())\n"
+        code += "        self.context = self.engine.create_execution_context()\n\n"
+        code += "    def predict(self, input_data: np.ndarray) -> np.ndarray:\n"
         code += '        """Run inference."""\n'
-        code += '        # Allocate GPU memory\n'
-        code += '        input_shape = self.engine.get_binding_shape(0)\n'
-        code += '        output_shape = self.engine.get_binding_shape(1)\n'
-        code += '        \n'
-        code += '        # Run inference (simplified)\n'
-        code += '        return np.zeros(output_shape, dtype=np.float32)\n\n'
+        code += "        # Allocate GPU memory\n"
+        code += "        input_shape = self.engine.get_binding_shape(0)\n"
+        code += "        output_shape = self.engine.get_binding_shape(1)\n"
+        code += "        \n"
+        code += "        # Run inference (simplified)\n"
+        code += "        return np.zeros(output_shape, dtype=np.float32)\n\n"
         return code
 
     def _generate_tvm_inference_class(self) -> str:
         """Generate TVM inference class."""
-        code = 'class EdgeFlowTVMInference:\n'
+        code = "class EdgeFlowTVMInference:\n"
         code += '    """EdgeFlow inference engine using TVM."""\n\n'
-        code += '    def __init__(self, model_path: str):\n'
-        code += '        self.model_path = model_path\n'
-        code += '        self.module = None\n'
-        code += '        self.device = None\n'
-        code += '        self._load_model()\n\n'
-        code += '    def _load_model(self):\n'
+        code += "    def __init__(self, model_path: str):\n"
+        code += "        self.model_path = model_path\n"
+        code += "        self.module = None\n"
+        code += "        self.device = None\n"
+        code += "        self._load_model()\n\n"
+        code += "    def _load_model(self):\n"
         code += '        """Load TVM model."""\n'
-        code += '        # Load compiled module\n'
-        code += '        self.module = tvm.runtime.load_module(self.model_path)\n'
-        code += '        self.device = tvm.cpu(0)\n\n'
-        code += '    def predict(self, input_data: np.ndarray) -> np.ndarray:\n'
+        code += "        # Load compiled module\n"
+        code += "        self.module = tvm.runtime.load_module(self.model_path)\n"
+        code += "        self.device = tvm.cpu(0)\n\n"
+        code += "    def predict(self, input_data: np.ndarray) -> np.ndarray:\n"
         code += '        """Run inference."""\n'
-        code += '        # Convert input to TVM tensor\n'
-        code += '        tvm_input = tvm.nd.array(input_data, device=self.device)\n'
-        code += '        \n'
-        code += '        # Run inference\n'
+        code += "        # Convert input to TVM tensor\n"
+        code += "        tvm_input = tvm.nd.array(input_data, device=self.device)\n"
+        code += "        \n"
+        code += "        # Run inference\n"
         code += '        self.module["run"](tvm_input)\n'
-        code += '        \n'
-        code += '        # Get output (simplified)\n'
-        code += '        return np.zeros((1, 1000), dtype=np.float32)\n\n'
+        code += "        \n"
+        code += "        # Get output (simplified)\n"
+        code += "        return np.zeros((1, 1000), dtype=np.float32)\n\n"
         return code
 
     def _generate_cpp_code(self) -> str:

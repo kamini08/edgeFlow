@@ -1,17 +1,17 @@
 import json
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 import pytest
 
+from device_specs import DeviceSpec, DeviceSpecManager, DeviceType
 from initial_check import (
-    InitialChecker,
-    perform_initial_check,
-    ModelProfile,
     CompatibilityReport,
+    InitialChecker,
+    ModelProfile,
+    perform_initial_check,
 )
-from device_specs import DeviceSpec, DeviceType, DeviceSpecManager
 
 
 class TestInitialCheck:
@@ -38,7 +38,11 @@ class TestInitialCheck:
     def test_compatibility_check_pass(self, sample_model):
         """Test successful compatibility check against RPi4 defaults."""
         checker = InitialChecker()
-        cfg = {"target_device": "raspberry_pi_4", "quantize": "int8", "model_path": sample_model}
+        cfg = {
+            "target_device": "raspberry_pi_4",
+            "quantize": "int8",
+            "model_path": sample_model,
+        }
         report = checker.check_compatibility(sample_model, cfg["target_device"], cfg)
         assert isinstance(report, CompatibilityReport)
         assert report.estimated_fit_score > 0
@@ -68,7 +72,17 @@ class TestInitialCheck:
         # JSON
         json_path = tmp_path / "devices.json"
         json_path.write_text(
-            json.dumps({"devices": [{"name": "custom_json", "ram_mb": 2048, "max_model_size_mb": 150}]}),
+            json.dumps(
+                {
+                    "devices": [
+                        {
+                            "name": "custom_json",
+                            "ram_mb": 2048,
+                            "max_model_size_mb": 150,
+                        }
+                    ]
+                }
+            ),
             encoding="utf-8",
         )
         mgr_json = DeviceSpecManager(str(json_path))
@@ -106,11 +120,17 @@ class TestInitialCheck:
     def test_api_integration(self, sample_model):
         """Test API endpoint for compatibility checking."""
         from fastapi.testclient import TestClient
+
         from backend.app import app
 
         client = TestClient(app)
-        payload = {"model_path": sample_model, "config": {"target_device": "raspberry_pi_4"}}
+        payload = {
+            "model_path": sample_model,
+            "config": {"target_device": "raspberry_pi_4"},
+        }
         r = client.post("/api/check", json=payload)
         assert r.status_code == 200
         data = r.json()
-        assert set(["compatible", "requires_optimization", "fit_score"]).issubset(data.keys())
+        assert set(["compatible", "requires_optimization", "fit_score"]).issubset(
+            data.keys()
+        )
