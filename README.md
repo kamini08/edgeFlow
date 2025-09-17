@@ -231,3 +231,13 @@ License
 -------
 
 TBD (add the appropriate license file for your project).
+
+
+Compatibility Check (CLI)
+-------------------------
+
+- `--check-only`: run device compatibility check and exit
+- `--device-spec-file <path>`: load custom device specs (CSV/JSON)
+- `--skip-check`: skip the initial compatibility gate
+
+See `docs/initial_check.md` for usage and API examples.
