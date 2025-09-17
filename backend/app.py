@@ -12,9 +12,10 @@ import json
 import logging
 from datetime import datetime, timezone
 from parser import parse_ef  # type: ignore
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, constr
@@ -22,16 +23,15 @@ from pydantic import BaseModel, Field, constr
 # Import core CLI logic
 import edgeflowc  # type: ignore
 from backend.api.services.parser_service import ParserService
-from reporter import generate_json_report  # type: ignore
+from code_generator import CodeGenerator
 
 # Import EdgeFlow pipeline components
-from edgeflow_ast import Program, create_program_from_dict
-from edgeflow_ir import IRBuilder, IRGraph, QuantizationPass, FusionPass, SchedulingPass
-from code_generator import CodeGenerator
-from optimizer import EdgeFlowOptimizer
-from validator import EdgeFlowValidator
+from edgeflow_ast import create_program_from_dict
+from edgeflow_ir import FusionPass, IRBuilder, QuantizationPass, SchedulingPass
 from explainability_reporter import generate_explainability_report
 from fast_compile import fast_compile_config
+from initial_check import InitialChecker, perform_initial_check
+from reporter import generate_json_report  # type: ignore
 
 # ----------------------------------------------------------------------------
 # Rate limiting (simple in-memory token bucket per client IP)
@@ -133,6 +133,20 @@ class BenchmarkResponse(BaseModel):
     improvement: Improvement
 
 
+class CheckRequest(BaseModel):
+    model_path: str
+    config: Dict[str, Any] = Field(default_factory=dict)
+    device_spec_file: Optional[str] = None
+
+
+class CheckResponse(BaseModel):
+    compatible: bool
+    requires_optimization: bool
+    issues: List[str] = []
+    recommendations: List[str] = []
+    fit_score: float
+
+
 # ----------------------------------------------------------------------------
 # FastAPI setup
 # ----------------------------------------------------------------------------
@@ -214,6 +228,7 @@ def help_() -> Dict[str, Any]:
         "POST /api/compile",
         "POST /api/compile/verbose",
         "POST /api/compile/dry-run",
+        "POST /api/check",
         "POST /api/optimize",
         "POST /api/benchmark",
         "GET /api/version",
@@ -329,79 +344,141 @@ def compile_dry_run(
     )
 
 
+@app.post("/api/check", response_model=CheckResponse)
+def check_compatibility_api(
+    req: CheckRequest, _: None = Depends(rate_limit_dep)
+) -> CheckResponse:
+    try:
+        should_opt, report = perform_initial_check(
+            req.model_path, req.config, req.device_spec_file
+        )
+        return CheckResponse(
+            compatible=report.compatible,
+            requires_optimization=report.requires_optimization,
+            issues=report.issues,
+            recommendations=report.recommendations,
+            fit_score=report.estimated_fit_score,
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/check/upload", response_model=CheckResponse)
+async def check_uploaded_model_api(
+    model: UploadFile = File(...),
+    config: str = Form("{}"),
+    device_spec_file: Optional[str] = Form(None),
+    _: None = Depends(rate_limit_dep),
+) -> CheckResponse:
+    import json as _json
+    import tempfile
+
+    try:
+        cfg = _json.loads(config) if isinstance(config, str) else dict(config)
+    except Exception:  # noqa: BLE001
+        cfg = {}
+    # Persist the uploaded file temporarily for profiling by path
+    suffix = Path(model.filename or "model").suffix
+    with tempfile.NamedTemporaryFile(
+        "wb", suffix=suffix, delete=True
+    ) as tmp:  # type: ignore[attr-defined]
+        content = await model.read()
+        tmp.write(content)
+        tmp.flush()
+        checker = InitialChecker(device_spec_file)
+        target = str(cfg.get("target_device") or cfg.get("device") or "generic")
+        report = checker.check_compatibility(tmp.name, target, cfg)
+        return CheckResponse(
+            compatible=report.compatible,
+            requires_optimization=report.requires_optimization,
+            issues=report.issues,
+            recommendations=report.recommendations,
+            fit_score=report.estimated_fit_score,
+        )
+
+
 @app.post("/api/pipeline", response_model=PipelineResponse)
 def run_full_pipeline(
     req: CompileRequest, _: None = Depends(rate_limit_dep)
 ) -> PipelineResponse:
-    """Run the complete EdgeFlow pipeline: parse -> AST -> IR -> optimization -> code generation."""
+    """Run full EdgeFlow pipeline.
+
+    Steps: parse -> AST -> IR -> optimization -> code generation.
+    """
     try:
         if not req.filename.lower().endswith(".ef"):
             raise HTTPException(
                 status_code=400, detail="Invalid file extension; expected .ef"
             )
-        
+
         # Step 1: Parse configuration
         success, cfg, err = ParserService.parse_config_content(req.config_file)
         if not success:
             return PipelineResponse(success=False, errors=[err])
-        
+
         # Step 2: Build AST
         ast = create_program_from_dict(cfg)
-        
+
         # Step 3: Build IR Graph
         ir_builder = IRBuilder()
         ir_graph = ir_builder.build_from_config(cfg)
-        
+
         # Step 4: Apply optimization passes
         optimization_passes = []
-        
+
         # Quantization Pass
         if "quantize" in cfg and cfg["quantize"] != "none":
             quantize_pass = QuantizationPass()
             ir_graph = quantize_pass.transform(ir_graph)
-            optimization_passes.append({
-                "name": "QuantizationPass",
-                "description": f"Applied {cfg['quantize']} quantization",
-                "nodes_added": 1
-            })
-        
+            optimization_passes.append(
+                {
+                    "name": "QuantizationPass",
+                    "description": f"Applied {cfg['quantize']} quantization",
+                    "nodes_added": 1,
+                }
+            )
+
         # Fusion Pass
         if cfg.get("enable_fusion", False):
             fusion_pass = FusionPass()
             ir_graph = fusion_pass.transform(ir_graph)
-            optimization_passes.append({
-                "name": "FusionPass", 
-                "description": "Fused operations for efficiency",
-                "nodes_added": 1
-            })
-        
+            optimization_passes.append(
+                {
+                    "name": "FusionPass",
+                    "description": "Fused operations for efficiency",
+                    "nodes_added": 1,
+                }
+            )
+
         # Scheduling Pass
         schedule_pass = SchedulingPass()
         ir_graph = schedule_pass.transform(ir_graph)
-        optimization_passes.append({
-            "name": "SchedulingPass",
-            "description": "Optimized execution schedule",
-            "nodes_added": 1
-        })
-        
+        optimization_passes.append(
+            {
+                "name": "SchedulingPass",
+                "description": "Optimized execution schedule",
+                "nodes_added": 1,
+            }
+        )
+
         # Step 5: Generate code
         code_generator = CodeGenerator(ast, ir_graph)
         generated_code = {
             "python": code_generator.generate_ir_based_code("python"),
             "cpp": code_generator.generate_ir_based_code("cpp"),
             "onnx": code_generator.generate_ir_based_code("onnx"),
-            "tensorrt": code_generator.generate_ir_based_code("tensorrt")
+            "tensorrt": code_generator.generate_ir_based_code("tensorrt"),
         }
-        
+
         # Step 6: Generate reports
         optimization_report = {
             "quantize": cfg.get("quantize"),
             "target_device": cfg.get("target_device"),
             "optimize_for": cfg.get("optimize_for"),
             "optimization_passes_applied": len(optimization_passes),
-            "generated_backends": list(generated_code.keys())
+            "generated_backends": list(generated_code.keys()),
         }
-        
+
         # Prepare IR data for explainability report
         ir_dict = ir_graph.to_dict()
         ir_transformations = {
@@ -411,27 +488,32 @@ def run_full_pipeline(
             "edges": len(ir_dict["edges"]),
             "is_valid": True,
             "execution_order": ir_dict["execution_order"],
-            "node_types": {}
+            "node_types": {},
         }
-        
+
         # Count node types
         for node in ir_dict["nodes"]:
             node_type = node["node_type"]
-            ir_transformations["node_types"][node_type] = ir_transformations["node_types"].get(node_type, 0) + 1
-        
+            ir_transformations["node_types"][node_type] = (
+                ir_transformations["node_types"].get(node_type, 0) + 1
+            )
+
         # Prepare optimization results for explainability report
         optimization_results = {
-            "optimizations_applied": [pass_info["name"].lower().replace("pass", "") for pass_info in optimization_passes],
-            "optimization_passes": optimization_passes
+            "optimizations_applied": [
+                str(pass_info["name"]).lower().replace("pass", "")
+                for pass_info in optimization_passes
+            ],
+            "optimization_passes": optimization_passes,
         }
-        
+
         explainability_report = generate_explainability_report(
-            cfg, 
-            optimization_results, 
+            cfg,
+            optimization_results,
             ir_transformations,
-            {"estimated_impact": {"size_reduction": 0.3, "speedup": 1.5}}
+            {"estimated_impact": {"size_reduction": 0.3, "speedup": 1.5}},
         )
-        
+
         return PipelineResponse(
             success=True,
             ast=ast.to_dict(),
@@ -440,13 +522,12 @@ def run_full_pipeline(
             generated_code=generated_code,
             optimization_report=optimization_report,
             explainability_report=explainability_report,
-            message="Pipeline executed successfully"
+            message="Pipeline executed successfully",
         )
-        
+
     except Exception as e:
         return PipelineResponse(
-            success=False,
-            errors=[f"Pipeline execution failed: {str(e)}"]
+            success=False, errors=[f"Pipeline execution failed: {str(e)}"]
         )
 
 
@@ -460,27 +541,26 @@ def fast_compile(
             raise HTTPException(
                 status_code=400, detail="Invalid file extension; expected .ef"
             )
-        
+
         # Parse configuration
         success, cfg, err = ParserService.parse_config_content(req.config_file)
         if not success:
             return FastCompileResponse(success=False, message=err)
-        
+
         # Run fast compile
         result = fast_compile_config(cfg)
-        
+
         return FastCompileResponse(
             success=True,
             estimated_impact=result.estimated_impact,
             validation_results={"errors": result.errors, "warnings": result.warnings},
             message="Fast compile completed successfully",
-            warnings=result.warnings
+            warnings=result.warnings,
         )
-        
+
     except Exception as e:
         return FastCompileResponse(
-            success=False,
-            message=f"Fast compile failed: {str(e)}"
+            success=False, message=f"Fast compile failed: {str(e)}"
         )
 
 
