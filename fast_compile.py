@@ -107,7 +107,7 @@ class EdgeFlowFastCompiler:
 
         # Step 1: Fast validation (no model loading)
         is_valid, errors = self.validator.early_validation(config)
-        warnings = []
+        warnings: List[str] = []
 
         if not is_valid:
             compile_time = (time.time() - start_time) * 1000
@@ -228,7 +228,7 @@ class EdgeFlowFastCompiler:
         self, config: Dict[str, Any], estimated_impact: Dict[str, Any]
     ) -> List[str]:
         """Generate warnings based on configuration and estimated impact."""
-        warnings = []
+        warnings: List[str] = []
 
         device = config.get("target_device", "cpu")
         quantize = config.get("quantize", "none")

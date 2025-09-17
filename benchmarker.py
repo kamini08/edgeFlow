@@ -413,12 +413,6 @@ def benchmark_model(model_path: str, config: Dict[str, Any]) -> Dict[str, Any]:
 def compare_models(
     original_path: str, optimized_path: str, config: Dict[str, Any]
 ) -> Dict[str, Any]:
-    """Compare two models (original vs optimized)."""
-
-
-def compare_models(
-    original_path: str, optimized_path: str, config: Dict[str, Any]
-) -> Dict[str, Any]:
     """Compare two models.
 
     Args:
