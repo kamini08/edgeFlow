@@ -351,7 +351,9 @@ def validate_config(config: Dict[str, Any]) -> Tuple[bool, List[str]]:
     if model_path is not None and (
         not isinstance(model_path, str) or not model_path.strip()
     ):
-        errors.append("'model_path' or 'model' must be a non-empty string when specified")
+        errors.append(
+            "'model_path' or 'model' must be a non-empty string when specified"
+        )
     elif model_path is None:
         # Allow simple test configs like {"x": 1}, but require model_path for
         # empty or production configs
@@ -362,7 +364,9 @@ def validate_config(config: Dict[str, Any]) -> Tuple[bool, List[str]]:
         is_empty = len(config) == 0
 
         if is_empty or (not has_metadata and not is_simple_test):
-            errors.append("'model_path' or 'model' is required and must be a non-empty string")
+            errors.append(
+                "'model_path' or 'model' is required and must be a non-empty string"
+            )
 
     # Optional validations
     if "batch_size" in config:
@@ -389,7 +393,9 @@ def validate_config(config: Dict[str, Any]) -> Tuple[bool, List[str]]:
             if not (0.0 <= float(ps) <= 1.0):
                 errors.append("'pruning_sparsity' must be between 0 and 1")
 
-    if "enable_operator_fusion" in config and not isinstance(config["enable_operator_fusion"], bool):
+    if "enable_operator_fusion" in config and not isinstance(
+        config["enable_operator_fusion"], bool
+    ):
         errors.append("'enable_operator_fusion' must be a boolean")
 
     if "quantize" in config:

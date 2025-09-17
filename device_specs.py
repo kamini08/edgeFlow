@@ -7,13 +7,13 @@ This module provides the foundation for compatibility checking.
 
 from __future__ import annotations
 
-from typing import Dict, Any, Optional, List
-from dataclasses import dataclass
-from pathlib import Path
-import json
 import csv
+import json
 import logging
+from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -90,10 +90,15 @@ class DeviceSpec:
             ),
             max_model_size_mb=int(data.get("max_model_size_mb", 50)),
             supported_quantizations=[
-                q.lower() for q in data.get("supported_quantizations", ["none", "float16", "int8"])
+                q.lower()
+                for q in data.get(
+                    "supported_quantizations", ["none", "float16", "int8"]
+                )
             ],
             power_budget_watts=(
-                float(data["power_budget_watts"]) if data.get("power_budget_watts") is not None else None
+                float(data["power_budget_watts"])
+                if data.get("power_budget_watts") is not None
+                else None
             ),
         )
 
@@ -115,6 +120,7 @@ class DeviceSpecManager:
 
     def _load_default_specs(self) -> None:
         """Load built-in device specifications."""
+
         # Define default specs for common devices
         def add(spec: DeviceSpec) -> None:
             self.devices[spec.name] = spec
@@ -129,7 +135,13 @@ class DeviceSpecManager:
                 cpu_freq_mhz=1200,
                 gpu_available=False,
                 tpu_available=False,
-                supported_operations=["conv2d", "depthwise_conv2d", "dense", "relu", "softmax"],
+                supported_operations=[
+                    "conv2d",
+                    "depthwise_conv2d",
+                    "dense",
+                    "relu",
+                    "softmax",
+                ],
                 max_model_size_mb=50,
                 supported_quantizations=["none", "float16", "int8"],
                 power_budget_watts=5.0,
@@ -145,7 +157,14 @@ class DeviceSpecManager:
                 cpu_freq_mhz=1500,
                 gpu_available=False,
                 tpu_available=False,
-                supported_operations=["conv2d", "dense", "relu", "softmax", "pad", "add"],
+                supported_operations=[
+                    "conv2d",
+                    "dense",
+                    "relu",
+                    "softmax",
+                    "pad",
+                    "add",
+                ],
                 max_model_size_mb=100,
                 supported_quantizations=["none", "float16", "int8"],
                 power_budget_watts=7.0,
@@ -200,7 +219,14 @@ class DeviceSpecManager:
                 cpu_freq_mhz=2035,
                 gpu_available=True,
                 tpu_available=False,
-                supported_operations=["conv2d", "dense", "relu", "softmax", "add", "mul"],
+                supported_operations=[
+                    "conv2d",
+                    "dense",
+                    "relu",
+                    "softmax",
+                    "add",
+                    "mul",
+                ],
                 max_model_size_mb=400,
                 supported_quantizations=["none", "float16", "int8"],
             )
@@ -215,7 +241,15 @@ class DeviceSpecManager:
                 cpu_freq_mhz=2300,
                 gpu_available=True,
                 tpu_available=False,
-                supported_operations=["conv2d", "dense", "relu", "softmax", "add", "mul", "pad"],
+                supported_operations=[
+                    "conv2d",
+                    "dense",
+                    "relu",
+                    "softmax",
+                    "add",
+                    "mul",
+                    "pad",
+                ],
                 max_model_size_mb=800,
                 supported_quantizations=["none", "float16", "int8"],
             )
@@ -295,19 +329,28 @@ class DeviceSpecManager:
                 # Parse list-like columns
                 ops = row.get("supported_operations") or ""
                 quants = row.get("supported_quantizations") or ""
-                ops_list = [x.strip() for x in ops.replace("|", ",").split(",") if x.strip()]
-                quants_list = [x.strip().lower() for x in quants.replace("|", ",").split(",") if x.strip()]
+                ops_list = [
+                    x.strip() for x in ops.replace("|", ",").split(",") if x.strip()
+                ]
+                quants_list = [
+                    x.strip().lower()
+                    for x in quants.replace("|", ",").split(",")
+                    if x.strip()
+                ]
                 data: Dict[str, Any] = {
                     **row,
                     "ram_mb": int(row.get("ram_mb") or 0),
                     "storage_mb": int(row.get("storage_mb") or 0),
                     "cpu_cores": int(row.get("cpu_cores") or 1),
                     "cpu_freq_mhz": int(row.get("cpu_freq_mhz") or 0),
-                    "gpu_available": str(row.get("gpu_available", "")).lower() in {"1", "true", "yes"},
-                    "tpu_available": str(row.get("tpu_available", "")).lower() in {"1", "true", "yes"},
+                    "gpu_available": str(row.get("gpu_available", "")).lower()
+                    in {"1", "true", "yes"},
+                    "tpu_available": str(row.get("tpu_available", "")).lower()
+                    in {"1", "true", "yes"},
                     "max_model_size_mb": int(row.get("max_model_size_mb") or 0),
                     "supported_operations": ops_list or ["conv2d", "dense"],
-                    "supported_quantizations": quants_list or ["none", "float16", "int8"],
+                    "supported_quantizations": quants_list
+                    or ["none", "float16", "int8"],
                 }
                 spec = DeviceSpec.from_dict(data)
                 self.devices[spec.name] = spec
@@ -353,4 +396,3 @@ class DeviceSpecManager:
                 return spec
         logger.warning("Unknown device: %s, using generic spec", device_name)
         return self._get_generic_spec()
-

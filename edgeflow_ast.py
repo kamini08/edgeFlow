@@ -228,18 +228,15 @@ class Program(ASTNode):
 
     def accept(self, visitor: "ASTVisitor") -> Any:
         return visitor.visit_program(self)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert the program to a dictionary representation."""
         return {
             "type": "Program",
             "statements": [
-                {
-                    "type": type(stmt).__name__,
-                    "data": stmt.__dict__
-                }
+                {"type": type(stmt).__name__, "data": stmt.__dict__}
                 for stmt in self.statements
-            ]
+            ],
         }
 
 
