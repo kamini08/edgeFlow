@@ -38,11 +38,12 @@ jobs:
 
       - name: Test Docker Compose configuration
         run: |
-          docker-compose config
+          docker compose version
+          docker compose config
 
       - name: Start services
         run: |
-          docker-compose up -d
+          docker compose up -d
           sleep 10
 
       - name: Health check
@@ -70,4 +71,4 @@ jobs:
       - name: Clean up
         if: always()
         run: |
-          docker-compose down -v
+          docker compose down -v
