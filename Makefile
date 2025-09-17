@@ -16,3 +16,36 @@ test-frontend:
 
 run-local:
 	docker-compose up --build
+
+# ------------------------------
+# Docker operations
+# ------------------------------
+
+.PHONY: docker-build docker-up docker-down docker-logs docker-test docker-clean
+
+docker-build:
+	@echo "🔨 Building Docker images..."
+	docker-compose build --parallel
+
+docker-up:
+	@echo "🚀 Starting EdgeFlow services..."
+	docker-compose up -d
+	@echo "✅ Services started!"
+	@echo "   API: http://localhost:8000"
+	@echo "   Frontend: http://localhost:3000"
+
+docker-down:
+	@echo "⏹️  Stopping EdgeFlow services..."
+	docker-compose down
+
+docker-logs:
+	docker-compose logs -f
+
+docker-test:
+	@echo "🧪 Running tests in Docker..."
+	docker run --rm -v $(PWD):/app edgeflow:latest pytest tests/
+
+docker-clean:
+	@echo "🧹 Cleaning up Docker resources..."
+	docker-compose down -v || true
+	docker system prune -f || true

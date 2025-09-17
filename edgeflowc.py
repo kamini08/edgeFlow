@@ -122,6 +122,27 @@ def parse_arguments() -> argparse.Namespace:
         help="Skip compatibility check and proceed directly to optimization",
     )
 
+    # Docker flags (parsed but used lazily to avoid import errors)
+    docker_group = parser.add_argument_group("Docker options")
+    docker_group.add_argument(
+        "--docker",
+        action="store_true",
+        help="Run optimization in Docker container",
+    )
+    docker_group.add_argument(
+        "--docker-build",
+        action="store_true",
+        help="Build Docker image before running",
+    )
+    docker_group.add_argument(
+        "--docker-tag", default="edgeflow:latest", help="Docker image tag to use"
+    )
+    docker_group.add_argument(
+        "--docker-no-cache",
+        action="store_true",
+        help="Build Docker image without cache",
+    )
+
     args = parser.parse_args()
     return args
 
@@ -416,6 +437,45 @@ def main() -> int:
 
         # Parse configuration file
         cfg = load_config(args.config_path)
+
+        # Optional: run inside Docker
+        if getattr(args, 'docker', False):
+            try:
+                from docker_manager import DockerManager, validate_docker_setup  # lazy import
+            except Exception as exc:  # noqa: BLE001
+                logging.error("Docker support not available: %s", exc)
+                return 1
+
+            docker_status = validate_docker_setup()
+            if not all(docker_status.values()):
+                logging.error("Docker setup issues detected: %s", docker_status)
+                return 1
+
+            manager = DockerManager()
+            if getattr(args, 'docker_build', False):
+                logging.info("Building Docker image: %s", args.docker_tag)
+                ok = manager.build_image(tag=args.docker_tag, build_args={})
+                if not ok:
+                    logging.error("Docker build failed")
+                    return 1
+
+            model_path = cfg.get("model_path") or cfg.get("model") or ""
+            if not model_path:
+                logging.error("No model or model_path defined in config; cannot run in Docker")
+                return 1
+
+            result = manager.run_optimization_pipeline(
+                config_file=args.config_path,
+                model_path=model_path,
+                device_spec_file=getattr(args, 'device_spec_file', None),
+                output_dir="./outputs",
+                image=getattr(args, 'docker_tag', 'edgeflow:latest'),
+            )
+            if not result.get("success"):
+                logging.error("Docker run failed: %s", result.get("error"))
+                return 1
+            logging.info("Docker optimization completed. Outputs at %s", result.get("output_path"))
+            return 0
 
         # Initial device compatibility check (gate-keeping)
         if not getattr(args, "skip_check", False):
