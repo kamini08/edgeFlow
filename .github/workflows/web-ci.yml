@@ -58,16 +58,24 @@ jobs:
         run: docker compose up -d || docker-compose up -d
       - name: Wait for backend
         run: |
-          ATTEMPTS=40
+          ATTEMPTS=60
+          echo "Waiting for backend to become healthy..."
           until curl -sf http://localhost:8000/api/health; do
             ATTEMPTS=$((ATTEMPTS-1))
             if [ $ATTEMPTS -le 0 ]; then
-              echo "Backend did not become healthy"
-              docker compose logs edgeflow-api || true
+              echo "Backend did not become healthy after 3 minutes"
+              echo "=== Docker compose status ==="
+              docker compose ps || docker-compose ps || true
+              echo "=== Backend logs ==="
+              docker compose logs edgeflow-api || docker-compose logs edgeflow-api || true
+              echo "=== Network connectivity test ==="
+              docker compose exec -T edgeflow-api curl -v http://localhost:8000/api/health || true
               exit 1
             fi
+            echo "Waiting... ($ATTEMPTS attempts remaining)"
             sleep 3
           done
+          echo "Backend is healthy!"
       - name: Smoke API
         run: |
           curl -sf http://localhost:8000/api/version
