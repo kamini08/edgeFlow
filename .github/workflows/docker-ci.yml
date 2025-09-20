@@ -1,0 +1,74 @@
+name: Docker CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'backend/Dockerfile'
+      - 'frontend/Dockerfile'
+      - 'docker_manager.py'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build EdgeFlow compiler image
+        run: |
+          docker build -t edgeflow:ci-test .
+
+      - name: Build API image
+        run: |
+          docker build -t edgeflow-api:ci-test -f backend/Dockerfile .
+
+      - name: Build Frontend image
+        run: |
+          docker build -t edgeflow-frontend:ci-test -f frontend/Dockerfile frontend/
+
+      - name: Test Docker Compose configuration
+        run: |
+          docker compose version
+          docker compose config
+
+      - name: Start services
+        run: |
+          docker compose up -d
+          sleep 10
+
+      - name: Health check
+        run: |
+          curl -f http://localhost:8000/api/health || exit 1
+          curl -f http://localhost:3000 || exit 1
+
+      - name: Run Docker tests
+        run: |
+          pip install pytest docker
+          pytest tests/test_docker.py -v -m docker
+
+      - name: Security scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'edgeflow:ci-test'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Clean up
+        if: always()
+        run: |
+          docker compose down -v
