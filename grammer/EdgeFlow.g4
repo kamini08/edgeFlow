@@ -21,6 +21,7 @@ statement
     | resourceConstraintsStmt
     | deploymentConfigStmt
     | pipelineConfigStmt
+    | pipelineStmt
     ;
 
 modelStmt
@@ -136,6 +137,72 @@ pipelineParam
     | PARALLEL_WORKERS '=' NUMBER
     ;
 
+// ----------------------------------------------------------------------------
+// Pipeline-centric constructs (non-breaking additions)
+// ----------------------------------------------------------------------------
+
+pipelineStmt
+    : PIPELINE IDENTIFIER '(' pipelineAttrList? ')' '{' pipelineBody* '}'
+    ;
+
+pipelineAttrList
+    : pipelineAttr (',' pipelineAttr)*
+    ;
+
+pipelineAttr
+    : TARGET '=' IDENTIFIER
+    | MEMORY_LIMIT '=' NUMBER
+    | FLAGS '=' '[' IDENTIFIER (',' IDENTIFIER)* ']'
+    ;
+
+pipelineBody
+    : declInput
+    | declOutput
+    | layerDecl
+    | connectionStmt
+    ;
+
+declInput
+    : INPUT IDENTIFIER ':' tensorType
+    ;
+
+declOutput
+    : OUTPUT IDENTIFIER ':' tensorType
+    ;
+
+tensorType
+    : TENSOR '<' DTYPE ',' '[' dimList? ']' '>'
+    ;
+
+dimList
+    : dim (',' dim)*
+    ;
+
+dim
+    : INTEGER
+    | STAR
+    ;
+
+layerDecl
+    : IDENTIFIER ':' IDENTIFIER '(' argList? ')' (ARROW IDENTIFIER)?
+    ;
+
+argList
+    : arg (',' arg)*
+    ;
+
+arg
+    : IDENTIFIER '=' (STRING | NUMBER | BOOL | IDENTIFIER | '[' valueList? ']')
+    ;
+
+valueList
+    : (STRING | NUMBER | BOOL | IDENTIFIER) (',' (STRING | NUMBER | BOOL | IDENTIFIER))*
+    ;
+
+connectionStmt
+    : CONNECT IDENTIFIER ARROW IDENTIFIER
+    ;
+
 // Lexer rules
 
 MODEL           : 'model';
@@ -163,6 +230,18 @@ DEPLOYMENT_MODE : 'deployment_mode';
 STREAMING_MODE  : 'streaming_mode';
 BATCH_SIZE      : 'batch_size';
 PARALLEL_WORKERS : 'parallel_workers';
+
+// New tokens for pipeline constructs
+PIPELINE        : 'pipeline';
+TARGET          : 'target';
+FLAGS           : 'flags';
+INPUT           : 'input';
+OUTPUT          : 'output';
+TENSOR          : 'Tensor';
+DTYPE           : 'int8' | 'uint8' | 'int16' | 'float16' | 'float32' | 'int32' | 'bool';
+CONNECT         : 'connect';
+ARROW           : '->';
+STAR            : '*';
 
 INT8            : 'int8';
 FLOAT16         : 'float16';

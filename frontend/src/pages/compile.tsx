@@ -4,6 +4,10 @@ import FileUpload from "../components/FileUpload";
 import ConfigEditor from "../components/ConfigEditor";
 import ASTViewer from "../components/ASTViewer";
 import IRGraphViewer from "../components/IRGraphViewer";
+import EnhancedASTViewer from "../components/EnhancedASTViewer";
+import EnhancedIRGraphViewer from "../components/EnhancedIRGraphViewer";
+import ValidationResultsViewer from "../components/ValidationResultsViewer";
+import DeploymentArtifactsViewer from "../components/DeploymentArtifactsViewer";
 import OptimizationPassesViewer from "../components/OptimizationPassesViewer";
 import GeneratedCodeViewer from "../components/GeneratedCodeViewer";
 import {
@@ -11,6 +15,10 @@ import {
   compileConfigVerbose,
   runFullPipeline,
   fastCompile,
+  validateDeployment,
+  packageDeployment,
+  deviceBenchmark,
+  benchmarkInterfaces,
 } from "../services/api";
 
 export default function CompilePage() {
@@ -19,6 +27,8 @@ export default function CompilePage() {
   const [logs, setLogs] = useState<string[]>([]);
   const [parsed, setParsed] = useState<any>(null);
   const [pipelineResults, setPipelineResults] = useState<any>(null);
+  const [validationResults, setValidationResults] = useState<any>(null);
+  const [deploymentArtifacts, setDeploymentArtifacts] = useState<any>(null);
   const [fastCompileResults, setFastCompileResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -60,6 +70,60 @@ export default function CompilePage() {
       setFastCompileResults(res);
     } catch (error) {
       console.error("Fast compile error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onPackageDeployment = async () => {
+    setLoading(true);
+    try {
+      const res = await packageDeployment(content, filename);
+      setDeploymentArtifacts(res);
+    } catch (error) {
+      console.error("Deployment packaging error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onValidateDeployment = async (
+    packagePath: string,
+    deviceType: string
+  ) => {
+    setLoading(true);
+    try {
+      const res = await validateDeployment(packagePath, deviceType);
+      setValidationResults(res);
+    } catch (error) {
+      console.error("Deployment validation error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onDeviceBenchmark = async () => {
+    setLoading(true);
+    try {
+      const res = await deviceBenchmark(content, filename);
+      setPipelineResults((prev) => ({ ...prev, benchmarkResults: res }));
+    } catch (error) {
+      console.error("Device benchmark error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onBenchmarkInterfaces = async () => {
+    setLoading(true);
+    try {
+      const res = await benchmarkInterfaces(content, filename);
+      setPipelineResults((prev) => ({
+        ...prev,
+        interfaceBenchmarkResults: res,
+      }));
+    } catch (error) {
+      console.error("Interface benchmark error:", error);
     } finally {
       setLoading(false);
     }
@@ -122,6 +186,24 @@ export default function CompilePage() {
               onClick={onFastCompile}
               disabled={loading}>
               {loading ? "Analyzing..." : "Fast Compile"}
+            </button>
+            <button
+              className="btn bg-purple-600 hover:bg-purple-700 text-white"
+              onClick={onPackageDeployment}
+              disabled={loading}>
+              {loading ? "Packaging..." : "Package Deployment"}
+            </button>
+            <button
+              className="btn bg-orange-600 hover:bg-orange-700 text-white"
+              onClick={onDeviceBenchmark}
+              disabled={loading}>
+              {loading ? "Benchmarking..." : "Device Benchmark"}
+            </button>
+            <button
+              className="btn bg-indigo-600 hover:bg-indigo-700 text-white"
+              onClick={onBenchmarkInterfaces}
+              disabled={loading}>
+              {loading ? "Testing..." : "Benchmark Interfaces"}
             </button>
           </div>
         </section>
@@ -209,12 +291,14 @@ export default function CompilePage() {
           <div className="space-y-6">
             {pipelineResults.success ? (
               <>
-                {/* AST Viewer */}
-                {pipelineResults.ast && <ASTViewer ast={pipelineResults.ast} />}
+                {/* Enhanced AST Viewer */}
+                {pipelineResults.ast && (
+                  <EnhancedASTViewer ast={pipelineResults.ast} />
+                )}
 
-                {/* IR Graph Viewer */}
+                {/* Enhanced IR Graph Viewer */}
                 {pipelineResults.ir_graph && (
-                  <IRGraphViewer irGraph={pipelineResults.ir_graph} />
+                  <EnhancedIRGraphViewer irGraph={pipelineResults.ir_graph} />
                 )}
 
                 {/* Optimization Passes */}
@@ -244,6 +328,42 @@ export default function CompilePage() {
                     </div>
                   </section>
                 )}
+
+                {/* Benchmark Results */}
+                {pipelineResults.benchmarkResults && (
+                  <section className="card">
+                    <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                      Device Benchmark Results
+                    </h3>
+                    <div className="prose max-w-none">
+                      <pre className="whitespace-pre-wrap text-sm text-gray-800 bg-gray-50 p-4 rounded-lg">
+                        {JSON.stringify(
+                          pipelineResults.benchmarkResults,
+                          null,
+                          2
+                        )}
+                      </pre>
+                    </div>
+                  </section>
+                )}
+
+                {/* Interface Benchmark Results */}
+                {pipelineResults.interfaceBenchmarkResults && (
+                  <section className="card">
+                    <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                      Interface Benchmark Results
+                    </h3>
+                    <div className="prose max-w-none">
+                      <pre className="whitespace-pre-wrap text-sm text-gray-800 bg-gray-50 p-4 rounded-lg">
+                        {JSON.stringify(
+                          pipelineResults.interfaceBenchmarkResults,
+                          null,
+                          2
+                        )}
+                      </pre>
+                    </div>
+                  </section>
+                )}
               </>
             ) : (
               <section className="card">
@@ -264,6 +384,56 @@ export default function CompilePage() {
               </section>
             )}
           </div>
+        )}
+
+        {/* Deployment Artifacts */}
+        {deploymentArtifacts && (
+          <div className="space-y-6">
+            {deploymentArtifacts.success ? (
+              <>
+                <DeploymentArtifactsViewer
+                  artifacts={deploymentArtifacts.artifacts}
+                  deviceType={deploymentArtifacts.device_type || "unknown"}
+                />
+
+                {/* Validation Button */}
+                {deploymentArtifacts.final_package && (
+                  <section className="card">
+                    <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                      Validate Deployment Package
+                    </h3>
+                    <div className="flex gap-3">
+                      <button
+                        className="btn bg-red-600 hover:bg-red-700 text-white"
+                        onClick={() =>
+                          onValidateDeployment(
+                            deploymentArtifacts.final_package,
+                            deploymentArtifacts.device_type || "raspberry_pi"
+                          )
+                        }
+                        disabled={loading}>
+                        {loading ? "Validating..." : "Validate Package"}
+                      </button>
+                    </div>
+                  </section>
+                )}
+              </>
+            ) : (
+              <section className="card">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-red-900 mb-2">
+                    Deployment Packaging Failed
+                  </h3>
+                  <p className="text-red-800">{deploymentArtifacts.message}</p>
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+
+        {/* Validation Results */}
+        {validationResults && (
+          <ValidationResultsViewer validationReport={validationResults} />
         )}
       </main>
     </div>
