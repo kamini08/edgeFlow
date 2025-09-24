@@ -408,6 +408,24 @@ def validate_config(config: Dict[str, Any]) -> Tuple[bool, List[str]]:
         if of not in {"latency", "size", "balanced"}:
             errors.append("'optimize_for' must be one of: latency, size, balanced")
 
+    if "framework" in config:
+        fw = str(config["framework"]).lower()
+        if fw not in {"tensorflow", "pytorch", "onnx", "xgboost"}:
+            errors.append("'framework' must be one of: tensorflow, pytorch, onnx, xgboost")
+
+    if "enable_hybrid_optimization" in config and not isinstance(
+        config["enable_hybrid_optimization"], bool
+    ):
+        errors.append("'enable_hybrid_optimization' must be a boolean")
+
+    if "pytorch_quantize" in config:
+        pq = str(config["pytorch_quantize"]).lower()
+        if pq not in {"dynamic_int8", "static_int8", "none"}:
+            errors.append("'pytorch_quantize' must be one of: dynamic_int8, static_int8, none")
+
+    if "fine_tuning" in config and not isinstance(config["fine_tuning"], bool):
+        errors.append("'fine_tuning' must be a boolean")
+
     return (len(errors) == 0, errors)
 
 
