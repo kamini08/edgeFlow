@@ -36,12 +36,19 @@ test_*.ef
 sample.ef
 tests/
 
+# Allow example configuration files
+!example_*.ef
+
 # Generated files and artifacts
 generated/
 *.tflite
 *.json
 test_model*
 mobilenet_v2.tflite
+
+# Allow example model files
+!large_resnet_model.tflite
+!example_*.tflite
 
 
 # Temporary and cache files
@@ -68,6 +75,10 @@ baseline_model*
 simple_model*
 *.h5
 *.h5_info.txt
+
+# Allow example model files
+!large_resnet_model.h5
+!example_*.h5
 
 # Frontend build files
 frontend/.next/

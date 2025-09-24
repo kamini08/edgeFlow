@@ -1,0 +1,25 @@
+# Example EdgeFlow Configuration for ResNet Model Optimization
+# Demonstrates multi-framework support with real performance improvements
+
+# Model configuration
+model = "large_resnet_model.tflite"
+keras_model = "large_resnet_model.h5"
+
+# Optimization settings
+quantize = int8
+target_device = "raspberry_pi"
+optimize_for = "latency"
+
+# Memory constraints
+memory_limit = 50
+
+# Advanced features
+enable_fusion = true
+fine_tuning = true
+
+# Multi-framework support
+framework = "tensorflow"
+enable_hybrid_optimization = false
+
+# Deployment
+deploy_path = "/tmp/edgeflow_output"
