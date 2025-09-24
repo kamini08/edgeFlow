@@ -16,6 +16,10 @@ statement
     | optimizeForStmt
     | memoryLimitStmt
     | fusionStmt
+    | frameworkStmt
+    | hybridOptimizationStmt
+    | pytorchQuantizeStmt
+    | fineTuningStmt
     | pruningStmt
     | schedulingStmt
     | resourceConstraintsStmt
@@ -64,6 +68,28 @@ memoryLimitStmt
 
 fusionStmt
     : FUSION '=' BOOL
+    ;
+
+frameworkStmt
+    : FRAMEWORK '=' IDENTIFIER
+    ;
+
+hybridOptimizationStmt
+    : HYBRID_OPTIMIZATION '=' BOOL
+    ;
+
+pytorchQuantizeStmt
+    : PYTORCH_QUANTIZE '=' pytorchQuantType
+    ;
+
+pytorchQuantType
+    : DYNAMIC_INT8
+    | STATIC_INT8
+    | NONE
+    ;
+
+fineTuningStmt
+    : FINE_TUNING '=' BOOL
     ;
 
 pruningStmt
@@ -214,6 +240,12 @@ BUFFER_SIZE     : 'buffer_size';
 OPTIMIZE_FOR    : 'optimize_for';
 MEMORY_LIMIT    : 'memory_limit';
 FUSION          : 'enable_fusion';
+FRAMEWORK       : 'framework';
+HYBRID_OPTIMIZATION : 'enable_hybrid_optimization';
+PYTORCH_QUANTIZE : 'pytorch_quantize';
+DYNAMIC_INT8    : 'dynamic_int8';
+STATIC_INT8     : 'static_int8';
+FINE_TUNING     : 'fine_tuning';
 PRUNING         : 'enable_pruning';
 PRUNING_SPARSITY : 'pruning_sparsity';
 SCHEDULING      : 'scheduling';

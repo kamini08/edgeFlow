@@ -143,11 +143,10 @@ class EdgeFlowBenchmarker:
         self.config = config
         self.target_device = config.get("target_device", "cpu")
         self.optimize_for = config.get("optimize_for", "latency")
-        self.memory_limit = config.get("memory_limit", 64)
+        self.memory_limit = float(config.get("memory_limit", 64))
 
     def benchmark_model(self, model_path: str) -> Dict[str, Any]:
-        """Benchmark a single model (real if possible, else simulation)."""
-        """Benchmark a single model.
+        """Benchmark a single model (real if possible, else simulation).
 
         Args:
             model_path: Path to the model file
@@ -188,21 +187,12 @@ class EdgeFlowBenchmarker:
             results = self._simulate_benchmark(model_path, model_size_mb)
             results["mode"] = "simulation"
 
-        # Get model size
-        model_size_mb = os.path.getsize(model_path) / (1024 * 1024)
-
-        # Simulate benchmarking based on device and optimization goals
-        results = self._simulate_benchmark(model_path, model_size_mb)
-
         logger.info(f"Benchmark complete: {model_path}")
         logger.info(
             f"  Latency: {results['latency_ms']:.2f} ms ({results.get('mode')})"
         )
         logger.info(f"  Throughput: {results['throughput_fps']:.2f} FPS")
         logger.info(f"  Memory: {results['memory_usage_mb']:.2f} MB")
-        logger.info(f"  Latency: {results['latency_ms']:.1f}ms")
-        logger.info(f"  Throughput: {results['throughput_fps']:.1f} FPS")
-        logger.info(f"  Memory: {results['memory_usage_mb']:.1f} MB")
 
         return results
 

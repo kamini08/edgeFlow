@@ -19,7 +19,10 @@ from edgeflow_ast import (
     Condition,
     ConditionalStatement,
     DeployPathStatement,
+    FineTuningStatement,
+    FrameworkStatement,
     FusionStatement,
+    HybridOptimizationStatement,
     Identifier,
     InputStreamStatement,
     Literal,
@@ -28,6 +31,7 @@ from edgeflow_ast import (
     OptimizeForStatement,
     PipelineStatement,
     Program,
+    PyTorchQuantizeStatement,
     QuantizeStatement,
     TargetDeviceStatement,
     UnaryExpression,
@@ -180,6 +184,29 @@ class CodeGenerator(ASTVisitor):
         self.config["enable_fusion"] = node.enabled
         if node.enabled:
             self.optimizations.append("Enabled operation fusion")
+        return None
+
+    def visit_framework_statement(self, node: FrameworkStatement) -> Any:
+        self.config["framework"] = node.framework
+        self.optimizations.append(f"Framework set to {node.framework}")
+        return None
+
+    def visit_hybrid_optimization_statement(self, node: HybridOptimizationStatement) -> Any:
+        self.config["enable_hybrid_optimization"] = node.enabled
+        if node.enabled:
+            self.optimizations.append("Enabled hybrid optimization pipeline")
+        return None
+
+    def visit_pytorch_quantize_statement(self, node: PyTorchQuantizeStatement) -> Any:
+        self.config["pytorch_quantize"] = node.quantize_type
+        if node.quantize_type != "none":
+            self.optimizations.append(f"Applied PyTorch {node.quantize_type} quantization")
+        return None
+
+    def visit_fine_tuning_statement(self, node: FineTuningStatement) -> Any:
+        self.config["fine_tuning"] = node.enabled
+        if node.enabled:
+            self.optimizations.append("Enabled fine-tuning capabilities")
         return None
 
     def visit_conditional_statement(self, node: ConditionalStatement) -> Any:

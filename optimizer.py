@@ -28,6 +28,23 @@ except ImportError:
     TFMOT_AVAILABLE = False
     logging.warning("TensorFlow not available, using simulation mode")
 
+# Try to import PyTorch for hybrid optimization
+try:
+    import torch  # noqa: F401
+    PYTORCH_AVAILABLE = True
+except ImportError:
+    PYTORCH_AVAILABLE = False
+    logging.warning("PyTorch not available, hybrid optimization limited")
+
+# Try to import ONNX for model conversion
+try:
+    import onnx  # noqa: F401
+    import onnxruntime as ort  # noqa: F401
+    ONNX_AVAILABLE = True
+except ImportError:
+    ONNX_AVAILABLE = False
+    logging.warning("ONNX not available, cross-framework conversion disabled")
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,6 +80,28 @@ class EdgeFlowOptimizer:
             self.tf_available = False
             self.tfmot_available = False
             logger.warning(f"TensorFlow not available: {e}, using simulation mode")
+
+        # Check PyTorch availability
+        try:
+            import torch
+            self.torch_available = True
+            self.torch = torch
+            logger.info("PyTorch initialized successfully")
+        except ImportError:
+            self.torch_available = False
+            logger.warning("PyTorch not available, hybrid optimization limited")
+
+        # Check ONNX availability
+        try:
+            import onnx
+            import onnxruntime as ort
+            self.onnx_available = True
+            self.onnx = onnx
+            self.ort = ort
+            logger.info("ONNX initialized successfully")
+        except ImportError:
+            self.onnx_available = False
+            logger.warning("ONNX not available, cross-framework conversion disabled")
 
     def apply_pruning(self, model, pruning_params: Dict[str, Any]):
         """Apply structured pruning to reduce model size.
@@ -127,6 +166,238 @@ class EdgeFlowOptimizer:
         except Exception as e:
             logger.warning(f"Pruning failed: {e}, using original model")
             return model
+
+    def apply_pytorch_quantization(self, model, config: Dict[str, Any]):
+        """Apply PyTorch quantization to a model.
+
+        Args:
+            model: PyTorch model to quantize
+            config: Configuration dictionary with quantization settings
+
+        Returns:
+            Quantized PyTorch model
+        """
+        if not self.torch_available:
+            logger.warning("PyTorch not available, skipping PyTorch quantization")
+            return model
+
+        try:
+            quantize_type = config.get("pytorch_quantize", "dynamic_int8")
+            logger.info(f"Applying PyTorch quantization: {quantize_type}")
+
+            if quantize_type == "dynamic_int8":
+                # Dynamic quantization - quantizes weights and activations dynamically
+                quantized_model = self.torch.quantization.quantize_dynamic(
+                    model, {self.torch.nn.Linear}, dtype=self.torch.qint8
+                )
+            elif quantize_type == "static_int8":
+                # Static quantization - requires calibration data
+                model.eval()
+                model.qconfig = self.torch.quantization.get_default_qconfig('fbgemm')
+                self.torch.quantization.prepare(model, inplace=True)
+
+                # Use dummy calibration data
+                with self.torch.no_grad():
+                    for _ in range(100):
+                        dummy_input = self.torch.randn(1, 3, 224, 224)
+                        model(dummy_input)
+
+                quantized_model = self.torch.quantization.convert(model, inplace=True)
+            else:
+                logger.warning(f"Unknown quantization type: {quantize_type}")
+                return model
+
+            logger.info("PyTorch quantization applied successfully")
+            return quantized_model
+
+        except Exception as e:
+            logger.warning(f"PyTorch quantization failed: {e}, using original model")
+            return model
+
+    def convert_pytorch_to_onnx(self, pytorch_model, input_shape=(1, 3, 224, 224), onnx_path=None):
+        """Convert PyTorch model to ONNX format.
+
+        Args:
+            pytorch_model: PyTorch model to convert
+            input_shape: Input tensor shape for the model
+            onnx_path: Path to save ONNX model (optional)
+
+        Returns:
+            Path to ONNX model or None if conversion failed
+        """
+        if not self.torch_available or not self.onnx_available:
+            logger.warning("PyTorch or ONNX not available, skipping conversion")
+            return None
+
+        try:
+            if onnx_path is None:
+                onnx_path = "converted_model.onnx"
+
+            pytorch_model.eval()
+
+            # Create dummy input for tracing
+            dummy_input = self.torch.randn(*input_shape)
+
+            # Export to ONNX
+            self.torch.onnx.export(
+                pytorch_model,
+                dummy_input,
+                onnx_path,
+                export_params=True,
+                opset_version=11,
+                do_constant_folding=True,
+                input_names=['input'],
+                output_names=['output'],
+                dynamic_axes={'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}}
+            )
+
+            logger.info(f"PyTorch model converted to ONNX: {onnx_path}")
+            return onnx_path
+
+        except Exception as e:
+            logger.error(f"PyTorch to ONNX conversion failed: {e}")
+            return None
+
+    def convert_onnx_to_tensorflow(self, onnx_path):
+        """Convert ONNX model to TensorFlow format.
+
+        Args:
+            onnx_path: Path to ONNX model
+
+        Returns:
+            TensorFlow model or None if conversion failed
+        """
+        if not self.onnx_available or not self.tf_available:
+            logger.warning("ONNX or TensorFlow not available, skipping conversion")
+            return None
+
+        try:
+            # Load ONNX model
+            onnx_model = self.onnx.load(onnx_path)
+
+            # Use tf2onnx or similar conversion (simplified approach)
+            # In practice, you might use tf2onnx library or onnx-tf converter
+            logger.info(f"ONNX model loaded: {onnx_path}")
+
+            # For now, return a placeholder - full implementation would use
+            # onnx-tf or tf2onnx libraries
+            logger.warning("ONNX to TensorFlow conversion requires additional libraries")
+            return None
+
+        except Exception as e:
+            logger.error(f"ONNX to TensorFlow conversion failed: {e}")
+            return None
+
+    def optimize_hybrid_pipeline(self, config: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+        """Run hybrid optimization pipeline using multiple frameworks.
+
+        Pipeline: PyTorch → ONNX → TensorFlow → TFLite
+        """
+        model_path = config.get("model", "")
+        framework = self._detect_framework(model_path)
+
+        logger.info(f"Starting hybrid optimization pipeline for {framework} model")
+
+        if framework == "pytorch" and self.torch_available:
+            # Stage 1: Load and optimize with PyTorch
+            pytorch_model = self.torch.load(model_path, map_location='cpu')
+            pytorch_model.eval()
+
+            # Apply PyTorch quantization
+            quantized_model = self.apply_pytorch_quantization(pytorch_model, config)
+
+            # Convert to TorchScript for better optimization
+            scripted_model = self.torch.jit.script(quantized_model)
+
+            # Stage 2: Convert to ONNX
+            input_shape = tuple(int(x) for x in config.get("input_shape", "1,3,224,224").split(","))
+            onnx_path = self.convert_pytorch_to_onnx(scripted_model, input_shape)
+
+            if onnx_path and self.onnx_available:
+                # Stage 3: Convert ONNX to TensorFlow (if converter available)
+                tf_model = self.convert_onnx_to_tensorflow(onnx_path)
+
+                if tf_model:
+                    # Stage 4: Apply TensorFlow/TFLite optimizations
+                    return self.optimize_tensorflow_model(tf_model, config)
+                else:
+                    # Fallback: Use ONNX directly for inference
+                    logger.info("Using ONNX model for inference (TensorFlow conversion not available)")
+                    return onnx_path, {
+                        "framework": "onnx",
+                        "optimizations_applied": ["pytorch_quantization", "torchscript_conversion"],
+                        "note": "Hybrid pipeline completed with ONNX output"
+                    }
+            else:
+                # Fallback: Use TorchScript model
+                torchscript_path = model_path.replace('.pth', '_optimized.pt')
+                scripted_model.save(torchscript_path)
+                logger.info("Using TorchScript model (ONNX conversion failed)")
+                return torchscript_path, {
+                    "framework": "torchscript",
+                    "optimizations_applied": ["pytorch_quantization", "torchscript_conversion"],
+                    "note": "Hybrid pipeline completed with TorchScript output"
+                }
+
+        elif framework == "tensorflow":
+            # Standard TensorFlow pipeline - call directly to avoid recursion
+            return self._optimize_tensorflow_standard(config)
+
+        else:
+            # Fallback to standard optimization
+            logger.warning(f"Unsupported framework {framework}, using standard pipeline")
+            return self._optimize_tensorflow_standard(config)
+
+    def _detect_framework(self, model_path: str) -> str:
+        """Detect the framework of a model based on file extension and content."""
+        if not model_path:
+            return "unknown"
+
+        ext = model_path.lower().split('.')[-1]
+
+        if ext in ['pth', 'pt', 'pkl']:
+            return "pytorch"
+        elif ext in ['h5', 'keras'] or model_path.endswith('.tflite'):
+            return "tensorflow"
+        elif ext == 'onnx':
+            return "onnx"
+        else:
+            return "unknown"
+
+    def optimize_tensorflow_model(self, tf_model, config: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+        """Optimize a TensorFlow model using standard pipeline."""
+        # Create temporary TFLite file
+        temp_tflite = "temp_tf_model.tflite"
+
+        try:
+            # Convert to TFLite
+            converter = self.tf.lite.TFLiteConverter.from_keras_model(tf_model)
+            converter.optimizations = [self.tf.lite.Optimize.DEFAULT]
+
+            # Apply quantization if requested
+            quantize = config.get("quantize", "none")
+            if quantize == "int8":
+                converter.target_spec.supported_ops = [
+                    self.tf.lite.OpsSet.TFLITE_BUILTINS_INT8
+                ]
+                converter.inference_input_type = self.tf.int8
+                converter.inference_output_type = self.tf.int8
+
+            tflite_model = converter.convert()
+
+            # Save and optimize
+            with open(temp_tflite, "wb") as f:
+                f.write(tflite_model)
+
+            # Apply final optimizations
+            final_config = config.copy()
+            final_config["model"] = temp_tflite
+
+            return self.optimize_model(final_config)
+
+        except Exception as e:
+            logger.error(f"TensorFlow model optimization failed: {e}")
+            return self._fallback_optimization(config)
 
     def apply_operator_fusion(self, converter):
         """Apply operator fusion optimizations to TFLite converter.
@@ -225,16 +496,22 @@ class EdgeFlowOptimizer:
     def optimize_model(self, config: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
         """Optimize a model using real TensorFlow Lite quantization, pruning, and operator fusion.
 
-        Supports two primary input flows:
-          1. Existing float32 TFLite model (``model`` points to *.tflite). In this
-             case we can ONLY re-quantize if a higher level source (``keras_model``)
-             is provided. Otherwise quantization becomes a no-op and we simply
-             report metrics / copy the model.
-          2. Keras model source (via ``keras_model`` config key). We generate a
-             baseline float32 TFLite plus an optimized (quantized + pruned + fused)
-             variant.
+        Supports hybrid optimization using multiple frameworks for maximum optimization.
         """
         model_path = config.get("model", "model.tflite")
+        enable_hybrid = config.get("enable_hybrid_optimization", False)
+        framework = config.get("framework", self._detect_framework(model_path))
+
+        # Check if hybrid optimization is requested or beneficial
+        if enable_hybrid or framework in ["pytorch", "onnx"]:
+            logger.info("Using hybrid optimization pipeline")
+            return self.optimize_hybrid_pipeline(config)
+
+        # Standard TensorFlow optimization pipeline
+        return self._optimize_tensorflow_standard(config)
+
+    def _optimize_tensorflow_standard(self, config: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+        """Standard TensorFlow optimization pipeline."""
         keras_source = config.get("keras_model")  # Optional
         quantize = str(config.get("quantize", "none")).lower()
         target_device = config.get("target_device", "cpu")
@@ -247,8 +524,8 @@ class EdgeFlowOptimizer:
         # Operator fusion configuration
         enable_operator_fusion = config.get("enable_operator_fusion", True)
 
-        logger.info("Starting optimization")
-        logger.info("  baseline model: %s", model_path)
+        logger.info("Starting TensorFlow optimization")
+        logger.info("  baseline model: %s", config.get("model", "model.tflite"))
         if keras_source:
             logger.info("  keras source: %s", keras_source)
         logger.info("  quantization: %s", quantize)
@@ -266,7 +543,7 @@ class EdgeFlowOptimizer:
 
             # If we have Keras source OR baseline is missing, recreate
             if keras_source and (
-                not os.path.exists(model_path)
+                not os.path.exists(config.get("model", "model.tflite"))
                 or keras_source.endswith((".h5", ".keras"))
             ):
                 logger.info(
@@ -287,13 +564,13 @@ class EdgeFlowOptimizer:
                 )
                 baseline_converter.optimizations = []  # pure float32 baseline
                 baseline_tflite = baseline_converter.convert()
-                with open(model_path, "wb") as f:
+                with open(config.get("model", "model.tflite"), "wb") as f:
                     f.write(baseline_tflite)
                 created_baseline = True
-            elif not os.path.exists(model_path):
+            elif not os.path.exists(config.get("model", "model.tflite")):
                 # Fallback: create a synthetic test model
                 logger.info("Baseline model missing; creating synthetic test model.")
-                if not self.create_test_model(model_path):
+                if not self.create_test_model(config.get("model", "model.tflite")):
                     return self._fallback_optimization(config)
                 created_baseline = True
 
@@ -332,9 +609,9 @@ class EdgeFlowOptimizer:
                 converter = self.tf.lite.TFLiteConverter.from_keras_model(keras_model)
             else:
                 # Last resort attempt to treat model_path as saved model dir
-                if os.path.isdir(model_path):
+                if os.path.isdir(config.get("model", "model.tflite")):
                     converter = self.tf.lite.TFLiteConverter.from_saved_model(
-                        model_path
+                        config.get("model", "model.tflite")
                     )
                 else:
                     logger.warning("Cannot quantize without valid source; falling back")
@@ -381,11 +658,11 @@ class EdgeFlowOptimizer:
                 ]
 
             optimized_tflite = converter.convert()
-            optimized_path = model_path.replace(".tflite", "_optimized.tflite")
+            optimized_path = config.get("model", "model.tflite").replace(".tflite", "_optimized.tflite")
             with open(optimized_path, "wb") as f:
                 f.write(optimized_tflite)
 
-            original_size = os.path.getsize(model_path)
+            original_size = os.path.getsize(config.get("model", "model.tflite"))
             optimized_size = os.path.getsize(optimized_path)
             size_reduction = (
                 ((original_size - optimized_size) / original_size) * 100
@@ -395,7 +672,7 @@ class EdgeFlowOptimizer:
 
             logger.info(
                 "Optimization complete: %s -> %s (%.1f%% smaller)",
-                model_path,
+                config.get("model", "model.tflite"),
                 optimized_path,
                 size_reduction,
             )
@@ -414,6 +691,7 @@ class EdgeFlowOptimizer:
                 "pruning_enabled": enable_pruning,
                 "pruning_sparsity": pruning_sparsity if enable_pruning else 0.0,
                 "operator_fusion_enabled": enable_operator_fusion,
+                "optimization_pipeline": "tensorflow_standard",
             }
         except Exception as e:  # noqa: BLE001
             logger.error("Real optimization failed: %s", e)
