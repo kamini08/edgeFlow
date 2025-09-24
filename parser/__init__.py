@@ -242,15 +242,14 @@ def _ensure_day2_exports() -> None:
         def _validate_config(  # type: ignore[name-defined]
             cfg: Dict[str, Any],
         ) -> Tuple[bool, List[str]]:
-            # Minimal validation: ensure a string model_path exists
-            ok = isinstance(cfg.get("model_path"), str) and bool(
-                cfg["model_path"].strip()
-            )
+            # Minimal validation: ensure a string model_path or model exists
+            model_path = cfg.get("model_path") or cfg.get("model")
+            ok = isinstance(model_path, str) and bool(model_path.strip())
             errs: List[str] = (
                 []
                 if ok
                 else [
-                    "'model_path' is required and must be a non-empty string",
+                    "'model_path' or 'model' is required and must be a non-empty string",
                 ]
             )
             return ok, errs

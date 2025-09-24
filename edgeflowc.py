@@ -686,17 +686,17 @@ def main() -> int:
             size_red = (
                 (
                     1
-                    - (optimized_stats["size_mb"] or 0.0)
-                    / (unoptimized_stats["size_mb"] or 1.0)
+                    - float(optimized_stats.get("size_mb", 0.0))
+                    / float(unoptimized_stats.get("size_mb", 1.0))
                 )
                 * 100.0
-                if unoptimized_stats["size_mb"]
+                if unoptimized_stats.get("size_mb", 0.0) > 0
                 else 0.0
             )
             speedup = (
-                (unoptimized_stats["latency_ms"] or 0.0)
-                / (optimized_stats["latency_ms"] or 1.0)
-                if optimized_stats["latency_ms"]
+                float(unoptimized_stats.get("latency_ms", 0.0))
+                / float(optimized_stats.get("latency_ms", 1.0))
+                if optimized_stats.get("latency_ms", 0.0) > 0
                 else 0.0
             )
             logging.info("=== Optimization Summary ===")

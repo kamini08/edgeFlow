@@ -101,18 +101,22 @@ class InitialChecker:
         profile = self.profile_model(model_path)
         device = self.spec_manager.get_device_spec(target_device or "generic")
 
+        # Use config memory_limit if specified, otherwise use device spec
+        memory_limit_mb = float(config.get("memory_limit", device.ram_mb))
+        max_model_size_mb = min(memory_limit_mb, device.max_model_size_mb)
+
         issues: List[str] = []
         recs: List[str] = []
 
         # Hard constraints
-        if profile.file_size_mb > device.max_model_size_mb:
+        if profile.file_size_mb > max_model_size_mb:
             issues.append(
-                f"Model size {profile.file_size_mb:.2f}MB exceeds device limit {device.max_model_size_mb}MB"
+                f"Model size {profile.file_size_mb:.2f}MB exceeds memory limit {max_model_size_mb}MB"
             )
             recs.append("Apply pruning/quantization to reduce model size")
 
-        # RAM headroom constraint (reserve ~30% of device RAM for system)
-        usable_ram_mb = max(int(device.ram_mb * 0.7), 1)
+        # RAM headroom constraint (reserve ~30% of available RAM for system)
+        usable_ram_mb = max(int(memory_limit_mb * 0.7), 1)
         if profile.estimated_ram_mb > usable_ram_mb:
             issues.append(
                 f"Estimated RAM {profile.estimated_ram_mb:.2f}MB exceeds safe budget {usable_ram_mb}MB"
@@ -140,7 +144,7 @@ class InitialChecker:
         ):
             recs.append("Quantize to int8 to leverage TPU acceleration")
 
-        fit = self._calculate_fit_score(profile, device)
+        fit = self._calculate_fit_score(profile, device, memory_limit_mb)
 
         compatible = len(issues) == 0
         # Require optimization if not compatible or fit score is modest (<70)
@@ -159,20 +163,23 @@ class InitialChecker:
         )
 
     def _calculate_fit_score(
-        self, model_profile: ModelProfile, device_spec: DeviceSpec
+        self, model_profile: ModelProfile, device_spec: DeviceSpec, memory_limit_mb: float
     ) -> float:
         """Calculate how well a model fits on a device (0-100)."""
+        # Use config memory limit instead of device spec RAM
+        max_model_size = min(memory_limit_mb, device_spec.max_model_size_mb)
+
         # Score components with simple caps
         size_score = max(
             0.0,
             min(
                 100.0,
-                (device_spec.max_model_size_mb / max(model_profile.file_size_mb, 1e-6))
+                (max_model_size / max(model_profile.file_size_mb, 1e-6))
                 * 20.0,
             ),
         )
-        # RAM: use safe budget of 70% device RAM
-        safe_ram = max(device_spec.ram_mb * 0.7, 1.0)
+        # RAM: use safe budget of 70% of memory limit
+        safe_ram = max(memory_limit_mb * 0.7, 1.0)
         ram_score = max(
             0.0,
             min(100.0, (safe_ram / max(model_profile.estimated_ram_mb, 1e-6)) * 40.0),
