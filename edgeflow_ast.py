@@ -129,6 +129,46 @@ class FusionStatement(Statement):
 
 
 @dataclass
+class FrameworkStatement(Statement):
+    """Represents a framework specification: framework = "pytorch" """
+
+    framework: str
+
+    def accept(self, visitor: "ASTVisitor") -> Any:
+        return visitor.visit_framework_statement(self)
+
+
+@dataclass
+class HybridOptimizationStatement(Statement):
+    """Represents hybrid optimization enablement: enable_hybrid_optimization = true """
+
+    enabled: bool
+
+    def accept(self, visitor: "ASTVisitor") -> Any:
+        return visitor.visit_hybrid_optimization_statement(self)
+
+
+@dataclass
+class PyTorchQuantizeStatement(Statement):
+    """Represents PyTorch-specific quantization: pytorch_quantize = "dynamic_int8" """
+
+    quantize_type: str
+
+    def accept(self, visitor: "ASTVisitor") -> Any:
+        return visitor.visit_pytorch_quantize_statement(self)
+
+
+@dataclass
+class FineTuningStatement(Statement):
+    """Represents fine-tuning configuration: fine_tuning = true """
+
+    enabled: bool
+
+    def accept(self, visitor: "ASTVisitor") -> Any:
+        return visitor.visit_fine_tuning_statement(self)
+
+
+@dataclass
 class ConditionalStatement(Statement):
     """Represents a conditional statement: if condition then statements end"""
 
@@ -289,6 +329,22 @@ class ASTVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_framework_statement(self, node: FrameworkStatement) -> Any:
+        pass
+
+    @abstractmethod
+    def visit_hybrid_optimization_statement(self, node: HybridOptimizationStatement) -> Any:
+        pass
+
+    @abstractmethod
+    def visit_pytorch_quantize_statement(self, node: PyTorchQuantizeStatement) -> Any:
+        pass
+
+    @abstractmethod
+    def visit_fine_tuning_statement(self, node: FineTuningStatement) -> Any:
+        pass
+
+    @abstractmethod
     def visit_conditional_statement(self, node: ConditionalStatement) -> Any:
         pass
 
@@ -364,6 +420,18 @@ def create_program_from_dict(config: Dict[str, Any]) -> Program:
     if "enable_fusion" in config:
         statements.append(FusionStatement(enabled=config["enable_fusion"]))
 
+    if "framework" in config:
+        statements.append(FrameworkStatement(framework=config["framework"]))
+
+    if "enable_hybrid_optimization" in config:
+        statements.append(HybridOptimizationStatement(enabled=config["enable_hybrid_optimization"]))
+
+    if "pytorch_quantize" in config:
+        statements.append(PyTorchQuantizeStatement(quantize_type=config["pytorch_quantize"]))
+
+    if "fine_tuning" in config:
+        statements.append(FineTuningStatement(enabled=config["fine_tuning"]))
+
     return Program(statements=statements)
 
 
@@ -402,6 +470,14 @@ def print_ast(node: ASTNode, indent: int = 0) -> str:
         result.append(f"{prefix}MemoryLimitStatement(limit_mb={node.limit_mb})")
     elif isinstance(node, FusionStatement):
         result.append(f"{prefix}FusionStatement(enabled={node.enabled})")
+    elif isinstance(node, FrameworkStatement):
+        result.append(f"{prefix}FrameworkStatement(framework='{node.framework}')")
+    elif isinstance(node, HybridOptimizationStatement):
+        result.append(f"{prefix}HybridOptimizationStatement(enabled={node.enabled})")
+    elif isinstance(node, PyTorchQuantizeStatement):
+        result.append(f"{prefix}PyTorchQuantizeStatement(quantize_type='{node.quantize_type}')")
+    elif isinstance(node, FineTuningStatement):
+        result.append(f"{prefix}FineTuningStatement(enabled={node.enabled})")
     elif isinstance(node, ConditionalStatement):
         result.append(f"{prefix}ConditionalStatement:")
         result.append(f"{prefix}  condition: {print_ast(node.condition, indent + 2)}")

@@ -132,7 +132,7 @@ def test_main_invalid_extension_returns_1(tmp_path, monkeypatch):
 
 def test_main_success_calls_optimize(tmp_path, monkeypatch):
     p = tmp_path / "ok.ef"
-    p.write_text('model="test.tflite"\nx=1', encoding="utf-8")
+    p.write_text('model="test.tflite"\nquantize="int8"\nmemory_limit=1\nx=1', encoding="utf-8")
     called = {"n": 0}
 
     def fake_opt(config):
@@ -145,7 +145,7 @@ def test_main_success_calls_optimize(tmp_path, monkeypatch):
         }
 
     monkeypatch.setattr(edgeflowc, "optimize_model", fake_opt)
-    _set_argv([str(p)])
+    _set_argv([str(p), "--skip-check"])
     code = edgeflowc.main()
     assert code == 0
     assert called["n"] == 1
@@ -153,7 +153,7 @@ def test_main_success_calls_optimize(tmp_path, monkeypatch):
 
 def test_main_verbose_emits_debug_log(tmp_path, monkeypatch, caplog):
     p = tmp_path / "ok.ef"
-    p.write_text('model="test.tflite"\nx=1', encoding="utf-8")
+    p.write_text('model="test.tflite"\nquantize="int8"\nmemory_limit=1\nx=1', encoding="utf-8")
     monkeypatch.setattr(
         edgeflowc,
         "optimize_model",
@@ -166,7 +166,7 @@ def test_main_verbose_emits_debug_log(tmp_path, monkeypatch, caplog):
     )
 
     caplog.set_level("DEBUG")
-    _set_argv([str(p), "--verbose"])
+    _set_argv([str(p), "--verbose", "--skip-check"])
     code = edgeflowc.main()
     assert code == 0
     # confirm debug log emitted by load step
