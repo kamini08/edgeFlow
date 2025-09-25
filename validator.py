@@ -22,6 +22,18 @@ class EdgeFlowValidator:
     """Validates EdgeFlow DSL configurations for semantic correctness."""
 
     def __init__(self):
+        # Try to load hardware config, fall back to basic validation if not available
+        try:
+            from hardware_config import get_hardware_config
+            self.hardware_config = get_hardware_config()
+            self.use_hardware_config = True
+            logger.debug("Hardware configuration system available")
+        except ImportError:
+            self.hardware_config = None
+            self.use_hardware_config = False
+            logger.debug("Hardware configuration system not available, using basic validation")
+
+        # Fallback supported devices for basic validation
         self.supported_devices = {
             "raspberry_pi",
             "jetson_nano",
@@ -49,7 +61,7 @@ class EdgeFlowValidator:
             ".json",  # TensorFlow.js
         }
 
-        # Device-specific constraints
+        # Device-specific constraints (fallback)
         self.device_constraints = {
             "raspberry_pi": {"max_memory_mb": 2048, "max_model_size_mb": 100},
             "jetson_nano": {"max_memory_mb": 4096, "max_model_size_mb": 200},
@@ -182,14 +194,23 @@ class EdgeFlowValidator:
 
             # Check against device-specific constraints
             device = config.get("target_device", "cpu")
-            device_constraint = self.device_constraints.get(
-                device, self.device_constraints["cpu"]
-            )
 
-            if file_size_mb > device_constraint["max_model_size_mb"]:
-                max_size = device_constraint["max_model_size_mb"]
+            if self.use_hardware_config:
+                try:
+                    device_spec = self.hardware_config.device_manager.get_device_spec(device)
+                    if device_spec:
+                        max_model_size = device_spec.max_model_size_mb
+                    else:
+                        max_model_size = 1000  # Default fallback
+                except Exception:
+                    max_model_size = self.device_constraints.get(device, self.device_constraints["cpu"])["max_model_size_mb"]
+            else:
+                device_constraint = self.device_constraints.get(device, self.device_constraints["cpu"])
+                max_model_size = device_constraint["max_model_size_mb"]
+
+            if file_size_mb > max_model_size:
                 errors.append(
-                    f"Model file too large for {device}: {file_size_mb:.1f}MB > {max_size}MB"
+                    f"Model file too large for {device}: {file_size_mb:.1f}MB > {max_model_size}MB"
                 )
 
         except OSError as e:
@@ -230,6 +251,45 @@ class EdgeFlowValidator:
         self, config: Dict[str, Any], errors: List[str]
     ) -> None:
         """Validate device compatibility."""
+        device = config.get("target_device", "cpu")
+
+        # Use hardware config system if available
+        if self.use_hardware_config:
+            try:
+                device_spec = self.hardware_config.device_manager.get_device_spec(device)
+                if not device_spec:
+                    # Get all available devices from hardware config
+                    available_devices = list(self.hardware_config.device_manager.devices.keys())
+                    supported_devices = ", ".join(sorted(available_devices))
+                    errors.append(
+                        f"Unsupported target device: {device}. Supported: {supported_devices}"
+                    )
+                    return
+
+                # Check memory limit against device constraints
+                memory_limit = config.get("memory_limit")
+                if memory_limit is not None:
+                    try:
+                        memory_limit_num = float(memory_limit)
+                        if memory_limit_num > device_spec.ram_mb:
+                            errors.append(
+                                f"Memory limit too high for {device}: {memory_limit}MB > {device_spec.ram_mb}MB"
+                            )
+                    except (ValueError, TypeError):
+                        pass  # Skip if not numeric
+
+            except Exception as e:
+                logger.warning(f"Hardware config validation failed, falling back to basic validation: {e}")
+                # Fall back to basic validation
+                self._validate_device_compatibility_basic(config, errors)
+        else:
+            # Use basic validation
+            self._validate_device_compatibility_basic(config, errors)
+
+    def _validate_device_compatibility_basic(
+        self, config: Dict[str, Any], errors: List[str]
+    ) -> None:
+        """Basic device compatibility validation (fallback)."""
         device = config.get("target_device", "cpu")
 
         if device not in self.supported_devices:
@@ -415,16 +475,40 @@ class EdgeFlowValidator:
         warnings = []
 
         try:
-            # Check model size vs device constraints
+            # Use hardware config system if available
+            if self.use_hardware_config and os.path.exists(model_path):
+                try:
+                    is_compatible, hw_warnings = self.hardware_config.validate_model_compatibility(
+                        model_path, config.get("target_device", "cpu"), config
+                    )
+                    if not is_compatible:
+                        return False, hw_warnings
+                    warnings.extend(hw_warnings)
+                    return True, warnings
+                except Exception as e:
+                    logger.warning(f"Hardware config validation failed, using basic validation: {e}")
+                    # Fall back to basic validation
+
+            # Basic model compatibility validation
             if os.path.exists(model_path):
                 model_size_mb = os.path.getsize(model_path) / (1024 * 1024)
                 device = config.get("target_device", "cpu")
                 memory_limit = config.get("memory_limit", 64)
 
-                if device == "raspberry_pi" and model_size_mb > 50:
-                    warnings.append(
-                        f"Large model ({model_size_mb:.1f}MB) may be slow on Raspberry Pi"
-                    )
+                if self.use_hardware_config:
+                    try:
+                        device_spec = self.hardware_config.device_manager.get_device_spec(device)
+                        if device_spec:
+                            max_model_size = device_spec.max_model_size_mb
+                        else:
+                            max_model_size = 1000
+                    except Exception:
+                        max_model_size = self.device_constraints.get(device, self.device_constraints["cpu"])["max_model_size_mb"]
+                else:
+                    max_model_size = self.device_constraints.get(device, self.device_constraints["cpu"])["max_model_size_mb"]
+
+                if model_size_mb > max_model_size:
+                    return False, [f"Model too large for {device}: {model_size_mb:.1f}MB > {max_model_size}MB"]
 
                 try:
                     memory_limit_num = float(memory_limit)

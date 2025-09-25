@@ -339,6 +339,27 @@ def _ensure_day2_exports() -> None:
             if "fine_tuning" in cfg and not isinstance(cfg["fine_tuning"], bool):
                 errors.append("'fine_tuning' must be a boolean")
 
+            # Hardware compatibility validation
+            target_device = cfg.get("target_device")
+            model_path = cfg.get("model_path") or cfg.get("model")
+
+            if target_device and model_path:
+                try:
+                    from hardware_config import validate_model_for_device
+                    is_compatible, hw_warnings = validate_model_for_device(
+                        model_path, target_device, cfg
+                    )
+                    if not is_compatible:
+                        errors.extend(hw_warnings)
+                    else:
+                        # Add warnings even if compatible for user awareness
+                        for warning in hw_warnings:
+                            logger.warning("Hardware compatibility warning: %s", warning)
+                except ImportError:
+                    logger.debug("Hardware config not available, skipping hardware validation")
+                except Exception as e:
+                    logger.warning("Hardware validation failed: %s", e)
+
             return (len(errors) == 0, errors)
 
         globals()["validate_config"] = _validate_config
