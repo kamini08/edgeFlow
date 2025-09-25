@@ -339,8 +339,8 @@ class EdgeBackendRPIC(EdgeBackendBase):
                 "CFLAGS ?= -O3 -std=c11 -Wall -Wextra -Wno-unused-parameter",
                 "LDFLAGS ?=",
                 "SRC := edge_model.c main.c",
-                "OBJ := $(SRC:.c=.o)
-TARGET := edge_model_demo",
+                "OBJ := $(SRC:.c=.o)",
+                "TARGET := edge_model_demo",
                 "all: $(TARGET)",
                 "$(TARGET): $(OBJ)",
                 "\t$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)",
