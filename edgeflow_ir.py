@@ -29,11 +29,35 @@ class NodeType(Enum):
 
 @dataclass
 class IRNode:
-    """Base class for IR nodes."""
+    """Base class for IR nodes.
+
+    Extended with a flexible, framework-agnostic schema to support multi-framework
+    conversion, validation, optimization, and provenance tracking. All new fields
+    are optional and defaulted to maintain backward compatibility with existing
+    usages that rely on ``properties``, ``dependencies`` and ``dependents``.
+    """
 
     node_id: str
     name: str
     node_type: Optional[NodeType] = None
+
+    # Canonical operator information (optional)
+    op_type: Optional[str] = None  # e.g., "Conv2D", "Dense", "ReLU"
+    input_shapes: Optional[List[List[int]]] = None  # list of shapes
+    output_shapes: Optional[List[List[int]]] = None  # list of shapes
+    params: Dict[str, Any] = field(default_factory=dict)  # operator params
+    inputs: List[str] = field(default_factory=list)  # upstream node IDs or tensor names
+    outputs: List[str] = field(
+        default_factory=list
+    )  # downstream node IDs or tensor names
+    dtype: Optional[str] = None  # e.g., "float32", "int8"
+    framework_origin: Optional[str] = None  # e.g., "onnx", "tf", "pytorch"
+    device_constraints: Dict[str, Any] = field(default_factory=dict)  # hw limits
+
+    # Provenance and transformation history
+    provenance: List[Dict[str, Any]] = field(default_factory=list)
+
+    # Backwards-compatible catch-all metadata containers
     properties: Dict[str, Any] = field(default_factory=dict)
     dependencies: Set[str] = field(default_factory=set)
     dependents: Set[str] = field(default_factory=set)
@@ -42,6 +66,17 @@ class IRNode:
         """Set default node type if not provided."""
         if self.node_type is None:
             self.node_type = NodeType.MODEL
+
+    def log_transformation(self, description: str, **metadata: Any) -> None:
+        """Append a provenance entry for auditing/debugging.
+
+        Args:
+            description: Human-friendly description of the change.
+            **metadata: Optional structured details (tool version, timestamps, etc.).
+        """
+        entry = {"description": description}
+        entry.update(metadata)
+        self.provenance.append(entry)
 
 
 @dataclass
@@ -116,6 +151,11 @@ class IRGraph:
         self.edges: List[Tuple[str, str]] = []
         self.execution_order: List[str] = []
         self.optimization_passes: List[str] = []
+        # Graph-level schema fields
+        self.graph_inputs: List[str] = []  # node IDs where data enters the graph
+        self.graph_outputs: List[str] = []  # node IDs where data exits the graph
+        self.metadata: Dict[str, Any] = {}  # model/framework/device/global flags
+        self.topology_info: Dict[str, Any] = {}  # optional connectivity statistics
 
     def add_node(self, node: IRNode) -> None:
         """Add a node to the IR graph."""
@@ -133,6 +173,12 @@ class IRGraph:
         # Update node dependencies
         self.nodes[to_node_id].dependencies.add(from_node_id)
         self.nodes[from_node_id].dependents.add(to_node_id)
+
+        # Maintain canonical inputs/outputs lists for IR schema
+        if from_node_id not in self.nodes[to_node_id].inputs:
+            self.nodes[to_node_id].inputs.append(from_node_id)
+        if to_node_id not in self.nodes[from_node_id].outputs:
+            self.nodes[from_node_id].outputs.append(to_node_id)
 
         logger.debug(f"Added edge: {from_node_id} -> {to_node_id}")
 
@@ -241,15 +287,34 @@ class IRGraph:
             "nodes": [
                 {
                     "id": node.node_id,
+                    "name": node.name,
                     "node_type": node.node_type.value if node.node_type else "unknown",
+                    # Canonical operator schema
+                    "op_type": node.op_type,
+                    "input_shapes": node.input_shapes,
+                    "output_shapes": node.output_shapes,
+                    "params": dict(node.params),
+                    "inputs": list(node.inputs),
+                    "outputs": list(node.outputs),
+                    "dtype": node.dtype,
+                    "framework_origin": node.framework_origin,
+                    "device_constraints": dict(node.device_constraints),
+                    "provenance": list(node.provenance),
+                    # Back-compat & graph relations
+                    "properties": dict(getattr(node, "properties", {})),
                     "dependencies": list(getattr(node, "dependencies", [])),
-                    "metadata": getattr(node, "metadata", {}),
+                    "dependents": list(getattr(node, "dependents", [])),
                 }
                 for node in self.nodes.values()
             ],
             "edges": [{"from": edge[0], "to": edge[1]} for edge in self.edges],
             "execution_order": list(self.execution_order),
             "optimization_passes": list(self.optimization_passes),
+            # Graph-level schema
+            "graph_inputs": list(self.graph_inputs),
+            "graph_outputs": list(self.graph_outputs),
+            "metadata": dict(self.metadata),
+            "topology_info": dict(self.topology_info),
         }
 
 
@@ -440,15 +505,40 @@ class IRBuilder:
         logger.info("Building IR graph from configuration")
 
         graph = IRGraph()
+        # Populate graph-level metadata
+        graph.metadata = {
+            "source_framework": config.get("source_framework", None),
+            "opset_version": config.get("opset_version", None),
+            "target_device": config.get("target_device", "cpu"),
+            "optimization_flags": {
+                "quantize": config.get("quantize", "none"),
+                "enable_fusion": config.get("enable_fusion", False),
+            },
+            "deployment_constraints": {
+                "memory_limit": config.get("memory_limit", None),
+                "buffer_size": config.get("buffer_size", None),
+            },
+        }
 
         # Create input node
+        input_shape_value = config.get("input_shape", "1,224,224,3")
         input_node = InputNode(
             node_id="input_0",
             name="Input Data",
             properties={
-                "input_shape": config.get("input_shape", "1,224,224,3"),
+                "input_shape": input_shape_value,
                 "data_type": "float32",
             },
+            op_type="Input",
+            input_shapes=[],
+            output_shapes=[
+                [
+                    int(dim) if str(dim).isdigit() else -1
+                    for dim in str(input_shape_value).split(",")
+                ]
+            ],
+            dtype="float32",
+            framework_origin=graph.metadata.get("source_framework"),
         )
         graph.add_node(input_node)
 
@@ -462,6 +552,16 @@ class IRBuilder:
                 "target_device": config.get("target_device", "cpu"),
                 "enable_fusion": config.get("enable_fusion", False),
             },
+            op_type="Model",
+            input_shapes=[
+                [
+                    int(dim) if str(dim).isdigit() else -1
+                    for dim in str(input_shape_value).split(",")
+                ]
+            ],
+            output_shapes=None,
+            dtype=None,
+            framework_origin=graph.metadata.get("source_framework"),
         )
         graph.add_node(model_node)
 
@@ -472,6 +572,11 @@ class IRBuilder:
             properties={
                 "output_format": config.get("output_format", "tensor"),
             },
+            op_type="Output",
+            input_shapes=None,
+            output_shapes=[],
+            dtype=None,
+            framework_origin=graph.metadata.get("source_framework"),
         )
         graph.add_node(output_node)
 
@@ -511,6 +616,17 @@ class IRBuilder:
 
         # Perform topological sort
         graph.topological_sort()
+
+        # Set graph IO after edges exist
+        graph.graph_inputs = ["input_0"]
+        graph.graph_outputs = ["output_0"]
+
+        # Simple topology info
+        graph.topology_info = {
+            "num_nodes": len(graph.nodes),
+            "num_edges": len(graph.edges),
+            "has_cycles": False,
+        }
 
         logger.info(
             f"Built IR graph with {len(graph.nodes)} nodes and {len(graph.edges)} edges"

@@ -8,8 +8,9 @@ representation between parsing and code generation.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 class ASTNode(ABC):
@@ -31,6 +32,129 @@ class Expression(ASTNode):
     """Base class for all expression types."""
 
     pass
+
+
+# ============================================================================
+# Type Constraint Enums
+# ============================================================================
+
+
+class LayerType(Enum):
+    """Enumeration of supported layer types with validation."""
+
+    CONV2D = "Conv2D"
+    CONV1D = "Conv1D"
+    DENSE = "Dense"
+    MAXPOOL2D = "MaxPool2D"
+    AVGPOOL2D = "AvgPool2D"
+    FLATTEN = "Flatten"
+    DROPOUT = "Dropout"
+    BATCH_NORM = "BatchNorm"
+    LAYER_NORM = "LayerNorm"
+    ACTIVATION = "Activation"
+    LSTM = "LSTM"
+    GRU = "GRU"
+    EMBEDDING = "Embedding"
+    ATTENTION = "Attention"
+
+
+class ActivationType(Enum):
+    """Enumeration of supported activation functions."""
+
+    RELU = "relu"
+    SIGMOID = "sigmoid"
+    TANH = "tanh"
+    SOFTMAX = "softmax"
+    LEAKY_RELU = "leaky_relu"
+    SWISH = "swish"
+    GELU = "gelu"
+    LINEAR = "linear"
+
+
+class PaddingType(Enum):
+    """Enumeration of supported padding types."""
+
+    VALID = "valid"
+    SAME = "same"
+
+
+class DataType(Enum):
+    """Enumeration of supported data types."""
+
+    FLOAT32 = "float32"
+    FLOAT16 = "float16"
+    INT32 = "int32"
+    INT16 = "int16"
+    INT8 = "int8"
+    UINT8 = "uint8"
+    BOOL = "bool"
+
+
+# ============================================================================
+# Type-Constrained Value Classes
+# ============================================================================
+
+
+@dataclass
+class ConstrainedInt:
+    """Integer with validation constraints."""
+
+    value: int
+    min_val: int = 1
+    max_val: int = 10000
+
+    def __post_init__(self):
+        if not (self.min_val <= self.value <= self.max_val):
+            raise ValueError(
+                f"Value {self.value} must be between {self.min_val} and {self.max_val}"
+            )
+
+
+@dataclass
+class KernelSize:
+    """Kernel size with validation (1-15 for most layers)."""
+
+    size: Union[int, Tuple[int, int]]
+
+    def __post_init__(self):
+        if isinstance(self.size, int):
+            if not (1 <= self.size <= 15):
+                raise ValueError(f"Kernel size {self.size} must be between 1 and 15")
+        elif isinstance(self.size, tuple):
+            if len(self.size) != 2:
+                raise ValueError("Kernel size tuple must have exactly 2 elements")
+            for s in self.size:
+                if not (1 <= s <= 15):
+                    raise ValueError(f"Kernel size {s} must be between 1 and 15")
+
+
+@dataclass
+class StrideValue:
+    """Stride value with validation (1-8)."""
+
+    stride: Union[int, Tuple[int, int]]
+
+    def __post_init__(self):
+        if isinstance(self.stride, int):
+            if not (1 <= self.stride <= 8):
+                raise ValueError(f"Stride {self.stride} must be between 1 and 8")
+        elif isinstance(self.stride, tuple):
+            if len(self.stride) != 2:
+                raise ValueError("Stride tuple must have exactly 2 elements")
+            for s in self.stride:
+                if not (1 <= s <= 8):
+                    raise ValueError(f"Stride {s} must be between 1 and 8")
+
+
+@dataclass
+class DropoutRate:
+    """Dropout rate with validation (0.0-0.9)."""
+
+    rate: float
+
+    def __post_init__(self):
+        if not (0.0 <= self.rate <= 0.9):
+            raise ValueError(f"Dropout rate {self.rate} must be between 0.0 and 0.9")
 
 
 # ============================================================================
@@ -188,6 +312,160 @@ class PipelineStatement(Statement):
 
     def accept(self, visitor: "ASTVisitor") -> Any:
         return visitor.visit_pipeline_statement(self)
+
+
+# ============================================================================
+# Layer Declaration Nodes with Type Constraints
+# ============================================================================
+
+
+@dataclass
+class LayerDeclaration(Statement):
+    """Base class for layer declarations with type validation."""
+
+    name: str = field()
+    layer_type: LayerType = field()
+    parameters: Dict[str, Any] = field(default_factory=dict)
+    source_line: Optional[int] = field(default=None)
+    source_column: Optional[int] = field(default=None)
+
+    def __post_init__(self):
+        """Post-initialization hook for subclasses."""
+        pass
+
+    def accept(self, visitor: "ASTVisitor") -> Any:
+        return visitor.visit_layer_declaration(self)
+
+    def validate_parameters(self) -> List[str]:
+        """Validate layer parameters and return list of errors."""
+        return []  # Override in subclasses
+
+
+@dataclass
+class Conv2DDeclaration(LayerDeclaration):
+    """Conv2D layer with type-constrained parameters."""
+
+    filters: ConstrainedInt = field()
+    kernel_size: KernelSize = field()
+    strides: StrideValue = field(default_factory=lambda: StrideValue(1))
+    padding: PaddingType = field(default=PaddingType.VALID)
+    activation: ActivationType = field(default=ActivationType.LINEAR)
+    use_bias: bool = field(default=True)
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.layer_type = LayerType.CONV2D
+        self.parameters = {
+            "filters": self.filters.value,
+            "kernel_size": self.kernel_size.size,
+            "strides": self.strides.stride,
+            "padding": self.padding.value,
+            "activation": self.activation.value,
+            "use_bias": self.use_bias,
+        }
+
+    def validate_parameters(self) -> List[str]:
+        """Validate Conv2D-specific parameters."""
+        errors = []
+
+        # Additional validation beyond type constraints
+        if self.filters.value > 2048:
+            errors.append(
+                f"Conv2D filters {self.filters.value} exceeds recommended maximum (2048)"
+            )
+
+        if isinstance(self.kernel_size.size, int) and self.kernel_size.size > 11:
+            errors.append(
+                f"Conv2D kernel size {self.kernel_size.size} may be too large for edge devices"
+            )
+        elif isinstance(self.kernel_size.size, tuple):
+            for s in self.kernel_size.size:
+                if s > 11:
+                    errors.append(
+                        f"Conv2D kernel size {s} may be too large for edge devices"
+                    )
+
+        return errors
+
+
+@dataclass
+class DenseDeclaration(LayerDeclaration):
+    """Dense layer with type-constrained parameters."""
+
+    units: ConstrainedInt = field()
+    activation: ActivationType = field(default=ActivationType.LINEAR)
+    use_bias: bool = field(default=True)
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.layer_type = LayerType.DENSE
+        self.parameters = {
+            "units": self.units.value,
+            "activation": self.activation.value,
+            "use_bias": self.use_bias,
+        }
+
+    def validate_parameters(self) -> List[str]:
+        """Validate Dense-specific parameters."""
+        errors = []
+
+        if self.units.value > 4096:
+            errors.append(
+                f"Dense units {self.units.value} may exceed memory limits on edge devices"
+            )
+
+        return errors
+
+
+@dataclass
+class DropoutDeclaration(LayerDeclaration):
+    """Dropout layer with type-constrained parameters."""
+
+    rate: DropoutRate = field()
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.layer_type = LayerType.DROPOUT
+        self.parameters = {"rate": self.rate.rate}
+
+    def validate_parameters(self) -> List[str]:
+        """Validate Dropout-specific parameters."""
+        errors = []
+
+        if self.rate.rate > 0.7:
+            errors.append(
+                f"Dropout rate {self.rate.rate} is very high and may hurt model performance"
+            )
+
+        return errors
+
+
+@dataclass
+class MaxPool2DDeclaration(LayerDeclaration):
+    """MaxPool2D layer with type-constrained parameters."""
+
+    pool_size: Union[int, Tuple[int, int]] = field()
+    strides: Optional[StrideValue] = field(default=None)
+    padding: PaddingType = field(default=PaddingType.VALID)
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.layer_type = LayerType.MAXPOOL2D
+
+        # Validate pool_size
+        if isinstance(self.pool_size, int):
+            if not (1 <= self.pool_size <= 8):
+                raise ValueError(f"Pool size {self.pool_size} must be between 1 and 8")
+        elif isinstance(self.pool_size, tuple):
+            for s in self.pool_size:
+                if not (1 <= s <= 8):
+                    raise ValueError(f"Pool size {s} must be between 1 and 8")
+
+        self.parameters = {
+            "pool_size": self.pool_size,
+            "strides": self.strides.stride if self.strides else self.pool_size,
+            "padding": self.padding.value,
+        }
 
 
 # ============================================================================
@@ -370,6 +648,10 @@ class ASTVisitor(ABC):
 
     @abstractmethod
     def visit_condition(self, node: Condition) -> Any:
+        pass
+
+    @abstractmethod
+    def visit_layer_declaration(self, node: LayerDeclaration) -> Any:
         pass
 
 

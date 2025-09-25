@@ -1,9 +1,11 @@
-EdgeFlow Compiler (CLI)
-=======================
+EdgeFlow Compiler with Semantic Analysis
+==========================================
 
 EdgeFlow is a domain-specific language (DSL) and compiler for optimizing TensorFlow Lite models for edge deployment. Users write simple `.ef` configuration files that describe optimization strategies (e.g., INT8 quantization), target devices, and goals like latency or size. The CLI parses these configs and runs the optimization pipeline.
 
-Project Status: Day 1 CLI skeleton with tests and CI. Parser and optimizer are stubbed for integration by other teams.
+**NEW: Comprehensive Semantic Analysis System** - The compiler now includes a sophisticated semantic analyzer that validates DSL models for shape compatibility, parameter ranges, resource constraints, and device compatibility before code generation.
+
+Project Status: CLI with semantic analysis, tests, and CI. Parser and optimizer integration points ready.
 
 Overview
 --------
@@ -112,6 +114,56 @@ Parse a `.ef` config and run the (placeholder) optimization pipeline:
 python edgeflowc.py path/to/config.ef
 ```
 
+## Semantic Analysis System
+
+The EdgeFlow compiler now includes a comprehensive semantic analysis system that validates DSL models before code generation. This ensures that generated models are correct, efficient, and compatible with target devices.
+
+### Key Features
+
+- **Shape Compatibility Validation**: Ensures tensor shapes match between connected layers
+- **Parameter Range Checking**: Validates that all layer parameters are within acceptable ranges
+- **Device Compatibility**: Checks if the model is compatible with target device constraints
+- **Resource Analysis**: Validates memory usage and computational requirements
+- **Forbidden Configuration Detection**: Identifies problematic layer sequences and configurations
+- **Graph Structure Validation**: Detects cycles, connectivity issues, and missing components
+
+### Quick Start with Semantic Analysis
+
+```python
+from semantic_analyzer import SemanticAnalyzer, IRGraph, semantic_check
+from semantic_analyzer import get_edge_device_config
+
+# Create or load your IR graph
+graph = create_your_model_graph()
+
+# Run semantic analysis
+config = get_edge_device_config()  # For edge devices
+errors = semantic_check(graph, config)
+
+# Check results
+if errors.has_errors():
+    errors.print_summary()
+else:
+    print("✅ Model validation passed!")
+```
+
+### Example Error Output
+
+```
+📊 Semantic Analysis Summary:
+   Errors: 2
+   Warnings: 1
+   Info: 0
+   Fatal: 0
+
+📝 Detailed Report:
+  [ERROR] at model.dsl:line 7: Expected input shape (1, 256), got (1, 28, 28, 3).
+    Suggestion: Ensure the previous layer outputs shape (1, 256)
+  [ERROR] at model.dsl:line 10: Dense layer requires Flatten layer after Conv2D
+    Suggestion: Add a Flatten layer between the convolutional and dense layers
+  [WARNING] at model.dsl:line 5: Kernel size 13 exceeds recommended maximum (11) for target device
+```
+
 ## Project Structure
 
 Architecture
@@ -119,13 +171,23 @@ Architecture
 
 ```bash
 edgeFlow/
-├── edgeflowc.py          # CLI entry point (this repo)
-├── parser/               # ANTLR-generated modules + wrapper (__init__.py)
-├── optimizer.py          # Model optimization logic (Team B)
+├── edgeflowc.py          # CLI entry point
+├── semantic_analyzer/    # 🆕 Semantic analysis system
+│   ├── __init__.py      # Main exports
+│   ├── analyzer.py      # Core semantic analyzer
+│   ├── error_types.py   # Error definitions and collection
+│   ├── ir_nodes.py      # IR graph and node structures
+│   ├── constraints.py   # Parameter ranges and device constraints
+│   └── compiler_integration.py  # Integration with compiler pipeline
+├── parser/               # ANTLR-generated modules + wrapper
+├── optimizer.py          # Model optimization logic
 ├── benchmarker.py        # Performance measurement tools
 ├── reporter.py           # Report generation
+├── examples/             # 🆕 Semantic analysis examples
+│   └── semantic_analysis_examples.py
 ├── tests/                # Unit tests
-│   └── test_cli.py
+│   ├── test_cli.py
+│   └── test_semantic_analyzer.py  # 🆕 Semantic analyzer tests
 ├── .github/workflows/ci.yml   # CI: lint, type, test, coverage badge
 ├── requirements.txt      # Runtime dependencies
 ├── requirements-dev.txt  # Dev/test dependencies
