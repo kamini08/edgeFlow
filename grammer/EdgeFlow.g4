@@ -210,7 +210,25 @@ dim
     ;
 
 layerDecl
-    : IDENTIFIER ':' IDENTIFIER '(' argList? ')' (ARROW IDENTIFIER)?
+    : IDENTIFIER ':' layerType '(' argList? ')' (ARROW IDENTIFIER)?
+    ;
+
+// Type-constrained layer definitions
+layerType
+    : 'Conv2D'
+    | 'Conv1D' 
+    | 'Dense'
+    | 'MaxPool2D'
+    | 'AvgPool2D'
+    | 'Flatten'
+    | 'Dropout'
+    | 'BatchNorm'
+    | 'LayerNorm'
+    | 'Activation'
+    | 'LSTM'
+    | 'GRU'
+    | 'Embedding'
+    | 'Attention'
     ;
 
 argList
@@ -218,7 +236,67 @@ argList
     ;
 
 arg
-    : IDENTIFIER '=' (STRING | NUMBER | BOOL | IDENTIFIER | '[' valueList? ']')
+    : IDENTIFIER '=' argValue
+    ;
+
+// Type-constrained argument values
+argValue
+    : STRING                    // For string parameters
+    | constrainedNumber        // For numeric parameters with constraints
+    | BOOL                     // For boolean parameters
+    | activationType           // For activation parameters
+    | paddingType             // For padding parameters
+    | IDENTIFIER              // For identifiers/references
+    | '[' valueList? ']'      // For array parameters
+    ;
+
+// Constrained numeric values
+constrainedNumber
+    : positiveInt             // Positive integers (filters, units, etc.)
+    | kernelSize              // Kernel size constraints
+    | strideValue             // Stride constraints
+    | poolSize                // Pool size constraints
+    | dropoutRate             // Dropout rate constraints
+    | NUMBER                  // General numbers
+    ;
+
+// Positive integers (1 to max)
+positiveInt
+    : POSITIVE_INT
+    ;
+
+// Kernel size constraints (1-15 for most layers)
+kernelSize
+    : KERNEL_SIZE_INT
+    | '(' KERNEL_SIZE_INT ',' KERNEL_SIZE_INT ')'
+    ;
+
+// Stride constraints (1-8)
+strideValue
+    : STRIDE_INT
+    | '(' STRIDE_INT ',' STRIDE_INT ')'
+    ;
+
+// Pool size constraints (1-8)
+poolSize
+    : POOL_SIZE_INT
+    | '(' POOL_SIZE_INT ',' POOL_SIZE_INT ')'
+    ;
+
+// Dropout rate (0.0-0.9)
+dropoutRate
+    : DROPOUT_RATE
+    ;
+
+// Activation type enumeration
+activationType
+    : 'relu' | 'sigmoid' | 'tanh' | 'softmax' 
+    | 'leaky_relu' | 'swish' | 'gelu' | 'linear'
+    ;
+
+// Padding type enumeration  
+paddingType
+    : 'valid' | 'same'
     ;
 
 valueList
@@ -279,6 +357,13 @@ INT8            : 'int8';
 FLOAT16         : 'float16';
 NONE            : 'none';
 BOOL            : 'true' | 'false';
+
+// Type-constrained tokens
+POSITIVE_INT    : [1-9] [0-9]* ;                    // Positive integers only
+KERNEL_SIZE_INT : [1-9] | '1' [0-5] ;              // 1-15 for kernel sizes
+STRIDE_INT      : [1-8] ;                           // 1-8 for strides  
+POOL_SIZE_INT   : [1-8] ;                           // 1-8 for pool sizes
+DROPOUT_RATE    : '0.' [0-9] | '0.9' ;              // 0.0-0.9 for dropout
 
 IDENTIFIER      : [a-zA-Z_] [a-zA-Z_0-9]* ;
 STRING          : '"' (~["\r\n])* '"' ;

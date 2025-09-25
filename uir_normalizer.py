@@ -29,6 +29,43 @@ from unified_ir import (
 logger = logging.getLogger(__name__)
 
 
+# ---- Canonical operator and dtype mappings (reference for parsers/normalizer) ----
+# Framework op name to canonical OperationType
+ONNX_TO_IR_OP: Dict[str, OperationType] = {
+    "Conv": OperationType.CONV2D,
+    "Relu": OperationType.RELU,
+    "Gemm": OperationType.DENSE,
+    "MatMul": OperationType.MATMUL,
+    "MaxPool": OperationType.MAX_POOL,
+    "AveragePool": OperationType.AVG_POOL,
+}
+
+TF_TO_IR_OP: Dict[str, OperationType] = {
+    "Conv2D": OperationType.CONV2D,
+    "Relu": OperationType.RELU,
+    "MatMul": OperationType.MATMUL,
+    "Dense": OperationType.DENSE,
+    "MaxPool": OperationType.MAX_POOL,
+    "AvgPool": OperationType.AVG_POOL,
+}
+
+DTYPE_MAP: Dict[str, DataType] = {
+    # Common TF/NumPy strings
+    "float32": DataType.FLOAT32,
+    "float16": DataType.FLOAT16,
+    "int8": DataType.INT8,
+    "int16": DataType.INT16,
+    "int32": DataType.INT32,
+    "int64": DataType.INT64,
+    "uint8": DataType.UINT8,
+    "uint16": DataType.UINT16,
+    "uint32": DataType.UINT32,
+    "uint64": DataType.UINT64,
+    "bool": DataType.BOOL,
+    "string": DataType.STRING,
+}
+
+
 @dataclass
 class NormalizationPolicy:
     canonical_layout: str = "NHWC"  # or "NCHW"
@@ -67,6 +104,7 @@ class UIRNormalizer(UIRTransformation):
         # Normalize nodes and attributes
         for node_id, node in graph.nodes.items():
             normalized_node = self._normalize_node(node, graph.framework_type)
+            self._annotate_device_compat(normalized_node, normalized.framework_metadata)
             normalized.add_node(normalized_node)
 
         # Preserve topology (edges)
@@ -127,6 +165,21 @@ class UIRNormalizer(UIRTransformation):
         ):
             self._normalize_elementwise_attributes(normalized_attrs)
 
+        # Normalize activation naming if present
+        act_attr = normalized_attrs.get("activation")
+        if act_attr and getattr(act_attr, "value", None):
+            act_val = str(act_attr.value).strip().lower()
+            canonical = {
+                "relu": "relu",
+                "leaky_relu": "leaky_relu",
+                "sigmoid": "sigmoid",
+                "tanh": "tanh",
+                "softmax": "softmax",
+                "gelu": "gelu",
+                "swish": "swish",
+            }.get(act_val, act_val)
+            normalized_attrs["activation"].value = canonical
+
         normalized_node = UIRNode(
             node_id=node.node_id,
             name=node.name,
@@ -135,7 +188,11 @@ class UIRNormalizer(UIRTransformation):
             inputs=list(node.inputs),
             outputs=list(node.outputs),
             attributes=normalized_attrs,
-            framework_metadata={**node.framework_metadata},
+            framework_metadata=self._append_provenance(
+                {**node.framework_metadata},
+                description=f"Normalized {op.value} attributes",
+                details={"layout": self.policy.canonical_layout},
+            ),
         )
 
         return normalized_node
@@ -215,6 +272,62 @@ class UIRNormalizer(UIRTransformation):
     def _normalize_elementwise_attributes(self, attrs: Dict[str, Any]) -> None:
         # No-op for now; placeholder for broadcasting semantics if needed
         return
+
+    # ---- Device compatibility & provenance helpers ----
+    def _annotate_device_compat(
+        self, node: UIRNode, graph_meta: Dict[str, Any]
+    ) -> None:
+        # Extract config if present
+        cfg = graph_meta.get("edgeflow_config", {})
+        target = cfg.get("target_device", "cpu")
+        memory_limit = cfg.get("memory_limit")
+
+        device_info: Dict[str, Any] = {
+            "target_device": target,
+            "compatible": True,
+            "notes": [],
+        }
+
+        # Simple example rule: limit kernel size for small devices
+        if (
+            node.operation_type == OperationType.CONV2D
+            and "kernel_size" in node.attributes
+        ):
+            ks = node.attributes["kernel_size"].value
+            if (
+                isinstance(ks, (list, tuple))
+                and len(ks) == 2
+                and target in ("raspberry_pi", "microcontroller")
+                and (ks[0] > 7 or ks[1] > 7)
+            ):
+                device_info["compatible"] = False
+                device_info["notes"].append(
+                    "Kernel size exceeds 7x7 limit for target device"
+                )
+
+        if memory_limit is not None:
+            device_info["memory_limit_mb"] = memory_limit
+
+        node.framework_metadata["device_compat"] = device_info
+        self._append_provenance(
+            node.framework_metadata,
+            description="Annotated device compatibility",
+            details=device_info,
+        )
+
+    def _append_provenance(
+        self,
+        meta: Dict[str, Any],
+        description: str,
+        details: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        prov = list(meta.get("provenance", []))
+        entry = {"description": description}
+        if details:
+            entry.update({"details": details})
+        prov.append(entry)
+        meta["provenance"] = prov
+        return meta
 
 
 def normalize_uir_graph(graph: UIRGraph, layout: str = "NHWC") -> UIRGraph:

@@ -358,6 +358,7 @@ class ONNXParser(FrameworkParser):
 
     def __init__(self):
         self.onnx_available = False
+        self._node_counter = 0
         try:
             import onnx
 
@@ -374,6 +375,11 @@ class ONNXParser(FrameworkParser):
 
         try:
             model = self.onnx.load(model_path)
+            # Enrich model with inferred shapes when possible
+            try:
+                model = self.onnx.shape_inference.infer_shapes(model)
+            except Exception as shape_err:
+                logger.warning(f"ONNX shape inference failed: {shape_err}")
 
             graph = UIRGraph(
                 name=os.path.basename(model_path),
@@ -391,8 +397,8 @@ class ONNXParser(FrameworkParser):
             )
 
             # Parse nodes from the graph
-            for node in model.graph.node:
-                uir_node = self._convert_onnx_node_to_uir(node)
+            for idx, node in enumerate(model.graph.node):
+                uir_node = self._convert_onnx_node_to_uir(node, idx)
                 graph.add_node(uir_node)
 
             # Parse input tensors
@@ -416,13 +422,17 @@ class ONNXParser(FrameworkParser):
             logger.error(f"Failed to parse ONNX model {model_path}: {e}")
             return self._simulate_parsing(model_path)
 
-    def _convert_onnx_node_to_uir(self, node) -> UIRNode:
+    def _convert_onnx_node_to_uir(self, node, index: int) -> UIRNode:
         """Convert an ONNX node to UIR node."""
         op_type = self._map_onnx_op_to_uir_op(node.op_type)
+        # Robust ID: prefer node.name, else generate stable fallback
+        node_name = (
+            node.name if getattr(node, "name", None) else f"{node.op_type}_{index}"
+        )
 
         uir_node = UIRNode(
-            node_id=node.name,
-            name=node.name,
+            node_id=node_name,
+            name=node_name,
             operation_type=op_type,
             framework_type=FrameworkType.ONNX,
             inputs=node.input,

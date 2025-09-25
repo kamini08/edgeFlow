@@ -105,6 +105,15 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="Generate detailed explainability report",
     )
+    parser.add_argument(
+        "--codegen",
+        nargs="?",
+        const="c",
+        help=(
+            "Generate backend artifacts for the given target (e.g., 'c'). "
+            "If provided without value, defaults to 'c'."
+        ),
+    )
 
     # Compatibility check flags
     check_group = parser.add_argument_group("Compatibility check options")
@@ -258,7 +267,9 @@ def load_config(
         # Comprehensive semantic validation
         # Prefer parser-level validation semantics (test-friendly) if available
         try:
-            from parser import validate_config as _parser_validate_config  # type: ignore
+            from parser import (
+                validate_config as _parser_validate_config,  # type: ignore
+            )
         except Exception:  # noqa: BLE001
             _parser_validate_config = None  # type: ignore
 
@@ -445,10 +456,10 @@ def main() -> int:
         # Optional: run inside Docker
         if getattr(args, "docker", False):
             try:
-                from docker_manager import (
+                from docker_manager import (  # lazy import
                     DockerManager,
                     validate_docker_setup,
-                )  # lazy import
+                )
             except Exception as exc:  # noqa: BLE001
                 logging.error("Docker support not available: %s", exc)
                 return 1
@@ -589,6 +600,30 @@ def main() -> int:
         logging.info("Applying IR transformations...")
         ir_info = apply_ir_transformations(ir_graph, cfg)
         logging.info("Applied %d optimization passes", ir_info.get("passes_applied", 0))
+
+        # Semantic validation (IR-level)
+        try:
+            from semantic_validator import SemanticValidator
+
+            logging.info("Validating IR semantics against device constraints...")
+            validator = SemanticValidator()
+            diags = validator.validate_ir_graph(
+                ir_graph, target_device=cfg.get("target_device")
+            )
+            errors = [d for d in diags if d.severity == "error"]
+            warnings = [d for d in diags if d.severity == "warning"]
+            for w in warnings:
+                logging.warning("[%s] %s", w.code, w.message)
+            if errors:
+                for e in errors:
+                    logging.error("[%s] %s", e.code, e.message)
+                logging.error(
+                    "IR validation failed with %d error(s). Aborting.", len(errors)
+                )
+                return 1
+            logging.info("IR validation passed (%d warnings)", len(warnings))
+        except Exception as exc:  # noqa: BLE001
+            logging.warning("IR semantic validation unavailable or failed: %s", exc)
 
         # Generate code
         logging.info("Generating inference code...")
@@ -735,6 +770,36 @@ def main() -> int:
                 logging.debug(
                     "Explainability report generation exception", exc_info=True
                 )
+
+        # Optional backend code generation
+        if getattr(args, "codegen", None):
+            try:
+                from backend_codegen import generate_backend_artifacts
+
+                # Prefer generating from Unified IR when available
+                try:
+                    from framework_parsers import parse_model_to_uir
+                    from uir_normalizer import normalize_uir_graph
+                    from unified_ir import UIRGraph
+
+                    model_path = cfg.get("model") or cfg.get("model_path")
+                    uir_graph = parse_model_to_uir(model_path)
+                    uir_graph = normalize_uir_graph(uir_graph, layout="NHWC")
+                    graph_for_codegen = uir_graph  # type: ignore[assignment]
+                    logging.info("Using Unified IR for backend code generation")
+                except Exception as _:
+                    graph_for_codegen = ir_graph  # Fallback
+                    logging.info(
+                        "Falling back to lightweight IR for backend code generation"
+                    )
+
+                target = args.codegen or "c"
+                logging.info("Generating backend artifacts for target: %s", target)
+                generated = generate_backend_artifacts(graph_for_codegen, cfg, target)
+                for path in generated:
+                    logging.info("  generated: %s", path)
+            except Exception as cg_exc:  # noqa: BLE001
+                logging.error("Backend code generation failed: %s", cg_exc)
 
         logging.info("EdgeFlow compilation pipeline completed successfully!")
         logging.info(
