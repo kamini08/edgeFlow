@@ -39,46 +39,18 @@ tests/
 # Allow example configuration files
 !example_*.ef
 
-# Generated files and artifacts
-generated/
-*.tflite
-*.json
-test_model*
-mobilenet_v2.tflite
-
-# Allow example model files
-!large_resnet_model.tflite
-!example_*.tflite
-
-
-# Temporary and cache files
-*.log
-*.tmp
-*.temp
-.DS_Store
-Thumbs.db
-
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Test results and reports
-test_results/
-benchmark_results/
-optimization_results/
-
-# Models
-baseline_model*
-simple_model*
+# Models - exclude all large model files
 *.h5
-*.h5_info.txt
+*.tflite
+*.onnx
+*.pb
+*.pkl
+*.joblib
 
-# Allow example model files
-!large_resnet_model.h5
-!example_*.h5
+# Allow only small test/example model files
+!test.tflite
+!test_optimized.tflite
+!example_*.tflite
 
 # Frontend build files
 frontend/.next/
