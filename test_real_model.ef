@@ -1,0 +1,11 @@
+model = "large_resnet_model.tflite"
+keras_model = "large_resnet_model.h5"
+quantize = int8
+target_device = "jetson_nano"
+deploy_path = "/tmp/edgeflow_output"
+optimize_for = "size"
+memory_limit = 400
+enable_fusion = true
+fine_tuning = false
+framework = "tensorflow"
+enable_hybrid_optimization = true
