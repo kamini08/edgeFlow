@@ -714,5 +714,45 @@ def demo_fast_compiler():
     print(f"   • Intelligent optimization suggestions generated")
 
 
+def fast_compile_config(config: Dict[str, Any]) -> FastCompileResult:
+    """
+    Fast compile a configuration for immediate feedback.
+
+    Args:
+        config: EdgeFlow configuration dictionary
+
+    Returns:
+        FastCompileResult with validation and performance estimates
+    """
+    try:
+        from edgeflow_ir import IRBuilder
+
+        # Build IR graph from config
+        ir_builder = IRBuilder()
+        ir_graph = ir_builder.build_from_config(config)
+
+        # Get target device and quantization from config
+        target_device = config.get("target_device", "mobile")
+        quantization = config.get("quantize", "float32")
+
+        # Initialize fast compiler and run compilation
+        compiler = EdgeFlowFastCompiler()
+        result = compiler.fast_compile(ir_graph, target_device, quantization)
+
+        return result
+
+    except Exception as e:
+        logger.error(f"Fast compile config failed: {e}")
+        return FastCompileResult(
+            success=False,
+            errors=[f"Configuration compilation failed: {str(e)}"],
+            warnings=[],
+            performance_metrics=None,
+            compile_time_ms=0.0,
+            device_compatibility={},
+            optimization_suggestions=[],
+        )
+
+
 if __name__ == "__main__":
     demo_fast_compiler()

@@ -25,6 +25,7 @@ from edgeflow_ast import (
     HybridOptimizationStatement,
     Identifier,
     InputStreamStatement,
+    LayerDeclaration,
     Literal,
     MemoryLimitStatement,
     ModelStatement,
@@ -176,7 +177,7 @@ class CodeGenerator(ASTVisitor):
         return None
 
     def visit_memory_limit_statement(self, node: MemoryLimitStatement) -> Any:
-        self.config["memory_limit"] = node.limit_mb
+        self.config["memory_limit"] = node.limit_mb.value
         self.optimizations.append(f"Memory limit set to {node.limit_mb}MB")
         return None
 
@@ -215,6 +216,25 @@ class CodeGenerator(ASTVisitor):
 
     def visit_pipeline_statement(self, node: PipelineStatement) -> Any:
         self.config["pipeline_steps"] = node.steps
+        return None
+
+    def visit_layer_declaration(self, node: LayerDeclaration) -> Any:
+        """Visit a layer declaration node."""
+        # Extract layer information for code generation
+        layer_info = {
+            "name": node.name,
+            "type": node.layer_type.value,
+            "parameters": node.parameters,
+        }
+        
+        # Add to optimizations list for reporting
+        self.optimizations.append(f"Layer {node.name}: {node.layer_type.value}")
+        
+        # Store layer information in config for code generation
+        if "layers" not in self.config:
+            self.config["layers"] = []
+        self.config["layers"].append(layer_info)
+        
         return None
 
     def visit_literal(self, node: Literal) -> Any:

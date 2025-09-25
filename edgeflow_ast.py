@@ -236,7 +236,7 @@ class OptimizeForStatement(Statement):
 class MemoryLimitStatement(Statement):
     """Represents a memory limit statement: memory_limit: 64 MB"""
 
-    limit_mb: int
+    limit_mb: ConstrainedInt = field(default_factory=lambda: ConstrainedInt(64, 16, 10000))
 
     def accept(self, visitor: "ASTVisitor") -> Any:
         return visitor.visit_memory_limit_statement(self)
@@ -323,11 +323,11 @@ class PipelineStatement(Statement):
 class LayerDeclaration(Statement):
     """Base class for layer declarations with type validation."""
 
-    name: str = field()
-    layer_type: LayerType = field()
+    name: str = ""
+    layer_type: LayerType = LayerType.CONV2D
     parameters: Dict[str, Any] = field(default_factory=dict)
-    source_line: Optional[int] = field(default=None)
-    source_column: Optional[int] = field(default=None)
+    source_line: Optional[int] = None
+    source_column: Optional[int] = None
 
     def __post_init__(self):
         """Post-initialization hook for subclasses."""
@@ -345,12 +345,12 @@ class LayerDeclaration(Statement):
 class Conv2DDeclaration(LayerDeclaration):
     """Conv2D layer with type-constrained parameters."""
 
-    filters: ConstrainedInt = field()
-    kernel_size: KernelSize = field()
+    filters: ConstrainedInt = field(default_factory=lambda: ConstrainedInt(32))
+    kernel_size: KernelSize = field(default_factory=lambda: KernelSize(3))
     strides: StrideValue = field(default_factory=lambda: StrideValue(1))
-    padding: PaddingType = field(default=PaddingType.VALID)
-    activation: ActivationType = field(default=ActivationType.LINEAR)
-    use_bias: bool = field(default=True)
+    padding: PaddingType = PaddingType.VALID
+    activation: ActivationType = ActivationType.LINEAR
+    use_bias: bool = True
 
     def __post_init__(self):
         super().__post_init__()
@@ -392,9 +392,9 @@ class Conv2DDeclaration(LayerDeclaration):
 class DenseDeclaration(LayerDeclaration):
     """Dense layer with type-constrained parameters."""
 
-    units: ConstrainedInt = field()
-    activation: ActivationType = field(default=ActivationType.LINEAR)
-    use_bias: bool = field(default=True)
+    units: ConstrainedInt = field(default_factory=lambda: ConstrainedInt(128))
+    activation: ActivationType = ActivationType.LINEAR
+    use_bias: bool = True
 
     def __post_init__(self):
         super().__post_init__()
@@ -421,7 +421,7 @@ class DenseDeclaration(LayerDeclaration):
 class DropoutDeclaration(LayerDeclaration):
     """Dropout layer with type-constrained parameters."""
 
-    rate: DropoutRate = field()
+    rate: DropoutRate = field(default_factory=lambda: DropoutRate(0.5))
 
     def __post_init__(self):
         super().__post_init__()
@@ -444,9 +444,9 @@ class DropoutDeclaration(LayerDeclaration):
 class MaxPool2DDeclaration(LayerDeclaration):
     """MaxPool2D layer with type-constrained parameters."""
 
-    pool_size: Union[int, Tuple[int, int]] = field()
-    strides: Optional[StrideValue] = field(default=None)
-    padding: PaddingType = field(default=PaddingType.VALID)
+    pool_size: Union[int, Tuple[int, int]] = 2
+    strides: Optional[StrideValue] = None
+    padding: PaddingType = PaddingType.VALID
 
     def __post_init__(self):
         super().__post_init__()
@@ -697,7 +697,7 @@ def create_program_from_dict(config: Dict[str, Any]) -> Program:
         statements.append(OptimizeForStatement(goal=config["optimize_for"]))
 
     if "memory_limit" in config:
-        statements.append(MemoryLimitStatement(limit_mb=config["memory_limit"]))
+        statements.append(MemoryLimitStatement(limit_mb=ConstrainedInt(config["memory_limit"], 16, 10000)))
 
     if "enable_fusion" in config:
         statements.append(FusionStatement(enabled=config["enable_fusion"]))
@@ -749,7 +749,7 @@ def print_ast(node: ASTNode, indent: int = 0) -> str:
     elif isinstance(node, OptimizeForStatement):
         result.append(f"{prefix}OptimizeForStatement(goal='{node.goal}')")
     elif isinstance(node, MemoryLimitStatement):
-        result.append(f"{prefix}MemoryLimitStatement(limit_mb={node.limit_mb})")
+        result.append(f"{prefix}MemoryLimitStatement(limit_mb={node.limit_mb.value})")
     elif isinstance(node, FusionStatement):
         result.append(f"{prefix}FusionStatement(enabled={node.enabled})")
     elif isinstance(node, FrameworkStatement):
