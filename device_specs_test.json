@@ -1,0 +1,236 @@
+{
+  "devices": [
+    {
+      "name": "raspberry_pi_3",
+      "device_type": "raspberry_pi_3",
+      "ram_mb": 1024,
+      "storage_mb": 16000,
+      "cpu_cores": 4,
+      "cpu_freq_mhz": 1200,
+      "gpu_available": false,
+      "tpu_available": false,
+      "supported_operations": [
+        "conv2d",
+        "depthwise_conv2d",
+        "dense",
+        "relu",
+        "softmax"
+      ],
+      "max_model_size_mb": 50,
+      "supported_quantizations": [
+        "none",
+        "float16",
+        "int8"
+      ],
+      "power_budget_watts": 5.0
+    },
+    {
+      "name": "raspberry_pi_4",
+      "device_type": "raspberry_pi_4",
+      "ram_mb": 2048,
+      "storage_mb": 32000,
+      "cpu_cores": 4,
+      "cpu_freq_mhz": 1500,
+      "gpu_available": false,
+      "tpu_available": false,
+      "supported_operations": [
+        "conv2d",
+        "dense",
+        "relu",
+        "softmax",
+        "pad",
+        "add"
+      ],
+      "max_model_size_mb": 100,
+      "supported_quantizations": [
+        "none",
+        "float16",
+        "int8"
+      ],
+      "power_budget_watts": 7.0
+    },
+    {
+      "name": "raspberry_pi_zero",
+      "device_type": "raspberry_pi_zero",
+      "ram_mb": 512,
+      "storage_mb": 8000,
+      "cpu_cores": 1,
+      "cpu_freq_mhz": 1000,
+      "gpu_available": false,
+      "tpu_available": false,
+      "supported_operations": [
+        "conv2d",
+        "dense",
+        "relu",
+        "softmax"
+      ],
+      "max_model_size_mb": 20,
+      "supported_quantizations": [
+        "float16",
+        "int8"
+      ],
+      "power_budget_watts": 2.5
+    },
+    {
+      "name": "jetson_nano",
+      "device_type": "jetson_nano",
+      "ram_mb": 4096,
+      "storage_mb": 64000,
+      "cpu_cores": 4,
+      "cpu_freq_mhz": 1479,
+      "gpu_available": true,
+      "tpu_available": false,
+      "supported_operations": [
+        "conv2d",
+        "dense",
+        "relu",
+        "softmax",
+        "batchnorm",
+        "add"
+      ],
+      "max_model_size_mb": 200,
+      "supported_quantizations": [
+        "none",
+        "float16",
+        "int8"
+      ],
+      "power_budget_watts": 10.0
+    },
+    {
+      "name": "jetson_tx2",
+      "device_type": "jetson_tx2",
+      "ram_mb": 8192,
+      "storage_mb": 128000,
+      "cpu_cores": 6,
+      "cpu_freq_mhz": 2035,
+      "gpu_available": true,
+      "tpu_available": false,
+      "supported_operations": [
+        "conv2d",
+        "dense",
+        "relu",
+        "softmax",
+        "add",
+        "mul"
+      ],
+      "max_model_size_mb": 400,
+      "supported_quantizations": [
+        "none",
+        "float16",
+        "int8"
+      ],
+      "power_budget_watts": null
+    },
+    {
+      "name": "jetson_xavier",
+      "device_type": "jetson_xavier",
+      "ram_mb": 16384,
+      "storage_mb": 256000,
+      "cpu_cores": 8,
+      "cpu_freq_mhz": 2300,
+      "gpu_available": true,
+      "tpu_available": false,
+      "supported_operations": [
+        "conv2d",
+        "dense",
+        "relu",
+        "softmax",
+        "add",
+        "mul",
+        "pad"
+      ],
+      "max_model_size_mb": 800,
+      "supported_quantizations": [
+        "none",
+        "float16",
+        "int8"
+      ],
+      "power_budget_watts": null
+    },
+    {
+      "name": "coral_dev_board",
+      "device_type": "coral_dev_board",
+      "ram_mb": 1024,
+      "storage_mb": 8000,
+      "cpu_cores": 4,
+      "cpu_freq_mhz": 1500,
+      "gpu_available": false,
+      "tpu_available": true,
+      "supported_operations": [
+        "conv2d",
+        "dense",
+        "relu",
+        "softmax"
+      ],
+      "max_model_size_mb": 50,
+      "supported_quantizations": [
+        "int8"
+      ],
+      "power_budget_watts": 5.0
+    },
+    {
+      "name": "arduino_nano_33",
+      "device_type": "arduino_nano_33",
+      "ram_mb": 1,
+      "storage_mb": 1024,
+      "cpu_cores": 1,
+      "cpu_freq_mhz": 64,
+      "gpu_available": false,
+      "tpu_available": false,
+      "supported_operations": [
+        "dense",
+        "relu",
+        "softmax"
+      ],
+      "max_model_size_mb": 1,
+      "supported_quantizations": [
+        "int8"
+      ],
+      "power_budget_watts": 0.5
+    },
+    {
+      "name": "esp32",
+      "device_type": "esp32",
+      "ram_mb": 0,
+      "storage_mb": 4096,
+      "cpu_cores": 2,
+      "cpu_freq_mhz": 240,
+      "gpu_available": false,
+      "tpu_available": false,
+      "supported_operations": [
+        "dense",
+        "relu",
+        "softmax"
+      ],
+      "max_model_size_mb": 2,
+      "supported_quantizations": [
+        "int8"
+      ],
+      "power_budget_watts": 1.5
+    },
+    {
+      "name": "generic",
+      "device_type": "generic",
+      "ram_mb": 2048,
+      "storage_mb": 16000,
+      "cpu_cores": 2,
+      "cpu_freq_mhz": 1400,
+      "gpu_available": false,
+      "tpu_available": false,
+      "supported_operations": [
+        "conv2d",
+        "dense",
+        "relu",
+        "softmax",
+        "add"
+      ],
+      "max_model_size_mb": 100,
+      "supported_quantizations": [
+        "none",
+        "float16",
+        "int8"
+      ],
+      "power_budget_watts": null
+    }
+  ]
+}

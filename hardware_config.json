@@ -1,0 +1,55 @@
+{
+  "description": "EdgeFlow Hardware Configuration",
+  "version": "1.0",
+  "device_specs_file": "device_specs_export.json",
+  "custom_configs": {
+    "power_aware_deployment": {
+      "max_power_watts": 5.0,
+      "preferred_quantization": "int8",
+      "enable_pruning": true
+    },
+    "performance_optimized": {
+      "min_ram_mb": 2048,
+      "prefer_gpu": true,
+      "allow_float16": true
+    },
+    "microcontroller_mode": {
+      "max_model_size_mb": 2,
+      "force_int8": true,
+      "disable_complex_ops": true
+    }
+  },
+  "deployment_profiles": {
+    "edge_server": {
+      "target_devices": ["jetson_xavier", "jetson_tx2"],
+      "optimization_goals": ["latency", "throughput"],
+      "fallback_devices": ["raspberry_pi_4"]
+    },
+    "iot_device": {
+      "target_devices": ["esp32", "arduino_nano_33"],
+      "optimization_goals": ["size", "power"],
+      "constraints": {
+        "max_power_watts": 1.0,
+        "max_model_size_mb": 1
+      }
+    },
+    "mobile_device": {
+      "target_devices": ["raspberry_pi_4", "raspberry_pi_zero"],
+      "optimization_goals": ["balanced"],
+      "constraints": {
+        "max_power_watts": 7.0,
+        "max_model_size_mb": 50
+      }
+    }
+  },
+  "validation_rules": {
+    "strict_mode": {
+      "fail_on_warnings": true,
+      "require_explicit_device_spec": true
+    },
+    "permissive_mode": {
+      "fail_on_warnings": false,
+      "use_generic_fallback": true
+    }
+  }
+}
