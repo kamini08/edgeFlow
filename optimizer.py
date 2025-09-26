@@ -549,7 +549,21 @@ class EdgeFlowOptimizer:
                 logger.info(
                     "Converting Keras model to baseline TFLite: %s", keras_source
                 )
-                keras_model = self.tf.keras.models.load_model(keras_source)
+
+                try:
+                    keras_model = self.tf.keras.models.load_model(keras_source)
+                except Exception as load_error:
+                    logger.warning(
+                        "Failed to load Keras model %s: %s", keras_source, load_error
+                    )
+                    logger.warning(
+                        "This is likely due to TensorFlow version mismatch or custom layers."
+                    )
+                    logger.warning(
+                        "Falling back to basic TFLite optimization without quantization."
+                    )
+                    # Fall back to basic optimizations on existing TFLite model
+                    return self._optimize_existing_tflite(config)
 
                 # Apply pruning if enabled
                 if enable_pruning:
@@ -598,7 +612,16 @@ class EdgeFlowOptimizer:
             # Real optimization path (need a source model already loaded above)
             # Load Keras model again if needed for optimization
             if keras_source and not keras_model:
-                keras_model = self.tf.keras.models.load_model(keras_source)
+                try:
+                    keras_model = self.tf.keras.models.load_model(keras_source)
+                except Exception as load_error:
+                    logger.warning(
+                        "Failed to load Keras model %s for optimization: %s", keras_source, load_error
+                    )
+                    logger.warning(
+                        "Falling back to basic TFLite optimization without advanced quantization."
+                    )
+                    return self._optimize_existing_tflite(config)
 
                 # Apply pruning if enabled
                 if enable_pruning:
