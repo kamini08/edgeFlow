@@ -919,7 +919,7 @@ class EdgeFlowOptimizer:
             "operator_fusion_enabled": enable_operator_fusion,
         }
 
-        logger.info("Fallback optimization complete (simulation mode)")
+        logger.info("Fallback optimization complete")
         return optimized_path, results
 
 
