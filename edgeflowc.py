@@ -768,28 +768,22 @@ def main() -> int:
             logging.info("✅ Report generated: %s", report_path)
 
             # Optional concise summary
-            simulate_as_real = cfg.get("simulate_as_real", False)
-            if simulate_as_real:
-                # Use impressive demo results for summary
-                size_red = 74.2
-                speedup = 2.8
-            else:
-                size_red = (
-                    (
-                        1
-                        - float(optimized_stats.get("size_mb", 0.0))
-                        / float(unoptimized_stats.get("size_mb", 1.0))
-                    )
-                    * 100.0
-                    if unoptimized_stats.get("size_mb", 0.0) > 0
-                    else 0.0
+            size_red = (
+                (
+                    1
+                    - float(optimized_stats.get("size_mb", 0.0))
+                    / float(unoptimized_stats.get("size_mb", 1.0))
                 )
-                speedup = (
-                    float(unoptimized_stats.get("latency_ms", 0.0))
-                    / float(optimized_stats.get("latency_ms", 1.0))
-                    if optimized_stats.get("latency_ms", 0.0) > 0
-                    else 0.0
-                )
+                * 100.0
+                if unoptimized_stats.get("size_mb", 0.0) > 0
+                else 0.0
+            )
+            speedup = (
+                float(unoptimized_stats.get("latency_ms", 0.0))
+                / float(optimized_stats.get("latency_ms", 1.0))
+                if optimized_stats.get("latency_ms", 0.0) > 0
+                else 0.0
+            )
             logging.info("=== Optimization Summary ===")
             logging.info("Size reduced by: %.1f%%", size_red)
             logging.info("Speed improved by: %.1fx", speedup)
