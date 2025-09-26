@@ -21,7 +21,7 @@ import logging
 import os
 import sys
 from parser import parse_ef  # Backward-compatible name
-from typing import Any
+from typing import Any, Optional
 from typing import Dict as DictType
 
 # Import our modules
@@ -42,6 +42,15 @@ from validator import (
     validate_edgeflow_config,
     validate_model_compatibility,
 )
+from cli_formatter import (
+    CLIFormatter,
+    ProgressBar,
+    Spinner,
+    Icons,
+    Color,
+    create_summary_box,
+    get_edgeflow_ascii_art,
+)
 
 VERSION = "0.1.0"
 
@@ -54,9 +63,11 @@ def _configure_logging(verbose: bool) -> None:
     """
 
     level = logging.DEBUG if verbose else logging.INFO
+    # Use simpler format for prettier output
+    format_str = "%(message)s" if not verbose else "%(asctime)s - %(levelname)s - %(message)s"
     logging.basicConfig(
         level=level,
-        format="%(asctime)s - %(levelname)s - %(message)s",
+        format=format_str,
     )
 
 
@@ -235,19 +246,25 @@ def _load_project_parser_module():
 
 
 def load_config(
-    file_path: str, use_early_validation: bool = True
+    file_path: str, use_early_validation: bool = True, formatter: Optional[CLIFormatter] = None
 ) -> DictType[str, Any]:
     """Load and validate EdgeFlow configuration from file.
 
     Args:
         file_path: Path to the ``.ef`` configuration file.
         use_early_validation: Whether to use fast early validation
+        formatter: Optional CLI formatter for pretty output
 
     Returns:
         Dict[str, Any]: Parsed configuration dictionary.
     """
+    formatter = formatter or CLIFormatter()
+    spinner = Spinner("Loading configuration", formatter)
+    spinner.start()
+
     try:
         # Prefer modern parser API if available
+        spinner.update("Parsing EdgeFlow file")
         if _parse_edgeflow_file is not None:
             config = _parse_edgeflow_file(file_path)
         else:
@@ -255,14 +272,15 @@ def load_config(
 
         # Early validation for fast feedback
         if use_early_validation:
+            spinner.update("Running early validation")
             validator = EdgeFlowValidator()
             is_valid, errors = validator.early_validation(config)
             if not is_valid:
-                logging.error("Early validation failed:")
+                spinner.stop(False, "Validation failed")
+                print(formatter.error("Early validation failed:"))
                 for error in errors:
-                    logging.error(f"  - {error}")
+                    print(formatter.error(f"  - {error}", with_icon=False))
                 raise SystemExit(1)
-            logging.info("Early validation passed")
 
         # Comprehensive semantic validation
         # Prefer parser-level validation semantics (test-friendly) if available
@@ -282,36 +300,45 @@ def load_config(
             else:
                 is_valid, errors = validate_edgeflow_config(config)
         if not is_valid:
-            logging.error("Configuration validation failed:")
+            spinner.stop(False, "Validation failed")
+            print(formatter.error("Configuration validation failed:"))
             for error in errors:
-                logging.error(f"  - {error}")
+                print(formatter.error(f"  - {error}", with_icon=False))
             raise SystemExit(1)
 
         # Model compatibility validation
         model_path = config.get("model")
         if model_path:
+            spinner.update("Checking model compatibility")
             is_compatible, warnings = validate_model_compatibility(model_path, config)
             if warnings:
-                logging.warning("Model compatibility warnings:")
+                spinner.stop(True, "Loaded with warnings")
+                print(formatter.warning("Model compatibility warnings:"))
                 for warning in warnings:
-                    logging.warning(f"  - {warning}")
+                    print(formatter.warning(f"  - {warning}", with_icon=False))
+            else:
+                spinner.stop(True, "Configuration loaded successfully")
+        else:
+            spinner.stop(True, "Configuration loaded successfully")
 
-        logging.info("Configuration validation passed")
         logging.debug("Loaded config: %s", json.dumps(config, sort_keys=True))
         return config
 
     except Exception as exc:
-        logging.error("Failed to load configuration: %s", exc)
+        if 'spinner' in locals():
+            spinner.stop(False, "Failed")
+        print(formatter.error(f"Failed to load configuration: {exc}"))
         raise SystemExit(1)
 
 
-def optimize_model(config: DictType[str, Any]) -> DictType[str, Any]:
+def optimize_model(config: DictType[str, Any], formatter: Optional[CLIFormatter] = None) -> DictType[str, Any]:
     """Run the full Day 3/4 pipeline: benchmark -> optimize -> benchmark.
 
     This reorders the earlier logic so we always capture baseline metrics
     prior to optimization (as required by Phase II tasks). It then performs
     optimization and captures post-optimization metrics plus a comparison.
     """
+    formatter = formatter or CLIFormatter()
     try:
         from benchmarker import benchmark_model, compare_models
         from optimizer import optimize
@@ -323,37 +350,39 @@ def optimize_model(config: DictType[str, Any]) -> DictType[str, Any]:
                 model_path,
             )
 
-        logging.info("=== BASELINE BENCHMARK (Pre-Optimization) ===")
+        print(formatter.header("Baseline Benchmark (Pre-Optimization)", level=2))
+        spinner = Spinner("Benchmarking original model", formatter)
+        spinner.start()
         original_benchmark = benchmark_model(model_path, config)
+        spinner.stop(True, "Benchmark complete")
 
-        logging.info("=== OPTIMIZATION PHASE ===")
+        print(formatter.header("Optimization Phase", level=2))
+        progress = ProgressBar(100, "Optimizing model", formatter=formatter)
+        progress.update(20, "Analyzing model")
         optimized_path, opt_results = optimize(config)
+        progress.finish("Optimization complete")
 
-        logging.info("=== POST-OPTIMIZATION BENCHMARK ===")
+        print(formatter.header("Post-Optimization Benchmark", level=2))
+        spinner = Spinner("Benchmarking optimized model", formatter)
+        spinner.start()
         optimized_benchmark = benchmark_model(optimized_path, config)
+        spinner.stop(True, "Benchmark complete")
 
-        logging.info("=== COMPARISON ===")
+        print(formatter.header("Comparison", level=2))
         comparison = compare_models(model_path, optimized_path, config)
         improvements = comparison.get("improvements", {})
 
-        logging.info("=== EDGEFLOW OPTIMIZATION SUMMARY ===")
-        logging.info(
-            "Model size reduction: %.1f%%",
-            improvements.get("size_reduction_percent", 0.0),
-        )
-        logging.info(
-            "Latency improvement: %.1f%%",
-            improvements.get("latency_improvement_percent", 0.0),
-        )
-        logging.info(
-            "Throughput improvement: %.1f%%",
-            improvements.get("throughput_improvement_percent", 0.0),
-        )
-        logging.info(
-            "Memory improvement: %.1f%%",
-            improvements.get("memory_improvement_percent", 0.0),
-        )
-        logging.info("Optimized model saved to: %s", optimized_path)
+        # Create summary box
+        summary_lines = [
+            f"Model size reduction: {improvements.get('size_reduction_percent', 0.0):.1f}%",
+            f"Latency improvement: {improvements.get('latency_improvement_percent', 0.0):.1f}%",
+            f"Throughput improvement: {improvements.get('throughput_improvement_percent', 0.0):.1f}%",
+            f"Memory improvement: {improvements.get('memory_improvement_percent', 0.0):.1f}%",
+            "",
+            f"Optimized model: {optimized_path}"
+        ]
+
+        print(create_summary_box("EdgeFlow Optimization Summary", summary_lines, formatter))
 
         return {
             "optimization": opt_results,
@@ -437,21 +466,27 @@ def main() -> int:
     try:
         args = parse_arguments()
         _configure_logging(args.verbose)
+        formatter = CLIFormatter()
 
         if not args.config_path:
-            logging.error("No configuration file provided. See --help.")
+            print(formatter.error("No configuration file provided. See --help."))
             return 2
 
         if not validate_file_path(args.config_path):
             # Provide a specific error where possible.
             if not os.path.exists(args.config_path):
-                logging.error("Error: File '%s' not found", args.config_path)
+                print(formatter.error(f"File '{args.config_path}' not found"))
             else:
-                logging.error("Error: Invalid file extension. Expected '.ef' file")
+                print(formatter.error("Invalid file extension. Expected '.ef' file"))
             return 1
 
         # Parse configuration file
-        cfg = load_config(args.config_path)
+        # Display ASCII art at startup
+        ascii_art = get_edgeflow_ascii_art().format(version=VERSION)
+        print(formatter.colorize(ascii_art, Color.BRIGHT_CYAN) if formatter.use_colors else ascii_art)
+        print(formatter.header("Configuration Loading", level=1))
+        print(formatter.info(f"Processing: {args.config_path}"))
+        cfg = load_config(args.config_path, formatter=formatter)
 
         # Optional: run inside Docker
         if getattr(args, "docker", False):
@@ -505,73 +540,75 @@ def main() -> int:
             try:
                 from initial_check import perform_initial_check
 
-                print(
-                    "\N{LEFT-POINTING MAGNIFYING GLASS} Performing initial compatibility check..."
-                )
+                spinner = Spinner("Performing initial compatibility check", formatter)
+                spinner.start()
                 model_path = cfg.get("model_path") or cfg.get("model")
                 if not model_path:
-                    logging.warning(
-                        "No model_path/model specified in config; skipping check"
-                    )
+                    spinner.stop(True, "Skipped (no model specified)")
+                    print(formatter.warning("No model_path/model specified in config; skipping check"))
                 else:
                     should_optimize, compat_report = perform_initial_check(
                         model_path, cfg, getattr(args, "device_spec_file", None)
                     )
-                    print(f"   Device: {cfg.get('target_device', 'generic')}")
-                    print(f"   Fit Score: {compat_report.estimated_fit_score:.1f}/100")
+                    spinner.stop(True, "Check complete")
+
+                    # Display compatibility results
+                    compat_stats = {
+                        "Device": cfg.get('target_device', 'generic'),
+                        "Fit Score": f"{compat_report.estimated_fit_score:.1f}/100",
+                        "Optimization Needed": "Yes" if should_optimize else "No"
+                    }
+                    print(formatter.format_stats(compat_stats, "Compatibility Results"))
 
                     if getattr(args, "check_only", False):
                         if compat_report.issues:
-                            print("\n\N{WARNING SIGN}  Issues found:")
+                            print(formatter.warning("\nIssues found:"))
                             for issue in compat_report.issues:
-                                print(f"   - {issue}")
+                                print(formatter.warning(f"  - {issue}", with_icon=False))
                         if compat_report.recommendations:
-                            print("\n\N{ELECTRIC LIGHT BULB} Recommendations:")
+                            print(formatter.info("\nRecommendations:"))
                             for rec in compat_report.recommendations:
-                                print(f"   - {rec}")
+                                print(formatter.info(f"  - {rec}", with_icon=False))
                         return 0
 
                     if not should_optimize:
-                        print("\N{CHECK MARK} Model already fits device constraints!")
-                        print("   Skipping optimization phase...")
+                        print(formatter.success("Model already fits device constraints!"))
+                        print(formatter.info("Skipping optimization phase..."))
                         return 0
             except Exception as exc:  # noqa: BLE001
                 logging.warning("Initial check failed or not available: %s", exc)
 
         # Handle fast compile mode
         if getattr(args, "fast_compile", False):
-            logging.info("Running fast compilation...")
+            print(formatter.header("Fast Compilation Mode", level=2))
+            spinner = Spinner("Running fast compilation", formatter)
+            spinner.start()
             fast_result = fast_compile_config(cfg)
 
             if not fast_result.success:
-                logging.error("Fast compilation failed:")
+                spinner.stop(False, "Failed")
+                print(formatter.error("Fast compilation failed:"))
                 for error in fast_result.errors:
-                    logging.error(f"  - {error}")
+                    print(formatter.error(f"  - {error}", with_icon=False))
                 return 1
 
-            logging.info("✅ Fast compilation successful!")
-            logging.info(f"⚡ Compile time: {fast_result.compile_time_ms:.2f}ms")
+            spinner.stop(True, f"Completed in {fast_result.compile_time_ms:.2f}ms")
+            print(formatter.success("Fast compilation successful!"))
 
             if fast_result.warnings:
-                logging.warning("⚠️ Warnings:")
+                print(formatter.warning("Warnings:"))
                 for warning in fast_result.warnings:
-                    logging.warning(f"  - {warning}")
+                    print(formatter.warning(f"  - {warning}", with_icon=False))
 
             # Print estimated impact
             impact = fast_result.estimated_impact
-            logging.info("📊 Estimated optimization impact:")
-            logging.info(
-                f"  Size reduction: {impact.get('estimated_size_reduction_percent', 0):.1f}%"
-            )
-            logging.info(
-                f"  Speed improvement: {impact.get('estimated_speed_improvement_factor', 1.0):.1f}x"
-            )
-            logging.info(
-                f"  Memory reduction: {impact.get('estimated_memory_reduction_percent', 0):.1f}%"
-            )
-            logging.info(
-                f"  Confidence: {impact.get('optimization_confidence', 0.8)*100:.0f}%"
-            )
+            impact_stats = {
+                "Size Reduction": f"{impact.get('estimated_size_reduction_percent', 0):.1f}%",
+                "Speed Improvement": f"{impact.get('estimated_speed_improvement_factor', 1.0):.1f}x",
+                "Memory Reduction": f"{impact.get('estimated_memory_reduction_percent', 0):.1f}%",
+                "Confidence": f"{impact.get('optimization_confidence', 0.8)*100:.0f}%"
+            }
+            print(formatter.format_stats(impact_stats, "Estimated Optimization Impact"))
 
             return 0
 
@@ -583,23 +620,23 @@ def main() -> int:
         logging.debug("Loaded config: %s", json.dumps(cfg, indent=2)[:500])
 
         # Create AST from parsed configuration
+        print(formatter.header("Compilation Pipeline", level=2))
+        spinner = Spinner("Creating AST", formatter)
+        spinner.start()
         program = create_program_from_dict(cfg)
-        logging.info("Created AST with %d statements", len(program.statements))
+        spinner.stop(True, f"Created {len(program.statements)} statements")
 
         # Build IR from AST
-        logging.info("Building Intermediate Representation...")
+        spinner = Spinner("Building Intermediate Representation", formatter)
+        spinner.start()
         ir_builder = IRBuilder()
         ir_graph = ir_builder.build_from_config(cfg)
-        logging.info(
-            "Created IR graph with %d nodes and %d edges",
-            len(ir_graph.nodes),
-            len(ir_graph.edges),
-        )
+        spinner.stop(True, f"{len(ir_graph.nodes)} nodes, {len(ir_graph.edges)} edges")
 
         # Apply IR transformations
-        logging.info("Applying IR transformations...")
+        progress = ProgressBar(3, "Applying IR transformations", formatter=formatter)
         ir_info = apply_ir_transformations(ir_graph, cfg)
-        logging.info("Applied %d optimization passes", ir_info.get("passes_applied", 0))
+        progress.finish(f"Applied {ir_info.get('passes_applied', 0)} optimization passes")
 
         # Semantic validation (IR-level)
         try:
@@ -681,11 +718,11 @@ def main() -> int:
             logging.info("  %s: %s", file_type, file_path)
 
         # Run optimization pipeline
-        logging.info("Running EdgeFlow optimization pipeline...")
-        opt_results = optimize_model(cfg)
+        print(formatter.header("EdgeFlow Optimization Pipeline", level=1))
+        opt_results = optimize_model(cfg, formatter)
 
         if "error" in opt_results:
-            logging.error(f"Optimization failed: {opt_results['error']}")
+            print(formatter.error(f"Optimization failed: {opt_results['error']}"))
             return 1
 
         # Generate human-readable optimization report using reporter module
@@ -801,10 +838,9 @@ def main() -> int:
             except Exception as cg_exc:  # noqa: BLE001
                 logging.error("Backend code generation failed: %s", cg_exc)
 
-        logging.info("EdgeFlow compilation pipeline completed successfully!")
-        logging.info(
-            "🎉 EdgeFlow has successfully optimized your model for edge deployment!"
-        )
+        print(formatter.header("Success", level=1))
+        print(formatter.success("EdgeFlow compilation pipeline completed successfully!"))
+        print(formatter.success("EdgeFlow has successfully optimized your model for edge deployment!", with_icon=False))
         return 0
     except SystemExit as e:
         # Argparse uses SystemExit for --help/--version and parse errors.
