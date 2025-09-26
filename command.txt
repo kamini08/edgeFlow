@@ -1,0 +1,1 @@
+python run_tflite_model.py --model large_resnet_model_optimizated.tflite --images test_images_1000/ --batch-size 2 --checkpoint full_run_checkpoint.json --progress-interval 100
