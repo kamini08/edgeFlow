@@ -1,0 +1,65 @@
+{
+  "device_id": "server_gpu_v100",
+  "name": "NVIDIA V100 Server",
+  "category": "server",
+  "manufacturer": "NVIDIA",
+  "model": "Tesla V100",
+  "version": "",
+  "constraints": [
+    {
+      "constraint_type": "ConstraintType.MEMORY",
+      "name": "max_memory_mb",
+      "value": 32768,
+      "unit": "MB",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    },
+    {
+      "constraint_type": "ConstraintType.COMPUTE",
+      "name": "max_ops_per_sec",
+      "value": 100000000000000.0,
+      "unit": "ops/sec",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    },
+    {
+      "constraint_type": "ConstraintType.POWER",
+      "name": "max_power_watts",
+      "value": 300,
+      "unit": "W",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "cuda_acceleration",
+      "supported": true,
+      "version": "10.1"
+    },
+    {
+      "name": "tensor_cores",
+      "supported": true,
+      "version": "V1"
+    }
+  ],
+  "preferred_quantization": [
+    "float32",
+    "float16",
+    "int8"
+  ],
+  "supported_operators": [],
+  "optimization_flags": {},
+  "created_at": "2025-09-26T19:03:14.217128",
+  "updated_at": "2025-09-26T19:03:14.217137",
+  "created_by": "system",
+  "tags": [],
+  "description": "High-performance server GPU",
+  "benchmark_scores": {}
+}

@@ -1,0 +1,34 @@
+{
+  "device_type": "raspberry_pi",
+  "constraints": {
+    "max_storage_mb": 100,
+    "max_memory_mb": 256,
+    "supported_architectures": [
+      "armv7l",
+      "aarch64"
+    ]
+  },
+  "artifacts": [
+    {
+      "type": "model_binary",
+      "path": "deployment/model_raspberry_pi.tar.gz",
+      "size_mb": 12.578862190246582
+    },
+    {
+      "type": "inference_code",
+      "path": "deployment/inference_code_raspberry_pi.tar.gz",
+      "size_mb": 0.0017118453979492188
+    },
+    {
+      "type": "dependencies",
+      "path": "deployment/dependencies_raspberry_pi.tar.gz",
+      "size_mb": 0.0005970001220703125
+    },
+    {
+      "type": "deployment_scripts",
+      "path": "deployment/scripts_raspberry_pi.tar.gz",
+      "size_mb": 0.001392364501953125
+    }
+  ],
+  "total_size_mb": 12.582563400268555
+}

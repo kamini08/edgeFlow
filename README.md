@@ -1,5 +1,4 @@
-EdgeFlow Compiler with Semantic Analysis
-==========================================
+# EdgeFlow Compiler with Semantic Analysis
 
 EdgeFlow is a domain-specific language (DSL) and compiler for optimizing TensorFlow Lite models for edge deployment. Users write simple `.ef` configuration files that describe optimization strategies (e.g., INT8 quantization), target devices, and goals like latency or size. The CLI parses these configs and runs the optimization pipeline.
 
@@ -7,15 +6,13 @@ EdgeFlow is a domain-specific language (DSL) and compiler for optimizing TensorF
 
 Project Status: CLI with semantic analysis, tests, and CI. Parser and optimizer integration points ready.
 
-Overview
---------
+## Overview
 
 - Language: EdgeFlow `.ef` configuration files
 - Targets: TFLite models on edge devices (e.g., Raspberry Pi)
 - Pipeline: parse config → optimize model → (future) benchmark → report
 
-Example `.ef`
--------------
+## Example `.ef`
 
 ```bash
 model_path = "path/to/model.tflite"
@@ -25,8 +22,7 @@ target_device = "raspberry_pi"
 optimize_for = latency
 ```
 
-Installation
-------------
+## Installation
 
 - Python 3.11 (CI target)
 - Install runtime dependencies:
@@ -41,54 +37,50 @@ For development (linting, tests, coverage, hooks):
 pip install -r requirements-dev.txt
 ```
 
-Usage
------
+## Usage
 
 Basic:
 
 ```bash
-python edgeflowc.py path/to/config.ef
+python -m edgeflow.compiler.edgeflowc path/to/config.ef
 ```
 
 Verbose:
 
 ```bash
-python edgeflowc.py path/to/config.ef --verbose
+python -m edgeflow.compiler.edgeflowc path/to/config.ef --verbose
 ```
 
 Help and Version:
 
 ```bash
-python edgeflowc.py --help
-python edgeflowc.py --version
+python -m edgeflow.compiler.edgeflowc --help
+python -m edgeflow.compiler.edgeflowc --version
 ```
 
-Expected Behavior
------------------
+## Expected Behavior
 
 - Missing file:
 
 ```bash
-python edgeflowc.py non_existent.ef
+python -m edgeflow.compiler.edgeflowc non_existent.ef
 # Error: File 'non_existent.ef' not found
 ```
 
 - Wrong extension:
 
 ```bash
-python edgeflowc.py invalid.txt
+python -m edgeflow.compiler.edgeflowc invalid.txt
 # Error: Invalid file extension. Expected '.ef' file
 ```
 
-CLI Options
------------
+## CLI Options
 
 - `config_path`: Positional `.ef` file path (required)
 - `-v, --verbose`: Enable verbose debug output
 - `--version`: Print CLI version and exit
 
-Language Toolchain (ANTLR)
--------------------------
+## Language Toolchain (ANTLR)
 
 Prereqs:
 
@@ -105,13 +97,12 @@ Generate Python parser/lexer into the `parser/` package:
 
 After generation, `parser/` contains `EdgeFlowLexer.py`, `EdgeFlowParser.py`, `EdgeFlowVisitor.py`, etc. The CLI automatically uses them when present; otherwise it falls back to a simple line-based parser.
 
-Running the Compiler
---------------------
+## Running the Compiler
 
 Parse a `.ef` config and run the (placeholder) optimization pipeline:
 
 ```bash
-python edgeflowc.py path/to/config.ef
+python -m edgeflow.compiler.edgeflowc path/to/config.ef
 ```
 
 ## Semantic Analysis System
@@ -166,43 +157,39 @@ else:
 
 ## Project Structure
 
-Architecture
-------------
-
 ```bash
 edgeFlow/
-├── edgeflowc.py          # CLI entry point
-├── semantic_analyzer/    # 🆕 Semantic analysis system
-│   ├── __init__.py      # Main exports
-│   ├── analyzer.py      # Core semantic analyzer
-│   ├── error_types.py   # Error definitions and collection
-│   ├── ir_nodes.py      # IR graph and node structures
-│   ├── constraints.py   # Parameter ranges and device constraints
-│   └── compiler_integration.py  # Integration with compiler pipeline
-├── parser/               # ANTLR-generated modules + wrapper
-├── optimizer.py          # Model optimization logic
-├── benchmarker.py        # Performance measurement tools
-├── reporter.py           # Report generation
-├── examples/             # 🆕 Semantic analysis examples
-│   └── semantic_analysis_examples.py
-├── tests/                # Unit tests
-│   ├── test_cli.py
-│   └── test_semantic_analyzer.py  # 🆕 Semantic analyzer tests
-├── .github/workflows/ci.yml   # CI: lint, type, test, coverage badge
+├── src/
+│   └── edgeflow/
+│       ├── compiler/         # Core compiler logic
+│       ├── deployment/       # Deployment orchestration
+│       ├── optimization/     # Optimization strategies
+│       ├── analysis/         # Static and semantic analysis
+│       ├── reporting/        # Error reporting and explainability
+│       ├── benchmarking/     # Performance benchmarking
+│       ├── config/           # Configuration handling
+│       ├── ir/               # Intermediate Representation
+│       ├── pipeline/         # Pipeline orchestration
+│       ├── utils/            # Utility functions
+│       ├── parser/           # Parser logic
+│       ├── backend/          # Backend API
+│       └── frontend/         # Frontend application
+├── scripts/              # Helper scripts
+├── tests/                # Unit and integration tests
+├── docs/                 # Documentation
+├── .github/workflows/    # CI/CD workflows
 ├── requirements.txt      # Runtime dependencies
 ├── requirements-dev.txt  # Dev/test dependencies
 ├── README.md             # This file
-└── .pre-commit-config.yaml    # Pre-commit hooks
+└── Makefile              # Build automation
 ```
 
-Integration Points
-------------------
+## Integration Points
 
 - Parser (`parser.parse_ef(path)`): `edgeflowc.load_config` tries to import and call this. If not found yet, it falls back to returning a minimal config with raw text.
 - Optimizer (`optimizer.optimize(config)`): `edgeflowc.optimize_model` tries to import and call this. If not found yet, it logs a message and continues.
 
-Development
------------
+## Development
 
 Set up pre-commit hooks:
 
@@ -225,8 +212,7 @@ Run tests with coverage:
 pytest -q --cov=edgeflowc --cov-report=term-missing
 ```
 
-CI/CD
------
+## CI/CD
 
 GitHub Actions runs on pushes and PRs for Python 3.11:
 
@@ -235,14 +221,13 @@ GitHub Actions runs on pushes and PRs for Python 3.11:
 - Tests with coverage (fail below 90%)
 - Coverage badge artifact generated via `genbadge`
 
-Web Interface
--------------
+## Web Interface
 
 Backend (FastAPI):
 
-- App entry: `backend/app.py`
+- App entry: `src/edgeflow/backend/app.py`
 - Endpoints with strict CLI parity:
-  - `POST /api/compile` (maps to `python edgeflowc.py config.ef`)
+  - `POST /api/compile` (maps to `python -m edgeflow.compiler.edgeflowc config.ef`)
   - `POST /api/compile/verbose` (maps to `--verbose`)
   - `POST /api/optimize` (optimization phase)
   - `POST /api/benchmark` (benchmarking)
@@ -264,8 +249,7 @@ docker-compose up --build
 # Frontend: http://localhost:3000
 ```
 
-Production (CD + Reverse Proxy)
--------------------------------
+## Production (CD + Reverse Proxy)
 
 - Continuous Deployment builds/pushes GHCR images, then deploys over SSH with Docker Compose on the server.
 - Public site: <https://edgeflow.pointblank.club/>
@@ -274,29 +258,24 @@ Production (CD + Reverse Proxy)
   - Frontend: `13000` (container 3000)
 - Recommended: bind services to `127.0.0.1` and expose via Nginx with TLS (Certbot). Frontend proxies `/api/*` to backend inside the Docker network; backend need not be directly exposed.
 
-Contributing
-------------
+## Contributing
 
 - Open a PR with a focused set of changes
 - Ensure `black`, `isort`, `flake8`, and `mypy` pass
 - Add/Update tests to maintain ≥90% coverage
 - Clearly document changes in docstrings and README where relevant
 
-Security Notes
---------------
+## Security Notes
 
 - The CLI validates that the input path is a regular file with a `.ef` extension.
 - Paths are normalized and resolved; the CLI does not follow any network or remote sources.
 - Future work: sandbox model handling and ensure safe file operations during optimization.
 
-License
--------
+## License
 
 TBD (add the appropriate license file for your project).
 
-
-Compatibility Check (CLI)
--------------------------
+## Compatibility Check (CLI)
 
 - `--check-only`: run device compatibility check and exit
 - `--device-spec-file <path>`: load custom device specs (CSV/JSON)

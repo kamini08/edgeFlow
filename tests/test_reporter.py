@@ -3,7 +3,6 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from reporter import (
     calculate_improvements,
     generate_json_report,

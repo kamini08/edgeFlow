@@ -1,8 +1,6 @@
 import subprocess
-from pathlib import Path
 
 import pytest
-
 from docker_manager import DockerManager, validate_docker_setup
 
 

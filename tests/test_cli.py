@@ -2,9 +2,8 @@ import sys
 from types import ModuleType
 from typing import Dict
 
-import pytest
-
 import edgeflowc
+import pytest
 
 
 def _set_argv(args):
@@ -132,7 +131,9 @@ def test_main_invalid_extension_returns_1(tmp_path, monkeypatch):
 
 def test_main_success_calls_optimize(tmp_path, monkeypatch):
     p = tmp_path / "ok.ef"
-    p.write_text('model="test.tflite"\nquantize="int8"\nmemory_limit=1\nx=1', encoding="utf-8")
+    p.write_text(
+        'model="test.tflite"\nquantize="int8"\nmemory_limit=1\nx=1', encoding="utf-8"
+    )
     called = {"n": 0}
 
     def fake_opt(config):
@@ -153,7 +154,9 @@ def test_main_success_calls_optimize(tmp_path, monkeypatch):
 
 def test_main_verbose_emits_debug_log(tmp_path, monkeypatch, caplog):
     p = tmp_path / "ok.ef"
-    p.write_text('model="test.tflite"\nquantize="int8"\nmemory_limit=1\nx=1', encoding="utf-8")
+    p.write_text(
+        'model="test.tflite"\nquantize="int8"\nmemory_limit=1\nx=1', encoding="utf-8"
+    )
     monkeypatch.setattr(
         edgeflowc,
         "optimize_model",

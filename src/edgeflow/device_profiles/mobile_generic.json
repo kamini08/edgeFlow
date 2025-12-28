@@ -1,0 +1,74 @@
+{
+  "device_id": "mobile_generic",
+  "name": "Generic Mobile Device",
+  "category": "mobile",
+  "manufacturer": "",
+  "model": "",
+  "version": "",
+  "constraints": [
+    {
+      "constraint_type": "ConstraintType.MEMORY",
+      "name": "max_memory_mb",
+      "value": 6144,
+      "unit": "MB",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    },
+    {
+      "constraint_type": "ConstraintType.COMPUTE",
+      "name": "max_ops_per_sec",
+      "value": 2000000000.0,
+      "unit": "ops/sec",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    },
+    {
+      "constraint_type": "ConstraintType.POWER",
+      "name": "max_power_watts",
+      "value": 5,
+      "unit": "W",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    },
+    {
+      "constraint_type": "ConstraintType.LATENCY",
+      "name": "max_inference_ms",
+      "value": 100,
+      "unit": "ms",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "gpu_acceleration",
+      "supported": true,
+      "description": "Mobile GPU support"
+    },
+    {
+      "name": "dsp_acceleration",
+      "supported": true,
+      "description": "DSP acceleration"
+    }
+  ],
+  "preferred_quantization": [
+    "int8",
+    "float16"
+  ],
+  "supported_operators": [],
+  "optimization_flags": {},
+  "created_at": "2025-09-26T19:03:14.217104",
+  "updated_at": "2025-09-26T19:03:14.217116",
+  "created_by": "system",
+  "tags": [],
+  "description": "Typical smartphone/tablet specifications",
+  "benchmark_scores": {}
+}

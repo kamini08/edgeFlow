@@ -1,12 +1,7 @@
 """Tests for --fast-compile CLI path in edgeflowc."""
 
 import argparse
-import json
-import os
-import tempfile
-from unittest.mock import MagicMock, Mock, patch
-
-import pytest
+from unittest.mock import Mock, patch
 
 import edgeflowc
 
@@ -18,7 +13,9 @@ class TestFastCompilePath:
     @patch("edgeflowc.fast_compile_config")
     @patch("edgeflowc.load_config")
     @patch("edgeflowc.validate_file_path")
-    def test_fast_compile_success(self, mock_validate, mock_load, mock_fast_compile, mock_parse_args):
+    def test_fast_compile_success(
+        self, mock_validate, mock_load, mock_fast_compile, mock_parse_args
+    ):
         """Test successful fast compilation path."""
         # Setup mocks
         mock_load.return_value = {"model": "test.tflite", "target_device": "cpu"}
@@ -61,7 +58,9 @@ class TestFastCompilePath:
     @patch("edgeflowc.fast_compile_config")
     @patch("edgeflowc.load_config")
     @patch("edgeflowc.validate_file_path")
-    def test_fast_compile_failure(self, mock_validate, mock_load, mock_fast_compile, mock_parse_args):
+    def test_fast_compile_failure(
+        self, mock_validate, mock_load, mock_fast_compile, mock_parse_args
+    ):
         """Test fast compilation failure path."""
         # Setup mocks
         mock_load.return_value = {"model": "test.tflite", "target_device": "cpu"}
@@ -99,7 +98,9 @@ class TestFastCompilePath:
     @patch("edgeflowc.fast_compile_config")
     @patch("edgeflowc.load_config")
     @patch("edgeflowc.validate_file_path")
-    def test_fast_compile_no_warnings(self, mock_validate, mock_load, mock_fast_compile, mock_parse_args):
+    def test_fast_compile_no_warnings(
+        self, mock_validate, mock_load, mock_fast_compile, mock_parse_args
+    ):
         """Test fast compilation success without warnings."""
         # Setup mocks
         mock_load.return_value = {"model": "test.tflite", "target_device": "gpu"}
@@ -142,7 +143,9 @@ class TestFastCompilePath:
     @patch("edgeflowc.fast_compile_config")
     @patch("edgeflowc.load_config")
     @patch("edgeflowc.validate_file_path")
-    def test_fast_compile_with_verbose(self, mock_validate, mock_load, mock_fast_compile, mock_parse_args):
+    def test_fast_compile_with_verbose(
+        self, mock_validate, mock_load, mock_fast_compile, mock_parse_args
+    ):
         """Test fast compilation with verbose logging."""
         # Setup mocks
         mock_load.return_value = {"model": "test.tflite"}
@@ -188,12 +191,14 @@ class TestFastCompilePath:
     @patch("edgeflowc.fast_compile_config")
     @patch("edgeflowc.load_config")
     @patch("edgeflowc.validate_file_path")
-    def test_fast_compile_with_parser_fallback(self, mock_validate, mock_load, mock_fast_compile, mock_parse_args):
+    def test_fast_compile_with_parser_fallback(
+        self, mock_validate, mock_load, mock_fast_compile, mock_parse_args
+    ):
         """Test fast compilation with parser fallback when load_config fails."""
         # First call fails, triggering fallback
         mock_load.side_effect = [
             ImportError("Parser not available"),
-            {"model": "test.tflite", "fallback": True}
+            {"model": "test.tflite", "fallback": True},
         ]
 
         mock_result = Mock()
