@@ -1,17 +1,10 @@
 import json
 import os
-import tempfile
 from pathlib import Path
 
 import pytest
-
-from device_specs import DeviceSpec, DeviceSpecManager, DeviceType
-from initial_check import (
-    CompatibilityReport,
-    InitialChecker,
-    ModelProfile,
-    perform_initial_check,
-)
+from device_specs import DeviceSpecManager
+from initial_check import CompatibilityReport, InitialChecker, ModelProfile
 
 
 class TestInitialCheck:
@@ -112,7 +105,10 @@ class TestInitialCheck:
         import edgeflowc as cli
 
         monkeypatch.setenv("PYTHONWARNINGS", "ignore")
-        monkeypatch.setattr("sys.argv", ["edgeflowc.py", str(ef), "--check-only"])  # type: ignore[attr-defined]
+        monkeypatch.setattr(
+            "sys.argv",
+            ["edgeflowc.py", str(ef), "--check-only"],
+        )  # type: ignore[attr-defined]
         code = cli.main()
         assert code == 0
 
@@ -123,8 +119,8 @@ class TestInitialCheck:
         Skip when FastAPI is not available in the environment.
         """
         try:
-            from fastapi.testclient import TestClient  # type: ignore
             from backend.app import app  # type: ignore
+            from fastapi.testclient import TestClient  # type: ignore
         except Exception:
             pytest.skip("fastapi not installed; skipping API integration test")
             return

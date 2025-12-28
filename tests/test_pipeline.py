@@ -1,8 +1,8 @@
 import unittest
 
+from mlir_dialect import MLIRModule
 from pipeline import compile_model
 from unified_ir import UIRGraph
-from mlir_dialect import MLIRModule
 
 
 class TestHighLevelPipeline(unittest.TestCase):
@@ -16,7 +16,9 @@ class TestHighLevelPipeline(unittest.TestCase):
 
     def test_compile_model_simulated_onnx(self):
         mlir_module, final_graph, validation = compile_model(
-            model_path="test_model.onnx", target_device="jetson_nano", quantize="float16"
+            model_path="test_model.onnx",
+            target_device="jetson_nano",
+            quantize="float16",
         )
         self.assertIsInstance(mlir_module, MLIRModule)
         self.assertIsInstance(final_graph, UIRGraph)
@@ -25,5 +27,3 @@ class TestHighLevelPipeline(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-

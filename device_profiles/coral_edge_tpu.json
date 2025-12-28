@@ -1,0 +1,61 @@
+{
+  "device_id": "coral_edge_tpu",
+  "name": "Coral Edge TPU",
+  "category": "edge",
+  "manufacturer": "Google",
+  "model": "",
+  "version": "",
+  "constraints": [
+    {
+      "constraint_type": "ConstraintType.MEMORY",
+      "name": "max_memory_mb",
+      "value": 8192,
+      "unit": "MB",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    },
+    {
+      "constraint_type": "ConstraintType.COMPUTE",
+      "name": "max_ops_per_sec",
+      "value": 4000000000000.0,
+      "unit": "ops/sec",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    },
+    {
+      "constraint_type": "ConstraintType.POWER",
+      "name": "max_power_watts",
+      "value": 2,
+      "unit": "W",
+      "min_value": null,
+      "max_value": null,
+      "description": "",
+      "enforced": true
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "tpu_acceleration",
+      "supported": true,
+      "version": "Edge TPU",
+      "performance_score": 95.0
+    }
+  ],
+  "preferred_quantization": [
+    "int8"
+  ],
+  "supported_operators": [],
+  "optimization_flags": {
+    "require_tpu_compatible": true
+  },
+  "created_at": "2025-09-26T19:03:14.217118",
+  "updated_at": "2025-09-26T19:03:14.217125",
+  "created_by": "system",
+  "tags": [],
+  "description": "Specialized AI accelerator for edge inference",
+  "benchmark_scores": {}
+}

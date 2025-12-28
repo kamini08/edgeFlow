@@ -1,0 +1,29 @@
+src/edgeflow/semantic_analyzer/error_types.py:104: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/semantic_analyzer/ir_nodes.py:202: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/semantic_analyzer/ir_nodes.py:203: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/semantic_analyzer/ir_nodes.py:204: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/semantic_analyzer/ir_nodes.py:205: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/uir_validators.py:79: error: Name "Tuple" is not defined  [name-defined]
+src/edgeflow/ir/uir_validators.py:79: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Tuple")
+src/edgeflow/ir/uir_validators.py:440: error: Name "Tuple" is not defined  [name-defined]
+src/edgeflow/ir/uir_validators.py:440: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Tuple")
+src/edgeflow/ir/uir_validators.py:537: error: Name "Tuple" is not defined  [name-defined]
+src/edgeflow/ir/uir_validators.py:537: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Tuple")
+src/edgeflow/ir/uir_validators.py:644: error: Name "Tuple" is not defined  [name-defined]
+src/edgeflow/ir/uir_validators.py:644: note: Did you forget to import it from "typing"? (Suggestion: "from typing import Tuple")
+src/edgeflow/ir/uir_validators.py:822: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/uir_optimization_passes.py:621: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/uir_optimization_passes.py:622: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:150: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:151: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:152: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:153: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:155: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:156: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:157: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:158: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/compiler/mlir_dialect.py:546: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/benchmarking/gpu_testing_framework.py:118: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/compiler/framework_parsers.py:779: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/backend/tests/test_integration.py:47: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 4 errors in 1 file (checked 80 source files)

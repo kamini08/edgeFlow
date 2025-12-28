@@ -1,0 +1,737 @@
+black....................................................................Passed
+isort....................................................................Passed
+flake8...................................................................Failed
+- hook id: flake8
+- exit code: 1
+
+src/edgeflow/analysis/initial_check.py:114:89: E501 line too long (101 > 88 characters)
+src/edgeflow/analysis/initial_check.py:122:89: E501 line too long (103 > 88 characters)
+src/edgeflow/analysis/initial_check.py:136:89: E501 line too long (101 > 88 characters)
+src/edgeflow/analysis/interactive_validator.py:7:1: F401 'json' imported but unused
+src/edgeflow/analysis/interactive_validator.py:9:1: F401 'os' imported but unused
+src/edgeflow/analysis/interactive_validator.py:15:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/analysis/interactive_validator.py:15:1: F401 'typing.Union' imported but unused
+src/edgeflow/analysis/interactive_validator.py:19:1: F401 'rich.live.Live' imported but unused
+src/edgeflow/analysis/interactive_validator.py:28:1: F401 'rich.syntax.Syntax' imported but unused
+src/edgeflow/analysis/interactive_validator.py:466:89: E501 line too long (93 > 88 characters)
+src/edgeflow/analysis/interactive_validator.py:505:89: E501 line too long (101 > 88 characters)
+src/edgeflow/analysis/interactive_validator.py:532:89: E501 line too long (94 > 88 characters)
+src/edgeflow/analysis/interactive_validator.py:737:28: F541 f-string is missing placeholders
+src/edgeflow/analysis/semantic_validator.py:13:1: F401 'typing.Set' imported but unused
+src/edgeflow/analysis/semantic_validator.py:13:1: F401 'typing.Union' imported but unused
+src/edgeflow/analysis/semantic_validator.py:15:1: F401 'numpy as np' imported but unused
+src/edgeflow/analysis/semantic_validator.py:88:89: E501 line too long (98 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:178:89: E501 line too long (104 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:187:89: E501 line too long (125 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:188:89: E501 line too long (108 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:210:17: F841 local variable 'device_spec' is assigned to but never used
+src/edgeflow/analysis/semantic_validator.py:272:89: E501 line too long (97 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:286:89: E501 line too long (92 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:314:89: E501 line too long (101 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:348:89: E501 line too long (116 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:382:89: E501 line too long (92 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:383:25: F811 redefinition of unused 'np' from line 15
+src/edgeflow/analysis/semantic_validator.py:392:89: E501 line too long (96 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:402:89: E501 line too long (120 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:403:89: E501 line too long (92 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:404:46: F541 f-string is missing placeholders
+src/edgeflow/analysis/semantic_validator.py:404:89: E501 line too long (125 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:432:89: E501 line too long (132 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:434:89: E501 line too long (120 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:452:89: E501 line too long (100 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:532:89: E501 line too long (98 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:570:89: E501 line too long (94 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:603:89: E501 line too long (99 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:679:89: E501 line too long (89 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:746:89: E501 line too long (91 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:747:89: E501 line too long (89 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:756:89: E501 line too long (102 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:765:89: E501 line too long (119 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:766:89: E501 line too long (103 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:803:13: F841 local variable 'op_spec' is assigned to but never used
+src/edgeflow/analysis/semantic_validator.py:840:89: E501 line too long (106 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:859:89: E501 line too long (91 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:860:89: E501 line too long (111 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:878:89: E501 line too long (106 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:915:89: E501 line too long (91 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:916:89: E501 line too long (107 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:924:89: E501 line too long (95 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:932:89: E501 line too long (111 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:940:89: E501 line too long (94 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:956:89: E501 line too long (94 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:978:16: F821 undefined name 'diagnostics'
+src/edgeflow/analysis/semantic_validator.py:1125:89: E501 line too long (96 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:1211:89: E501 line too long (98 > 88 characters)
+src/edgeflow/analysis/semantic_validator.py:1212:89: E501 line too long (91 > 88 characters)
+src/edgeflow/analysis/static_validator.py:3:89: E501 line too long (91 > 88 characters)
+src/edgeflow/analysis/static_validator.py:19:1: F401 'pathlib.Path' imported but unused
+src/edgeflow/analysis/static_validator.py:20:1: F401 'typing.Set' imported but unused
+src/edgeflow/analysis/static_validator.py:20:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/analysis/static_validator.py:20:1: F401 'typing.Union' imported but unused
+src/edgeflow/analysis/static_validator.py:386:89: E501 line too long (95 > 88 characters)
+src/edgeflow/analysis/static_validator.py:403:89: E501 line too long (101 > 88 characters)
+src/edgeflow/analysis/static_validator.py:438:89: E501 line too long (94 > 88 characters)
+src/edgeflow/analysis/static_validator.py:459:89: E501 line too long (96 > 88 characters)
+src/edgeflow/analysis/static_validator.py:462:89: E501 line too long (95 > 88 characters)
+src/edgeflow/analysis/static_validator.py:472:89: E501 line too long (104 > 88 characters)
+src/edgeflow/analysis/static_validator.py:475:89: E501 line too long (90 > 88 characters)
+src/edgeflow/analysis/static_validator.py:559:89: E501 line too long (95 > 88 characters)
+src/edgeflow/analysis/static_validator.py:574:89: E501 line too long (105 > 88 characters)
+src/edgeflow/analysis/static_validator.py:595:89: E501 line too long (94 > 88 characters)
+src/edgeflow/analysis/static_validator.py:599:89: E501 line too long (97 > 88 characters)
+src/edgeflow/analysis/static_validator.py:640:89: E501 line too long (90 > 88 characters)
+src/edgeflow/analysis/static_validator.py:653:89: E501 line too long (90 > 88 characters)
+src/edgeflow/analysis/static_validator.py:667:89: E501 line too long (89 > 88 characters)
+src/edgeflow/analysis/static_validator.py:687:89: E501 line too long (101 > 88 characters)
+src/edgeflow/analysis/validator.py:222:89: E501 line too long (99 > 88 characters)
+src/edgeflow/analysis/validator.py:235:89: E501 line too long (90 > 88 characters)
+src/edgeflow/analysis/validator.py:249:89: E501 line too long (92 > 88 characters)
+src/edgeflow/analysis/validator.py:278:89: E501 line too long (94 > 88 characters)
+src/edgeflow/analysis/validator.py:289:89: E501 line too long (112 > 88 characters)
+src/edgeflow/analysis/validator.py:296:89: E501 line too long (95 > 88 characters)
+src/edgeflow/analysis/validator.py:330:89: E501 line too long (96 > 88 characters)
+src/edgeflow/analysis/validator.py:342:89: E501 line too long (91 > 88 characters)
+src/edgeflow/analysis/validator.py:367:89: E501 line too long (94 > 88 characters)
+src/edgeflow/analysis/validator.py:467:89: E501 line too long (97 > 88 characters)
+src/edgeflow/analysis/validator.py:473:89: E501 line too long (151 > 88 characters)
+src/edgeflow/analysis/validator.py:508:89: E501 line too long (89 > 88 characters)
+src/edgeflow/analysis/validator.py:538:89: E501 line too long (99 > 88 characters)
+src/edgeflow/analysis/validator.py:545:89: E501 line too long (109 > 88 characters)
+src/edgeflow/benchmarking/benchmarker.py:40:1: F811 redefinition of unused 'os' from line 29
+src/edgeflow/benchmarking/benchmarker.py:41:1: F811 redefinition of unused 'time' from line 31
+src/edgeflow/benchmarking/benchmarker.py:42:1: F401 'pathlib.Path' imported but unused
+src/edgeflow/benchmarking/benchmarker.py:43:1: F811 redefinition of unused 'Any' from line 32
+src/edgeflow/benchmarking/benchmarker.py:43:1: F811 redefinition of unused 'Dict' from line 32
+src/edgeflow/benchmarking/benchmarker.py:43:1: F811 redefinition of unused 'Optional' from line 32
+src/edgeflow/benchmarking/benchmarker.py:43:1: F401 'typing.List' imported but unused
+src/edgeflow/benchmarking/benchmarker.py:326:89: E501 line too long (89 > 88 characters)
+src/edgeflow/benchmarking/benchmarker.py:329:89: E501 line too long (94 > 88 characters)
+src/edgeflow/benchmarking/device_benchmarker.py:18:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/benchmarking/device_benchmarker.py:18:1: F401 'typing.Union' imported but unused
+src/edgeflow/benchmarking/device_benchmarker.py:349:89: E501 line too long (94 > 88 characters)
+src/edgeflow/benchmarking/device_benchmarker.py:594:89: E501 line too long (112 > 88 characters)
+src/edgeflow/benchmarking/device_benchmarker.py:722:89: E501 line too long (99 > 88 characters)
+src/edgeflow/benchmarking/device_benchmarker.py:728:11: F541 f-string is missing placeholders
+src/edgeflow/benchmarking/gpu_testing_framework.py:13:1: F401 'pathlib.Path' imported but unused
+src/edgeflow/benchmarking/gpu_testing_framework.py:14:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/benchmarking/gpu_testing_framework.py:139:25: F541 f-string is missing placeholders
+src/edgeflow/benchmarking/gpu_testing_framework.py:188:89: E501 line too long (118 > 88 characters)
+src/edgeflow/benchmarking/gpu_testing_framework.py:416:89: E501 line too long (91 > 88 characters)
+src/edgeflow/benchmarking/gpu_testing_framework.py:509:89: E501 line too long (93 > 88 characters)
+src/edgeflow/benchmarking/gpu_testing_framework.py:523:13: F841 local variable 'config' is assigned to but never used
+src/edgeflow/benchmarking/gpu_testing_framework.py:576:89: E501 line too long (94 > 88 characters)
+src/edgeflow/benchmarking/gpu_testing_framework.py:713:11: F541 f-string is missing placeholders
+src/edgeflow/benchmarking/gpu_testing_framework.py:723:89: E501 line too long (102 > 88 characters)
+src/edgeflow/benchmarking/gpu_testing_framework.py:727:19: F541 f-string is missing placeholders
+src/edgeflow/benchmarking/gpu_testing_framework.py:732:19: F541 f-string is missing placeholders
+src/edgeflow/benchmarking/gpu_testing_framework.py:739:11: F541 f-string is missing placeholders
+src/edgeflow/compiler/backend_codegen.py:174:89: E501 line too long (119 > 88 characters)
+src/edgeflow/compiler/backend_codegen.py:182:89: E501 line too long (92 > 88 characters)
+src/edgeflow/compiler/backend_codegen.py:183:89: E501 line too long (91 > 88 characters)
+src/edgeflow/compiler/backend_codegen.py:240:89: E501 line too long (129 > 88 characters)
+src/edgeflow/compiler/backend_codegen.py:241:89: E501 line too long (132 > 88 characters)
+src/edgeflow/compiler/backend_codegen.py:298:89: E501 line too long (96 > 88 characters)
+src/edgeflow/compiler/backend_codegen.py:362:89: E501 line too long (89 > 88 characters)
+src/edgeflow/compiler/backend_codegen.py:363:89: E501 line too long (101 > 88 characters)
+src/edgeflow/compiler/code_generator.py:43:5: F401 'edgeflow_ir.NodeType' imported but unused
+src/edgeflow/compiler/code_generator.py:688:89: E501 line too long (95 > 88 characters)
+src/edgeflow/compiler/code_generator.py:705:89: E501 line too long (97 > 88 characters)
+src/edgeflow/compiler/code_generator.py:712:89: E501 line too long (99 > 88 characters)
+src/edgeflow/compiler/code_generator.py:713:89: E501 line too long (94 > 88 characters)
+src/edgeflow/compiler/code_generator.py:715:89: E501 line too long (111 > 88 characters)
+src/edgeflow/compiler/code_generator.py:716:89: E501 line too long (104 > 88 characters)
+src/edgeflow/compiler/code_generator.py:732:89: E501 line too long (107 > 88 characters)
+src/edgeflow/compiler/code_generator.py:783:89: E501 line too long (101 > 88 characters)
+src/edgeflow/compiler/code_generator.py:788:89: E501 line too long (107 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:35:1: F401 'cli_formatter.Icons' imported but unused
+src/edgeflow/compiler/edgeflowc.py:44:1: F401 'code_generator.generate_code' imported but unused
+src/edgeflow/compiler/edgeflowc.py:48:1: F401 'fast_compile.FastCompileResult' imported but unused
+src/edgeflow/compiler/edgeflowc.py:58:5: F401 'deployment_orchestrator.CrossPlatformDeployer' imported but unused
+src/edgeflow/compiler/edgeflowc.py:58:5: F401 'deployment_orchestrator.DeploymentTarget' imported but unused
+src/edgeflow/compiler/edgeflowc.py:59:5: F401 'dynamic_device_profiles.get_device_profile' imported but unused
+src/edgeflow/compiler/edgeflowc.py:59:5: F401 'dynamic_device_profiles.get_profile_manager' imported but unused
+src/edgeflow/compiler/edgeflowc.py:61:5: F401 'integrated_error_system.ErrorCategory' imported but unused
+src/edgeflow/compiler/edgeflowc.py:61:5: F401 'integrated_error_system.ValidationSeverity' imported but unused
+src/edgeflow/compiler/edgeflowc.py:61:5: F401 'integrated_error_system.get_error_reporter' imported but unused
+src/edgeflow/compiler/edgeflowc.py:67:5: F401 'optimization_orchestrator.OptimizationLevel' imported but unused
+src/edgeflow/compiler/edgeflowc.py:67:5: F401 'optimization_orchestrator.OptimizationOrchestrator' imported but unused
+src/edgeflow/compiler/edgeflowc.py:67:5: F401 'optimization_orchestrator.OptimizationStrategy' imported but unused
+src/edgeflow/compiler/edgeflowc.py:72:5: F401 'traceability_system.get_global_tracker' imported but unused
+src/edgeflow/compiler/edgeflowc.py:362:89: E501 line too long (91 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:447:89: E501 line too long (106 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:454:89: E501 line too long (92 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:455:89: E501 line too long (96 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:456:89: E501 line too long (102 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:457:89: E501 line too long (94 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:702:89: E501 line too long (94 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:703:89: E501 line too long (101 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:704:89: E501 line too long (98 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:918:21: F401 'unified_ir.UIRGraph' imported but unused
+src/edgeflow/compiler/edgeflowc.py:925:17: F841 local variable '_' is assigned to but never used
+src/edgeflow/compiler/edgeflowc.py:957:89: E501 line too long (96 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:960:89: E501 line too long (96 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:970:89: E501 line too long (93 > 88 characters)
+src/edgeflow/compiler/edgeflowc.py:1013:51: F821 undefined name 'exc'
+src/edgeflow/compiler/framework_parsers.py:11:1: F401 'abc.ABC' imported but unused
+src/edgeflow/compiler/framework_parsers.py:11:1: F401 'abc.abstractmethod' imported but unused
+src/edgeflow/compiler/framework_parsers.py:13:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/compiler/framework_parsers.py:13:1: F401 'typing.Union' imported but unused
+src/edgeflow/compiler/mlir_dialect.py:16:1: F401 'abc.ABC' imported but unused
+src/edgeflow/compiler/mlir_dialect.py:19:1: F401 'typing.Set' imported but unused
+src/edgeflow/compiler/mlir_dialect.py:19:1: F401 'typing.Union' imported but unused
+src/edgeflow/compiler/mlir_dialect.py:21:1: F401 'unified_ir.DataType' imported but unused
+src/edgeflow/compiler/mlir_dialect.py:21:1: F401 'unified_ir.FrameworkType' imported but unused
+src/edgeflow/compiler/mlir_dialect.py:21:1: F401 'unified_ir.TensorInfo' imported but unused
+src/edgeflow/compiler/mlir_dialect.py:21:1: F401 'unified_ir.TensorShape' imported but unused
+src/edgeflow/compiler/mlir_dialect.py:116:22: F541 f-string is missing placeholders
+src/edgeflow/compiler/mlir_dialect.py:123:22: F541 f-string is missing placeholders
+src/edgeflow/compiler/mlir_dialect.py:128:89: E501 line too long (117 > 88 characters)
+src/edgeflow/compiler/mlir_dialect.py:145:89: E501 line too long (90 > 88 characters)
+src/edgeflow/compiler/mlir_dialect.py:150:89: E501 line too long (134 > 88 characters)
+src/edgeflow/compiler/mlir_dialect.py:152:89: E501 line too long (104 > 88 characters)
+src/edgeflow/compiler/mlir_dialect.py:625:11: F541 f-string is missing placeholders
+src/edgeflow/compiler/mlir_dialect.py:631:11: F541 f-string is missing placeholders
+src/edgeflow/compiler/mlir_dialect.py:634:11: F541 f-string is missing placeholders
+src/edgeflow/config/config_suggester.py:3:89: E501 line too long (90 > 88 characters)
+src/edgeflow/config/config_suggester.py:17:1: F401 'typing.Union' imported but unused
+src/edgeflow/config/config_suggester.py:19:1: F401 'static_validator.ValidationResult' imported but unused
+src/edgeflow/config/config_suggester.py:91:89: E501 line too long (90 > 88 characters)
+src/edgeflow/config/config_suggester.py:111:89: E501 line too long (95 > 88 characters)
+src/edgeflow/config/config_suggester.py:334:89: E501 line too long (125 > 88 characters)
+src/edgeflow/config/config_suggester.py:353:89: E501 line too long (115 > 88 characters)
+src/edgeflow/config/config_suggester.py:368:89: E501 line too long (118 > 88 characters)
+src/edgeflow/config/config_suggester.py:450:89: E501 line too long (90 > 88 characters)
+src/edgeflow/config/config_suggester.py:451:89: E501 line too long (89 > 88 characters)
+src/edgeflow/config/dynamic_device_profiles.py:9:1: F401 'os' imported but unused
+src/edgeflow/config/dynamic_device_profiles.py:191:89: E501 line too long (92 > 88 characters)
+src/edgeflow/config/dynamic_device_profiles.py:248:89: E501 line too long (95 > 88 characters)
+src/edgeflow/config/dynamic_device_profiles.py:748:15: F541 f-string is missing placeholders
+src/edgeflow/config/hardware_config.py:349:89: E501 line too long (95 > 88 characters)
+src/edgeflow/config/hardware_config.py:357:9: F811 redefinition of unused 'json' from line 10
+src/edgeflow/config/hardware_config.py:379:89: E501 line too long (115 > 88 characters)
+src/edgeflow/deployment/deploy_to_pi.py:7:1: F401 'os' imported but unused
+src/edgeflow/deployment/deploy_to_pi.py:60:89: E501 line too long (89 > 88 characters)
+src/edgeflow/deployment/deploy_to_pi.py:70:23: W291 trailing whitespace
+src/edgeflow/deployment/deploy_to_pi.py:71:51: W291 trailing whitespace
+src/edgeflow/deployment/deploy_to_pi.py:89:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deploy_to_pi.py:93:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deploy_to_pi.py:97:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deploy_to_pi.py:102:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deploy_to_pi.py:106:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deploy_to_pi.py:128:89: E501 line too long (91 > 88 characters)
+src/edgeflow/deployment/deploy_to_pi.py:143:11: F541 f-string is missing placeholders
+src/edgeflow/deployment/deploy_to_pi.py:145:89: E501 line too long (89 > 88 characters)
+src/edgeflow/deployment/deployment_orchestrator.py:8:1: F401 'os' imported but unused
+src/edgeflow/deployment/deployment_orchestrator.py:9:1: F401 'subprocess' imported but unused
+src/edgeflow/deployment/deployment_orchestrator.py:14:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/deployment/deployment_orchestrator.py:16:1: F401 'dynamic_device_profiles.get_device_profile' imported but unused
+src/edgeflow/deployment/deployment_orchestrator.py:159:13: F841 local variable 'dockerfile_content' is assigned to but never used
+src/edgeflow/deployment/deployment_packager.py:17:1: F401 'subprocess' imported but unused
+src/edgeflow/deployment/deployment_packager.py:19:1: F401 'zipfile' imported but unused
+src/edgeflow/deployment/deployment_packager.py:22:1: F401 'pathlib.Path' imported but unused
+src/edgeflow/deployment/deployment_packager.py:23:1: F401 'typing.Optional' imported but unused
+src/edgeflow/deployment/deployment_packager.py:23:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/deployment/deployment_packager.py:180:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:186:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:192:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:213:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:216:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:250:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:255:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:260:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:317:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:322:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:326:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:396:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:401:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:405:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:782:9: F841 local variable 'quantize' is assigned to but never used
+src/edgeflow/deployment/deployment_packager.py:783:9: F841 local variable 'buffer_size' is assigned to but never used
+src/edgeflow/deployment/deployment_packager.py:821:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:829:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:833:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:835:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:841:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:844:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:848:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:852:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:857:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:860:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:865:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:868:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:870:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:872:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:877:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:881:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:888:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:892:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:899:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:911:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:916:89: E501 line too long (89 > 88 characters)
+src/edgeflow/deployment/deployment_packager.py:917:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:919:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:922:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:972:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:976:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:985:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:991:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:998:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1002:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1011:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1014:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1016:49: W291 trailing whitespace
+src/edgeflow/deployment/deployment_packager.py:1018:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1023:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1028:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1030:51: W291 trailing whitespace
+src/edgeflow/deployment/deployment_packager.py:1032:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1033:89: E501 line too long (91 > 88 characters)
+src/edgeflow/deployment/deployment_packager.py:1035:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1038:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1041:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1047:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1049:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1054:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1061:89: E501 line too long (101 > 88 characters)
+src/edgeflow/deployment/deployment_packager.py:1063:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1066:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1075:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1078:1: W293 blank line contains whitespace
+src/edgeflow/deployment/deployment_packager.py:1098:89: E501 line too long (97 > 88 characters)
+src/edgeflow/deployment/deployment_packager.py:1248:89: E501 line too long (112 > 88 characters)
+src/edgeflow/deployment/deployment_packager.py:1255:89: E501 line too long (111 > 88 characters)
+src/edgeflow/deployment/deployment_packager.py:1293:89: E501 line too long (94 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:7:89: E501 line too long (93 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:9:89: E501 line too long (99 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:20:1: F401 'pathlib.Path' imported but unused
+src/edgeflow/deployment/deployment_validator.py:136:13: F401 'tflite_runtime.interpreter' imported but unused
+src/edgeflow/deployment/deployment_validator.py:141:17: F401 'tensorflow.lite' imported but unused
+src/edgeflow/deployment/deployment_validator.py:281:29: F541 f-string is missing placeholders
+src/edgeflow/deployment/deployment_validator.py:282:89: E501 line too long (97 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:296:29: F541 f-string is missing placeholders
+src/edgeflow/deployment/deployment_validator.py:297:89: E501 line too long (97 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:346:89: E501 line too long (115 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:407:89: E501 line too long (100 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:422:89: E501 line too long (96 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:444:89: E501 line too long (93 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:445:89: E501 line too long (103 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:544:89: E501 line too long (102 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:545:53: F541 f-string is missing placeholders
+src/edgeflow/deployment/deployment_validator.py:545:89: E501 line too long (105 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:563:89: E501 line too long (97 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:564:89: E501 line too long (112 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:615:89: E501 line too long (95 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:660:9: F841 local variable 'device_reqs' is assigned to but never used
+src/edgeflow/deployment/deployment_validator.py:714:9: F841 local variable 'device_reqs' is assigned to but never used
+src/edgeflow/deployment/deployment_validator.py:769:89: E501 line too long (99 > 88 characters)
+src/edgeflow/deployment/deployment_validator.py:797:11: F541 f-string is missing placeholders
+src/edgeflow/deployment/docker_manager.py:9:1: F401 'json' imported but unused
+src/edgeflow/deployment/docker_manager.py:11:1: F401 'os' imported but unused
+src/edgeflow/deployment/docker_manager.py:13:1: F401 'time' imported but unused
+src/edgeflow/deployment/edgeflow_raspberry_pi_deployment/inference_code/inference.py:8:1: F401 'os' imported but unused
+src/edgeflow/deployment/edgeflow_raspberry_pi_deployment/inference_code/inference.py:10:1: F401 'typing.Any' imported but unused
+src/edgeflow/deployment/edgeflow_raspberry_pi_deployment/inference_code/inference.py:10:1: F401 'typing.Optional' imported but unused
+src/edgeflow/deployment/edgeflow_raspberry_pi_deployment/inference_code/inference.py:142:15: F541 f-string is missing placeholders
+src/edgeflow/deployment/pi_system_monitor.py:35:15: F541 f-string is missing placeholders
+src/edgeflow/deployment/pi_system_monitor.py:71:9: E722 do not use bare 'except'
+src/edgeflow/deployment/pi_system_monitor.py:82:9: E722 do not use bare 'except'
+src/edgeflow/deployment/pi_system_monitor.py:111:9: E722 do not use bare 'except'
+src/edgeflow/deployment/pi_system_monitor.py:308:89: E501 line too long (105 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:311:89: E501 line too long (140 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:380:23: F541 f-string is missing placeholders
+src/edgeflow/deployment/pi_system_monitor.py:383:89: E501 line too long (93 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:386:89: E501 line too long (99 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:391:89: E501 line too long (107 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:394:19: F541 f-string is missing placeholders
+src/edgeflow/deployment/pi_system_monitor.py:398:15: F541 f-string is missing placeholders
+src/edgeflow/deployment/pi_system_monitor.py:402:9: F841 local variable 'log_file' is assigned to but never used
+src/edgeflow/deployment/pi_system_monitor.py:406:15: F541 f-string is missing placeholders
+src/edgeflow/deployment/pi_system_monitor.py:414:89: E501 line too long (94 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:425:89: E501 line too long (94 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:430:89: E501 line too long (103 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:433:89: E501 line too long (103 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:481:13: F841 local variable 'output' is assigned to but never used
+src/edgeflow/deployment/pi_system_monitor.py:491:89: E501 line too long (91 > 88 characters)
+src/edgeflow/deployment/pi_system_monitor.py:494:15: F541 f-string is missing placeholders
+src/edgeflow/deployment/pi_system_monitor.py:507:15: F541 f-string is missing placeholders
+src/edgeflow/deployment/pi_system_monitor.py:512:19: F541 f-string is missing placeholders
+src/edgeflow/deployment/pi_system_monitor.py:522:15: F541 f-string is missing placeholders
+src/edgeflow/frontend/node_modules/flatted/python/flatted.py:91:9: E722 do not use bare 'except'
+src/edgeflow/grammar/grammar_validator.py:2:89: E501 line too long (98 > 88 characters)
+src/edgeflow/grammar/grammar_validator.py:8:1: F401 'typing.Union' imported but unused
+src/edgeflow/grammar/grammar_validator.py:13:1: F401 'edgeflow_ast.ASTNode' imported but unused
+src/edgeflow/grammar/grammar_validator.py:13:1: F401 'edgeflow_ast.DataType' imported but unused
+src/edgeflow/grammar/grammar_validator.py:13:1: F401 'edgeflow_ast.MaxPool2DDeclaration' imported but unused
+src/edgeflow/grammar/grammar_validator.py:13:1: E402 module level import not at top of file
+src/edgeflow/grammar/grammar_validator.py:31:1: F401 'semantic_analyzer.constraints.DeviceConstraints' imported but unused
+src/edgeflow/grammar/grammar_validator.py:31:1: E402 module level import not at top of file
+src/edgeflow/grammar/grammar_validator.py:32:1: E402 module level import not at top of file
+src/edgeflow/grammar/grammar_validator.py:231:89: E501 line too long (91 > 88 characters)
+src/edgeflow/grammar/grammar_validator.py:272:89: E501 line too long (115 > 88 characters)
+src/edgeflow/grammar/grammar_validator.py:287:89: E501 line too long (104 > 88 characters)
+src/edgeflow/grammar/grammar_validator.py:297:89: E501 line too long (103 > 88 characters)
+src/edgeflow/grammar/grammar_validator.py:310:89: E501 line too long (97 > 88 characters)
+src/edgeflow/ir/edgeflow_ast.py:311:89: E501 line too long (91 > 88 characters)
+src/edgeflow/ir/edgeflow_ast.py:376:89: E501 line too long (89 > 88 characters)
+src/edgeflow/ir/edgeflow_ast.py:381:89: E501 line too long (95 > 88 characters)
+src/edgeflow/ir/edgeflow_ast.py:416:89: E501 line too long (90 > 88 characters)
+src/edgeflow/ir/edgeflow_ast.py:439:89: E501 line too long (92 > 88 characters)
+src/edgeflow/ir/edgeflow_ir.py:368:89: E501 line too long (91 > 88 characters)
+src/edgeflow/ir/uir_normalizer.py:16:1: F401 'typing.List' imported but unused
+src/edgeflow/ir/uir_normalizer.py:16:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/ir/uir_normalizer.py:203:89: E501 line too long (100 > 88 characters)
+src/edgeflow/ir/uir_optimization_passes.py:10:1: F401 'abc.ABC' imported but unused
+src/edgeflow/ir/uir_optimization_passes.py:10:1: F401 'abc.abstractmethod' imported but unused
+src/edgeflow/ir/uir_optimization_passes.py:13:1: F401 'typing.Union' imported but unused
+src/edgeflow/ir/uir_optimization_passes.py:15:1: F401 'unified_ir.FrameworkType' imported but unused
+src/edgeflow/ir/uir_optimization_passes.py:15:1: F401 'unified_ir.TensorShape' imported but unused
+src/edgeflow/ir/uir_optimization_passes.py:170:89: E501 line too long (95 > 88 characters)
+src/edgeflow/ir/uir_optimization_passes.py:365:89: E501 line too long (95 > 88 characters)
+src/edgeflow/ir/uir_optimization_passes.py:758:11: F541 f-string is missing placeholders
+src/edgeflow/ir/uir_optimization_passes.py:763:11: F541 f-string is missing placeholders
+src/edgeflow/ir/uir_optimization_passes.py:766:89: E501 line too long (94 > 88 characters)
+src/edgeflow/ir/uir_optimization_passes.py:773:11: F541 f-string is missing placeholders
+src/edgeflow/ir/uir_validators.py:10:1: F401 'abc.ABC' imported but unused
+src/edgeflow/ir/uir_validators.py:10:1: F401 'abc.abstractmethod' imported but unused
+src/edgeflow/ir/uir_validators.py:13:1: F401 'typing.Set' imported but unused
+src/edgeflow/ir/uir_validators.py:13:1: F401 'typing.Union' imported but unused
+src/edgeflow/ir/uir_validators.py:15:1: F401 'unified_ir.FrameworkType' imported but unused
+src/edgeflow/ir/uir_validators.py:159:89: E501 line too long (118 > 88 characters)
+src/edgeflow/ir/uir_validators.py:167:89: E501 line too long (93 > 88 characters)
+src/edgeflow/ir/uir_validators.py:190:89: E501 line too long (116 > 88 characters)
+src/edgeflow/ir/uir_validators.py:213:89: E501 line too long (119 > 88 characters)
+src/edgeflow/ir/uir_validators.py:237:89: E501 line too long (109 > 88 characters)
+src/edgeflow/ir/uir_validators.py:261:89: E501 line too long (101 > 88 characters)
+src/edgeflow/ir/uir_validators.py:456:89: E501 line too long (97 > 88 characters)
+src/edgeflow/ir/uir_validators.py:501:89: E501 line too long (94 > 88 characters)
+src/edgeflow/ir/uir_validators.py:516:89: E501 line too long (92 > 88 characters)
+src/edgeflow/ir/uir_validators.py:569:89: E501 line too long (92 > 88 characters)
+src/edgeflow/ir/uir_validators.py:597:89: E501 line too long (121 > 88 characters)
+src/edgeflow/ir/uir_validators.py:749:89: E501 line too long (143 > 88 characters)
+src/edgeflow/ir/uir_validators.py:780:89: E501 line too long (107 > 88 characters)
+src/edgeflow/ir/uir_validators.py:799:89: E501 line too long (91 > 88 characters)
+src/edgeflow/ir/uir_validators.py:924:11: F541 f-string is missing placeholders
+src/edgeflow/ir/unified_ir.py:22:1: F401 'typing.Set' imported but unused
+src/edgeflow/optimization/fast_compile.py:12:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/optimization/fast_compile.py:15:1: F401 'semantic_analyzer.semantic_check' imported but unused
+src/edgeflow/optimization/fast_compile.py:16:1: F401 'semantic_analyzer.constraints.ConstraintConfig' imported but unused
+src/edgeflow/optimization/fast_compile.py:22:1: F401 'semantic_analyzer.error_types.ErrorCollector' imported but unused
+src/edgeflow/optimization/fast_compile.py:62:89: E501 line too long (92 > 88 characters)
+src/edgeflow/optimization/fast_compile.py:465:89: E501 line too long (91 > 88 characters)
+src/edgeflow/optimization/fast_compile.py:646:15: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:651:15: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:657:15: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:665:15: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:669:11: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:673:89: E501 line too long (98 > 88 characters)
+src/edgeflow/optimization/fast_compile.py:677:11: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:681:15: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:691:19: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:709:11: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:711:11: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:712:11: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:713:11: F541 f-string is missing placeholders
+src/edgeflow/optimization/fast_compile.py:714:11: F541 f-string is missing placeholders
+src/edgeflow/optimization/gpu_optimization_integration.py:12:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/optimization/gpu_optimization_integration.py:14:1: F401 'dynamic_device_profiles.DeviceProfile' imported but unused
+src/edgeflow/optimization/gpu_optimization_integration.py:17:1: F401 'optimization_orchestrator.OptimizationResult' imported but unused
+src/edgeflow/optimization/gpu_optimization_integration.py:186:89: E501 line too long (113 > 88 characters)
+src/edgeflow/optimization/gpu_optimization_integration.py:269:89: E501 line too long (92 > 88 characters)
+src/edgeflow/optimization/gpu_optimization_integration.py:270:89: E501 line too long (94 > 88 characters)
+src/edgeflow/optimization/gpu_optimization_integration.py:271:89: E501 line too long (94 > 88 characters)
+src/edgeflow/optimization/gpu_optimization_integration.py:408:89: E501 line too long (96 > 88 characters)
+src/edgeflow/optimization/gpu_optimization_integration.py:553:21: F541 f-string is missing placeholders
+src/edgeflow/optimization/gpu_optimization_integration.py:561:22: F541 f-string is missing placeholders
+src/edgeflow/optimization/gpu_optimization_integration.py:585:15: F541 f-string is missing placeholders
+src/edgeflow/optimization/gpu_optimization_integration.py:593:15: F541 f-string is missing placeholders
+src/edgeflow/optimization/optimization_orchestrator.py:14:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/optimization/optimization_orchestrator.py:14:1: F401 'typing.Union' imported but unused
+src/edgeflow/optimization/optimization_orchestrator.py:305:89: E501 line too long (89 > 88 characters)
+src/edgeflow/optimization/optimization_orchestrator.py:370:89: E501 line too long (90 > 88 characters)
+src/edgeflow/optimization/optimization_orchestrator.py:503:89: E501 line too long (90 > 88 characters)
+src/edgeflow/optimization/optimization_orchestrator.py:613:14: F841 local variable 'ctx' is assigned to but never used
+src/edgeflow/optimization/optimization_orchestrator.py:670:89: E501 line too long (100 > 88 characters)
+src/edgeflow/optimization/optimization_orchestrator.py:675:89: E501 line too long (109 > 88 characters)
+src/edgeflow/optimization/optimization_orchestrator.py:680:89: E501 line too long (112 > 88 characters)
+src/edgeflow/optimization/optimization_pipeline.py:10:1: F401 'dataclasses.field' imported but unused
+src/edgeflow/optimization/optimization_pipeline.py:13:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/optimization/optimization_pipeline.py:17:1: F401 'traceability_system.register_artifact' imported but unused
+src/edgeflow/optimization/optimization_pipeline.py:17:1: F401 'traceability_system.trace_transformation' imported but unused
+src/edgeflow/optimization/optimization_pipeline.py:234:89: E501 line too long (93 > 88 characters)
+src/edgeflow/optimization/optimization_pipeline.py:244:9: F401 'tensorflow_model_optimization.quantization.keras.quantize_model' imported but unused
+src/edgeflow/optimization/optimization_pipeline.py:269:9: F401 'tensorflow as tf' imported but unused
+src/edgeflow/optimization/optimizer.py:90:13: F811 redefinition of unused 'torch' from line 34
+src/edgeflow/optimization/optimizer.py:101:13: F811 redefinition of unused 'onnx' from line 43
+src/edgeflow/optimization/optimizer.py:102:13: F811 redefinition of unused 'ort' from line 44
+src/edgeflow/optimization/optimizer.py:286:13: F841 local variable 'onnx_model' is assigned to but never used
+src/edgeflow/optimization/optimizer.py:342:89: E501 line too long (94 > 88 characters)
+src/edgeflow/optimization/optimizer.py:525:89: E501 line too long (98 > 88 characters)
+src/edgeflow/optimization/optimizer.py:590:89: E501 line too long (93 > 88 characters)
+src/edgeflow/optimization/optimizer.py:593:89: E501 line too long (89 > 88 characters)
+src/edgeflow/optimization/optimizer.py:602:89: E501 line too long (89 > 88 characters)
+src/edgeflow/optimization/optimizer.py:640:89: E501 line too long (99 > 88 characters)
+src/edgeflow/optimization/optimizer.py:658:89: E501 line too long (98 > 88 characters)
+src/edgeflow/optimization/optimizer.py:790:89: E501 line too long (92 > 88 characters)
+src/edgeflow/optimization/optimizer.py:873:89: E501 line too long (89 > 88 characters)
+src/edgeflow/pipeline/end_to_end_pipeline.py:281:89: E501 line too long (95 > 88 characters)
+src/edgeflow/pipeline/end_to_end_pipeline.py:325:89: E501 line too long (112 > 88 characters)
+src/edgeflow/pipeline/pipeline.py:9:1: F401 'typing.Any' imported but unused
+src/edgeflow/pipeline/pipeline.py:9:1: F401 'typing.Dict' imported but unused
+src/edgeflow/reporting/cli_formatter.py:85:89: E501 line too long (97 > 88 characters)
+src/edgeflow/reporting/cli_formatter.py:162:89: E501 line too long (108 > 88 characters)
+src/edgeflow/reporting/cli_formatter.py:205:89: E501 line too long (115 > 88 characters)
+src/edgeflow/reporting/cli_formatter.py:264:89: E501 line too long (94 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:17:1: F401 'typing.Union' imported but unused
+src/edgeflow/reporting/error_reporter.py:70:89: E501 line too long (119 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:85:89: E501 line too long (114 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:100:89: E501 line too long (108 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:101:89: E501 line too long (111 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:117:89: E501 line too long (102 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:132:89: E501 line too long (92 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:133:89: E501 line too long (107 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:148:89: E501 line too long (97 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:149:89: E501 line too long (100 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:165:89: E501 line too long (96 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:166:89: E501 line too long (98 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:181:89: E501 line too long (106 > 88 characters)
+src/edgeflow/reporting/error_reporter.py:197:89: E501 line too long (104 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:4:89: E501 line too long (90 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:9:1: F401 'typing.List' imported but unused
+src/edgeflow/reporting/explainability_reporter.py:9:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/reporting/explainability_reporter.py:31:89: E501 line too long (103 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:32:89: E501 line too long (111 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:33:89: E501 line too long (128 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:37:89: E501 line too long (96 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:38:89: E501 line too long (98 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:39:89: E501 line too long (105 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:44:89: E501 line too long (107 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:45:89: E501 line too long (114 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:49:89: E501 line too long (89 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:50:89: E501 line too long (101 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:51:89: E501 line too long (110 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:57:89: E501 line too long (104 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:63:89: E501 line too long (105 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:69:89: E501 line too long (110 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:74:89: E501 line too long (92 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:75:89: E501 line too long (122 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:133:27: W291 trailing whitespace
+src/edgeflow/reporting/explainability_reporter.py:134:28: W291 trailing whitespace
+src/edgeflow/reporting/explainability_reporter.py:146:9: F841 local variable 'quantize' is assigned to but never used
+src/edgeflow/reporting/explainability_reporter.py:155:89: E501 line too long (93 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:156:89: E501 line too long (95 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:176:89: E501 line too long (92 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:180:89: E501 line too long (90 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:260:89: E501 line too long (89 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:310:89: E501 line too long (98 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:311:89: E501 line too long (93 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:312:89: E501 line too long (101 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:361:89: E501 line too long (90 > 88 characters)
+src/edgeflow/reporting/explainability_reporter.py:365:89: E501 line too long (92 > 88 characters)
+src/edgeflow/reporting/integrated_error_system.py:7:1: F401 'json' imported but unused
+src/edgeflow/reporting/integrated_error_system.py:9:1: F401 'os' imported but unused
+src/edgeflow/reporting/integrated_error_system.py:13:1: F401 'pathlib.Path' imported but unused
+src/edgeflow/reporting/integrated_error_system.py:14:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/reporting/integrated_error_system.py:14:1: F401 'typing.Union' imported but unused
+src/edgeflow/reporting/integrated_error_system.py:115:89: E501 line too long (90 > 88 characters)
+src/edgeflow/reporting/integrated_error_system.py:240:89: E501 line too long (99 > 88 characters)
+src/edgeflow/reporting/integrated_error_system.py:241:89: E501 line too long (101 > 88 characters)
+src/edgeflow/reporting/integrated_error_system.py:252:89: E501 line too long (89 > 88 characters)
+src/edgeflow/reporting/integrated_error_system.py:262:89: E501 line too long (96 > 88 characters)
+src/edgeflow/reporting/integrated_error_system.py:359:89: E501 line too long (93 > 88 characters)
+src/edgeflow/reporting/reporter.py:230:89: E501 line too long (122 > 88 characters)
+src/edgeflow/reporting/reporter.py:231:89: E501 line too long (107 > 88 characters)
+src/edgeflow/reporting/traceability_system.py:16:1: F401 'typing.Union' imported but unused
+src/edgeflow/semantic_analyzer/__init__.py:4:89: E501 line too long (91 > 88 characters)
+src/edgeflow/semantic_analyzer/__init__.py:5:89: E501 line too long (95 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:4:1: F401 'math' imported but unused
+src/edgeflow/semantic_analyzer/analyzer.py:5:1: F401 'typing.Tuple' imported but unused
+src/edgeflow/semantic_analyzer/analyzer.py:7:1: F401 '.constraints.DeviceConstraints' imported but unused
+src/edgeflow/semantic_analyzer/analyzer.py:7:1: F401 '.constraints.ParameterRange' imported but unused
+src/edgeflow/semantic_analyzer/analyzer.py:8:1: F401 '.error_types.SourceLocation' imported but unused
+src/edgeflow/semantic_analyzer/analyzer.py:15:1: F401 '.ir_nodes.ActivationType' imported but unused
+src/edgeflow/semantic_analyzer/analyzer.py:15:1: F401 '.ir_nodes.DataType' imported but unused
+src/edgeflow/semantic_analyzer/analyzer.py:15:1: F401 '.ir_nodes.TensorInfo' imported but unused
+src/edgeflow/semantic_analyzer/analyzer.py:15:1: F401 '.ir_nodes.TensorShape' imported but unused
+src/edgeflow/semantic_analyzer/analyzer.py:179:89: E501 line too long (94 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:198:89: E501 line too long (96 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:232:89: E501 line too long (98 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:257:89: E501 line too long (135 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:299:89: E501 line too long (100 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:324:89: E501 line too long (113 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:328:89: E501 line too long (108 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:345:89: E501 line too long (116 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:349:89: E501 line too long (144 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:357:89: E501 line too long (90 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:441:89: E501 line too long (104 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:456:89: E501 line too long (104 > 88 characters)
+src/edgeflow/semantic_analyzer/analyzer.py:460:89: E501 line too long (138 > 88 characters)
+src/edgeflow/semantic_analyzer/compiler_integration.py:6:1: F401 'typing.List' imported but unused
+src/edgeflow/semantic_analyzer/compiler_integration.py:302:19: F541 f-string is missing placeholders
+src/edgeflow/semantic_analyzer/constraints.py:2:89: E501 line too long (92 > 88 characters)
+src/edgeflow/semantic_analyzer/constraints.py:5:1: F401 'enum.Enum' imported but unused
+src/edgeflow/semantic_analyzer/error_types.py:147:89: E501 line too long (98 > 88 characters)
+src/edgeflow/semantic_analyzer/error_types.py:233:15: F541 f-string is missing placeholders
+src/edgeflow/semantic_analyzer/error_types.py:239:15: F541 f-string is missing placeholders
+src/edgeflow/semantic_analyzer/ir_nodes.py:4:1: F401 'abc.ABC' imported but unused
+src/edgeflow/semantic_analyzer/ir_nodes.py:4:1: F401 'abc.abstractmethod' imported but unused
+src/edgeflow/utils/download_model.py:39:7: F541 f-string is missing placeholders
+tests/test_cli_docker.py:5:1: F401 'pytest' imported but unused
+tests/test_cli_docker.py:22:89: E501 line too long (101 > 88 characters)
+tests/test_cli_docker.py:92:89: E501 line too long (101 > 88 characters)
+tests/test_cli_explain_checkonly.py:4:1: F401 'json' imported but unused
+tests/test_cli_explain_checkonly.py:5:1: F401 'os' imported but unused
+tests/test_cli_explain_checkonly.py:6:1: F401 'tempfile' imported but unused
+tests/test_cli_explain_checkonly.py:7:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/test_cli_explain_checkonly.py:10:1: F401 'pytest' imported but unused
+tests/test_cli_explain_checkonly.py:74:57: F841 local variable 'mock_open' is assigned to but never used
+tests/test_cli_fast_compile.py:4:1: F401 'json' imported but unused
+tests/test_cli_fast_compile.py:5:1: F401 'os' imported but unused
+tests/test_cli_fast_compile.py:6:1: F401 'tempfile' imported but unused
+tests/test_cli_fast_compile.py:7:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/test_cli_fast_compile.py:10:1: F401 'pytest' imported but unused
+tests/test_docker.py:2:1: F401 'pathlib.Path' imported but unused
+tests/test_initial_check.py:3:1: F401 'tempfile' imported but unused
+tests/test_initial_check.py:7:1: F401 'device_specs.DeviceSpec' imported but unused
+tests/test_initial_check.py:7:1: F401 'device_specs.DeviceType' imported but unused
+tests/test_initial_check.py:8:1: F401 'initial_check.perform_initial_check' imported but unused
+tests/test_initial_check.py:66:89: E501 line too long (98 > 88 characters)
+tests/test_initial_check.py:114:89: E501 line too long (112 > 88 characters)
+
+mypy.....................................................................Failed
+- hook id: mypy
+- exit code: 1
+
+src/edgeflow/semantic_analyzer/error_types.py:104: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/semantic_analyzer/error_types.py:116: error: Incompatible default for argument "node_id" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/error_types.py:116: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/error_types.py:116: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/error_types.py:117: error: Incompatible default for argument "layer_name" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/error_types.py:117: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/error_types.py:117: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/error_types.py:142: error: Incompatible default for argument "node_id" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/error_types.py:142: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/error_types.py:142: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/error_types.py:143: error: Incompatible default for argument "layer_name" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/error_types.py:143: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/error_types.py:143: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/error_types.py:170: error: Incompatible default for argument "node_id" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/error_types.py:170: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/error_types.py:170: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/error_types.py:171: error: Incompatible default for argument "layer_name" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/error_types.py:171: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/error_types.py:171: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/error_types.py:173: error: Incompatible default for argument "suggestion" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/error_types.py:173: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/error_types.py:173: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/error_types.py:192: error: Incompatible default for argument "node_id" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/error_types.py:192: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/error_types.py:192: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/error_types.py:193: error: Incompatible default for argument "layer_name" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/error_types.py:193: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/error_types.py:193: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/ir_nodes.py:202: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/semantic_analyzer/ir_nodes.py:203: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/semantic_analyzer/ir_nodes.py:204: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/semantic_analyzer/ir_nodes.py:205: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/semantic_analyzer/ir_nodes.py:354: error: Incompatible default for argument "name" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/ir_nodes.py:354: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/ir_nodes.py:354: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/ir_nodes.py:355: error: Incompatible default for argument "location" (default has type "None", argument has type "SourceLocation")  [assignment]
+src/edgeflow/semantic_analyzer/ir_nodes.py:355: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/ir_nodes.py:355: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/ir_nodes.py:375: error: Incompatible default for argument "name" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/ir_nodes.py:375: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/ir_nodes.py:375: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/ir_nodes.py:376: error: Incompatible default for argument "location" (default has type "None", argument has type "SourceLocation")  [assignment]
+src/edgeflow/semantic_analyzer/ir_nodes.py:376: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/ir_nodes.py:376: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/ir_nodes.py:396: error: Incompatible default for argument "name" (default has type "None", argument has type "str")  [assignment]
+src/edgeflow/semantic_analyzer/ir_nodes.py:396: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/ir_nodes.py:396: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/semantic_analyzer/ir_nodes.py:397: error: Incompatible default for argument "location" (default has type "None", argument has type "SourceLocation")  [assignment]
+src/edgeflow/semantic_analyzer/ir_nodes.py:397: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/edgeflow/semantic_analyzer/ir_nodes.py:397: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/edgeflow/reporting/cli_formatter.py:316: error: Incompatible types in assignment (expression has type "float", variable has type "int")  [assignment]
+src/edgeflow/analysis/semantic_validator.py:280: error: Value of type "object" is not indexable  [index]
+src/edgeflow/analysis/semantic_validator.py:395: error: Item "None" of "dict[str, Any] | None" has no attribute "get"  [union-attr]
+src/edgeflow/analysis/semantic_validator.py:425: error: Item "None" of "dict[str, Any] | None" has no attribute "get"  [union-attr]
+src/edgeflow/analysis/semantic_validator.py:544: error: Value of type "object" is not indexable  [index]
+src/edgeflow/analysis/semantic_validator.py:564: error: Value of type "object" is not indexable  [index]
+src/edgeflow/analysis/semantic_validator.py:570: error: Value of type "object" is not indexable  [index]
+src/edgeflow/analysis/semantic_validator.py:575: error: Unsupported right operand type for in ("object")  [operator]
+src/edgeflow/analysis/semantic_validator.py:576: error: Value of type "object" is not indexable  [index]
+src/edgeflow/analysis/semantic_validator.py:978: error: Name "diagnostics" is not defined  [name-defined]
+src/edgeflow/analysis/semantic_validator.py:1283: error: Unsupported left operand type for + ("Collection[str]")  [operator]
+src/edgeflow/reporting/traceability_system.py:293: error: Need type annotation for "transformation_counts" (hint: "transformation_counts: dict[<type>, <type>] = ...")  [var-annotated]
+src/edgeflow/reporting/error_reporter.py:215: error: Dict entry 0 has incompatible type "str": "dict[str, list[str]]"; expected "str": "list[str]"  [dict-item]
+src/edgeflow/reporting/error_reporter.py:253: error: Dict entry 1 has incompatible type "str": "dict[str, list[str]]"; expected "str": "list[str]"  [dict-item]
+src/edgeflow/pipeline/end_to_end_pipeline.py:188: error: "object" has no attribute "append"  [attr-defined]
+src/edgeflow/pipeline/end_to_end_pipeline.py:209: error: "object" has no attribute "append"  [attr-defined]
+src/edgeflow/pipeline/end_to_end_pipeline.py:287: error: "object" has no attribute "append"  [attr-defined]
+src/edgeflow/pipeline/end_to_end_pipeline.py:310: error: "object" has no attribute "append"  [attr-defined]
+src/edgeflow/pipeline/end_to_end_pipeline.py:315: error: "object" has no attribute "append"  [attr-defined]
+src/edgeflow/pipeline/end_to_end_pipeline.py:324: error: "object" has no attribute "append"  [attr-defined]
+src/edgeflow/pipeline/end_to_end_pipeline.py:337: error: Need type annotation for "result"  [var-annotated]
+src/edgeflow/pipeline/end_to_end_pipeline.py:425: error: Need type annotation for "result"  [var-annotated]
+src/edgeflow/optimization/gpu_optimization_integration.py:83: error: Incompatible types in assignment (expression has type "None", variable has type "list[str]")  [assignment]
+src/edgeflow/optimization/gpu_optimization_integration.py:84: error: Incompatible types in assignment (expression has type "None", variable has type "list[str]")  [assignment]
+src/edgeflow/optimization/gpu_optimization_integration.py:85: error: Incompatible types in assignment (expression has type "None", variable has type "list[str]")  [assignment]
+src/edgeflow/optimization/gpu_optimization_integration.py:307: error: Item "None" of "Any | None" has no attribute "vendor"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:413: error: Item "None" of "Any | None" has no attribute "vendor"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:475: error: Need type annotation for "recommendations"  [var-annotated]
+src/edgeflow/optimization/gpu_optimization_integration.py:503: error: Item "float" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:503: error: Item "str" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:503: error: Item "int" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:503: error: Item "None" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:505: error: Item "float" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:505: error: Item "str" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:505: error: Item "int" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:505: error: Item "None" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:509: error: Item "float" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:509: error: Item "str" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:509: error: Item "int" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:509: error: Item "None" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:514: error: Item "float" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:514: error: Item "str" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:514: error: Item "int" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:514: error: Item "None" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:519: error: Item "float" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:519: error: Item "str" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:519: error: Item "int" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/gpu_optimization_integration.py:519: error: Item "None" of "list[Any] | float | str | int | None" has no attribute "append"  [union-attr]
+src/edgeflow/optimization/fast_compile.py:226: error: Incompatible types in assignment (expression has type "float", variable has type "int")  [assignment]
+src/edgeflow/optimization/fast_compile.py:227: error: Incompatible types in assignment (expression has type "float", variable has type "int")  [assignment]
+src/edgeflow/optimization/fast_compile.py:531: error: Item "None" of "PerformanceMetrics | None" has no attribute "inference_time_ms"  [union-attr]
+src/edgeflow/optimization/fast_compile.py:533: error: Incompatible types in assignment (expression has type "str", target has type "dict[str, FastCompileResult] | None")  [assignment]
+src/edgeflow/optimization/fast_compile.py:537: error: Item "None" of "PerformanceMetrics | None" has no attribute "memory_usage_mb"  [union-attr]
+src/edgeflow/optimization/fast_compile.py:539: error: Incompatible types in assignment (expression has type "str", target has type "dict[str, FastCompileResult] | None")  [assignment]
+src/edgeflow/optimization/fast_compile.py:543: error: Item "None" of "PerformanceMetrics | None" has no attribute "accuracy_estimate"  [union-attr]
+src/edgeflow/optimization/fast_compile.py:545: error: Incompatible types in assignment (expression has type "str", target has type "dict[str, FastCompileResult] | None")  [assignment]
+src/edgeflow/optimization/fast_compile.py:549: error: Item "None" of "PerformanceMetrics | None" has no attribute "power_consumption_mw"  [union-attr]
+src/edgeflow/optimization/fast_compile.py:551: error: Incompatible types in assignment (expression has type "str", target has type "dict[str, FastCompileResult] | None")  [assignment]
+src/edgeflow/optimization/fast_compile.py:568: error: Incompatible types in assignment (expression has type "str", target has type "dict[str, FastCompileResult] | None")  [assignment]
+src/edgeflow/ir/unified_ir.py:161: error: Argument 1 to "append" of "list" has incompatible type "int | str"; expected "int"  [arg-type]
+src/edgeflow/ir/unified_ir.py:163: error: Argument 1 to "TensorShape" has incompatible type "list[int]"; expected "list[int | str]"  [arg-type]
+src/edgeflow/ir/unified_ir.py:163: note: "List" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
+src/edgeflow/ir/unified_ir.py:163: note: Consider using "Sequence" instead, which is covariant
+src/edgeflow/ir/unified_ir.py:472: error: Argument 1 to "TensorShape" has incompatible type "list[int]"; expected "list[int | str]"  [arg-type]
+src/edgeflow/ir/unified_ir.py:472: note: "List" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
+src/edgeflow/ir/unified_ir.py:472: note: Consider using "Sequence" instead, which is covariant
+src/edgeflow/ir/uir_validators.py:481: error: Need type annotation for "issues" (hint: "issues: list[<type>] = ...")  [var-annotated]
+src/edgeflow/ir/uir_validators.py:813: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/uir_optimization_passes.py:621: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/uir_optimization_passes.py:622: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/uir_normalizer.py:327: error: Dict entry 0 has incompatible type "str": "dict[str, Any]"; expected "str": "str"  [dict-item]
+src/edgeflow/ir/edgeflow_ir.py:150: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:151: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:152: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:153: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:155: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:156: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:157: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/ir/edgeflow_ir.py:158: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/compiler/mlir_dialect.py:546: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/compiler/framework_parsers.py:779: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/edgeflow/benchmarking/gpu_testing_framework.py:118: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 79 errors in 12 files (checked 85 source files)
+

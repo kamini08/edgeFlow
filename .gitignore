@@ -48,6 +48,37 @@ tests/
 *.joblib
 
 # Allow only small test/example model files
+!models/simple_cnn.keras
+
+# Ignore generated files
+generated/
+
+# Ignore report files
+report.md
+
+# Ignore local model files
+models/*.h5
+models/*.tflite
+models/*.onnx
+models/*.pb
+models/__pycache__/
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Ignore local environment files
+.env
+.env.local
+
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+**/__pycache__/
 !test.tflite
 !test_optimized.tflite
 !example_*.tflite
@@ -136,3 +167,4 @@ wheels/
 .env.development.local
 .env.test.local
 .env.production.local
+node_modules/
