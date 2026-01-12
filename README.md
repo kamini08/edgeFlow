@@ -1,6 +1,8 @@
 # EdgeFlow Compiler with Semantic Analysis
 
-EdgeFlow is a domain-specific language (DSL) and compiler for optimizing TensorFlow Lite models for edge deployment. Users write simple `.ef` configuration files that describe optimization strategies (e.g., INT8 quantization), target devices, and goals like latency or size. The CLI parses these configs and runs the optimization pipeline.
+**DSL for deploying AI models on edge devices.**
+
+EdgeFlow is a domain-specific language (DSL) and compiler for optimizing AI models for edge deployment. Users write simple `.ef` configuration files that describe optimization strategies (e.g., INT8 quantization), target devices, and goals like latency or size. The CLI parses these configs and runs the optimization pipeline.
 
 **NEW: Comprehensive Semantic Analysis System** - The compiler now includes a sophisticated semantic analyzer that validates DSL models for shape compatibility, parameter ranges, resource constraints, and device compatibility before code generation.
 
@@ -35,6 +37,78 @@ For development (linting, tests, coverage, hooks):
 
 ```bash
 pip install -r requirements-dev.txt
+```
+
+**Recommended: Install as editable package**
+
+```bash
+pip install -e .
+```
+
+This allows you to use `edgeflow` command directly instead of `python -m edgeflow.compiler.edgeflowc`.
+
+## Quick Start
+
+### 1. Clone and Install
+
+```bash
+# Clone repository
+git clone https://github.com/pointblank-club/edgeFlow.git
+cd edgeFlow
+
+# Create and activate virtual environment (recommended)
+python3 -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# On Windows: .venv\Scripts\activate
+
+# Install package
+pip install -e .
+```
+
+### 2. Verify Installation
+
+```bash
+edgeflow --version
+edgeflow --help
+```
+
+> **Note**: You may see a warning about missing 'dynamic_device_profiles'. This is expected and doesn't affect functionality.
+
+### 3. Run Example
+
+```bash
+# View the example configuration
+cat examples/quick_start.ef
+
+# Run the compiler (note: requires a .tflite model file)
+edgeflow examples/quick_start.ef
+```
+
+### 4. Create Your Own Config
+
+Create a file `my_config.ef`:
+
+```
+model = "path/to/your/model.tflite"
+output = "optimized_model.tflite"
+quantize = int8
+target_device = "raspberry_pi"
+optimize_for = latency
+```
+
+Then run:
+
+```bash
+edgeflow my_config.ef
+```
+
+### Alternative: Without Installation
+
+If you prefer not to install, set `PYTHONPATH`:
+
+```bash
+export PYTHONPATH=$(pwd)/src
+python -m edgeflow.compiler.edgeflowc examples/quick_start.ef
 ```
 
 ## Usage
@@ -72,37 +146,6 @@ python -m edgeflow.compiler.edgeflowc non_existent.ef
 ```bash
 python -m edgeflow.compiler.edgeflowc invalid.txt
 # Error: Invalid file extension. Expected '.ef' file
-```
-
-## CLI Options
-
-- `config_path`: Positional `.ef` file path (required)
-- `-v, --verbose`: Enable verbose debug output
-- `--version`: Print CLI version and exit
-
-## Language Toolchain (ANTLR)
-
-Prereqs:
-
-- Java JDK (required by ANTLR tool)
-- `antlr4-python3-runtime` (`pip install antlr4-python3-runtime`)
-- ANTLR 4.13.1 Complete Jar (download from antlr.org and place in `grammer/`)
-
-Generate Python parser/lexer into the `parser/` package:
-
-```bash
-
-
-```
-
-After generation, `parser/` contains `EdgeFlowLexer.py`, `EdgeFlowParser.py`, `EdgeFlowVisitor.py`, etc. The CLI automatically uses them when present; otherwise it falls back to a simple line-based parser.
-
-## Running the Compiler
-
-Parse a `.ef` config and run the (placeholder) optimization pipeline:
-
-```bash
-python -m edgeflow.compiler.edgeflowc path/to/config.ef
 ```
 
 ## Semantic Analysis System
@@ -159,29 +202,29 @@ else:
 
 ```bash
 edgeFlow/
-├── src/
-│   └── edgeflow/
-│       ├── compiler/         # Core compiler logic
-│       ├── deployment/       # Deployment orchestration
-│       ├── optimization/     # Optimization strategies
-│       ├── analysis/         # Static and semantic analysis
-│       ├── reporting/        # Error reporting and explainability
-│       ├── benchmarking/     # Performance benchmarking
-│       ├── config/           # Configuration handling
-│       ├── ir/               # Intermediate Representation
-│       ├── pipeline/         # Pipeline orchestration
-│       ├── utils/            # Utility functions
-│       ├── parser/           # Parser logic
-│       ├── backend/          # Backend API
-│       └── frontend/         # Frontend application
-├── scripts/              # Helper scripts
+├── .github/workflows/    # CI/CD GitHub Actions
+├── scripts/              # Build and verification scripts
+├── src/edgeflow/         # Core source code
+│   ├── analysis/         # Static and semantic analysis
+│   ├── backend/          # Backend API
+│   ├── benchmarking/     # Performance benchmarking
+│   ├── compiler/         # Core compiler logic
+│   ├── config/           # Configuration handling
+│   ├── deployment/       # Deployment orchestration
+│   ├── frontend/         # Frontend application
+│   ├── ir/               # Intermediate Representation
+│   ├── optimization/     # Optimization strategies
+│   ├── parser/           # Parser logic
+│   ├── pipeline/         # Pipeline orchestration
+│   ├── reporting/        # Error reporting
+│   ├── semantic_analyzer/ # Semantic analysis system
+│   └── utils/            # Utility functions
 ├── tests/                # Unit and integration tests
-├── docs/                 # Documentation
-├── .github/workflows/    # CI/CD workflows
+├── Dockerfile            # Docker container build
+├── docker-compose.yml    # Docker Compose configuration
 ├── requirements.txt      # Runtime dependencies
 ├── requirements-dev.txt  # Dev/test dependencies
-├── README.md             # This file
-└── Makefile              # Build automation
+└── README.md             # This file
 ```
 
 ## Integration Points
@@ -212,73 +255,13 @@ Run tests with coverage:
 pytest -q --cov=edgeflowc --cov-report=term-missing
 ```
 
-## CI/CD
-
-GitHub Actions runs on pushes and PRs for Python 3.11:
-
-- Lint: black, isort, flake8
-- Type check: mypy (ignore missing imports by default)
-- Tests with coverage (fail below 90%)
-- Coverage badge artifact generated via `genbadge`
-
-## Web Interface
-
-Backend (FastAPI):
-
-- App entry: `src/edgeflow/backend/app.py`
-- Endpoints with strict CLI parity:
-  - `POST /api/compile` (maps to `python -m edgeflow.compiler.edgeflowc config.ef`)
-  - `POST /api/compile/verbose` (maps to `--verbose`)
-  - `POST /api/optimize` (optimization phase)
-  - `POST /api/benchmark` (benchmarking)
-  - `GET /api/version` (maps to `--version`)
-  - `GET /api/help` (maps to `--help`)
-  - `GET /api/health` (health check)
-
-Frontend (Next.js + TS):
-
-- Components under `frontend/src/components` and pages under `frontend/src/pages`
-- API client in `frontend/src/services/api.ts`
-- Styling via Tailwind CSS (see `frontend/src/styles/globals.css`)
-
-Local run (Docker):
-
-```bash
-docker-compose up --build
-# Backend: http://localhost:8000/docs
-# Frontend: http://localhost:3000
-```
-
-## Production (CD + Reverse Proxy)
-
-- Continuous Deployment builds/pushes GHCR images, then deploys over SSH with Docker Compose on the server.
-- Public site: <https://edgeflow.pointblank.club/>
-- Host ports by default:
-  - Backend: `18000` (container 8000)
-  - Frontend: `13000` (container 3000)
-- Recommended: bind services to `127.0.0.1` and expose via Nginx with TLS (Certbot). Frontend proxies `/api/*` to backend inside the Docker network; backend need not be directly exposed.
-
 ## Contributing
 
-- Open a PR with a focused set of changes
-- Ensure `black`, `isort`, `flake8`, and `mypy` pass
-- Add/Update tests to maintain ≥90% coverage
-- Clearly document changes in docstrings and README where relevant
-
-## Security Notes
-
-- The CLI validates that the input path is a regular file with a `.ef` extension.
-- Paths are normalized and resolved; the CLI does not follow any network or remote sources.
-- Future work: sandbox model handling and ensure safe file operations during optimization.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on how to contribute to EdgeFlow.
 
 ## License
 
-TBD (add the appropriate license file for your project).
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
-## Compatibility Check (CLI)
-
-- `--check-only`: run device compatibility check and exit
-- `--device-spec-file <path>`: load custom device specs (CSV/JSON)
-- `--skip-check`: skip the initial compatibility gate
-
-See `docs/initial_check.md` for usage and API examples.
+## Security Notes
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
