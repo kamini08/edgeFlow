@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from reporter import (
+from edgeflow.reporting.reporter import (
     calculate_improvements,
     generate_json_report,
     generate_recommendations,

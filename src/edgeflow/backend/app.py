@@ -30,7 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from initial_check import InitialChecker, perform_initial_check
 from pydantic import BaseModel, Field, constr
-from reporter import generate_json_report  # type: ignore
+from edgeflow.reporting.reporter import generate_json_report  # type: ignore
 
 # ----------------------------------------------------------------------------
 # Rate limiting (simple in-memory token bucket per client IP)

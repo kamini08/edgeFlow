@@ -2,7 +2,7 @@ import sys
 from types import ModuleType
 from typing import Dict
 
-import edgeflowc
+from edgeflow.compiler import edgeflowc
 import pytest
 
 

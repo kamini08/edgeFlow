@@ -1,7 +1,7 @@
 import sys
 from types import ModuleType
 
-import edgeflowc
+from edgeflow.compiler import edgeflowc
 
 
 def _write_cfg(tmp_path, content):

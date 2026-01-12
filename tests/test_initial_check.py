@@ -3,8 +3,8 @@ import os
 from pathlib import Path
 
 import pytest
-from device_specs import DeviceSpecManager
-from initial_check import CompatibilityReport, InitialChecker, ModelProfile
+from edgeflow.config.device_specs import DeviceSpecManager
+from edgeflow.analysis.initial_check import CompatibilityReport, InitialChecker, ModelProfile
 
 
 class TestInitialCheck:
@@ -42,7 +42,7 @@ class TestInitialCheck:
         assert report.compatible is True
 
     def test_compatibility_check_fail(self, tmp_path: Path):
-        """Test failed compatibility check when model grossly exceeds device limits."""
+        """Test failed compatibility check when model grossly exceeds memory limits."""
         # Create a large dummy model (5MB) which exceeds ESP32 limits
         big = tmp_path / "huge_model.tflite"
         big.write_bytes(b"0" * (5 * 1024 * 1024))
@@ -50,7 +50,7 @@ class TestInitialCheck:
         cfg = {"target_device": "esp32", "quantize": "int8", "model_path": str(big)}
         report = checker.check_compatibility(str(big), cfg["target_device"], cfg)
         assert report.compatible is False
-        assert any("exceeds device limit" in msg for msg in report.issues)
+        assert any("exceeds memory limit" in msg for msg in report.issues)
 
     def test_device_spec_loading(self, tmp_path: Path):
         """Test loading custom device specifications from CSV and JSON."""
@@ -86,7 +86,7 @@ class TestInitialCheck:
         checker = InitialChecker()
         prof = checker.profile_model(sample_model)
         spec = checker.spec_manager.get_device_spec("raspberry_pi_4")
-        score = checker._calculate_fit_score(prof, spec)
+        score = checker._calculate_fit_score(prof, spec, spec.ram_mb)
         assert 0 <= score <= 100
 
     @pytest.mark.integration
@@ -102,7 +102,7 @@ class TestInitialCheck:
         )
 
         # Import CLI and run main() with args
-        import edgeflowc as cli
+        from edgeflow.compiler import edgeflowc as cli
 
         monkeypatch.setenv("PYTHONWARNINGS", "ignore")
         monkeypatch.setattr(

@@ -38,6 +38,7 @@ class DataType(Enum):
     """Supported data types across frameworks."""
 
     FLOAT32 = "float32"
+    FLOAT64 = "float64"
     FLOAT16 = "float16"
     INT8 = "int8"
     INT16 = "int16"

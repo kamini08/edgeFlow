@@ -28,7 +28,7 @@ from rich.progress import (
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
-from traceability_system import (
+from edgeflow.reporting.traceability_system import (
     ProvenanceTracker,
     TransformationType,
     trace_transformation,
@@ -365,7 +365,7 @@ class InteractiveValidator:
 
         try:
             # Load and parse the file
-            from parser import parse_ef
+            from edgeflow.parser import parse_edgeflow_file as parse_ef
 
             config = parse_ef(file_path)
 
@@ -428,7 +428,7 @@ class InteractiveValidator:
         messages = []
 
         try:
-            from device_specs import get_device_specs
+            from edgeflow.config.device_specs import get_device_specs
 
             device_specs = get_device_specs(target_device)
 
@@ -488,7 +488,7 @@ class InteractiveValidator:
         messages = []
 
         try:
-            from parser import parse_ef
+            from edgeflow.parser import parse_edgeflow_file as parse_ef
 
             config = parse_ef(file_path)
 

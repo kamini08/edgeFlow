@@ -20,19 +20,22 @@ import json
 import logging
 import os
 import sys
-from parser import parse_ef  # Backward-compatible name
+try:
+    from edgeflow.parser import parse_edgeflow_file as _parse_edgeflow_file
+    from edgeflow.parser import parse_edgeflow_file as parse_ef
+except ImportError:
+    try:
+        from parser import parse_edgeflow_file as _parse_edgeflow_file
+        from parser import parse_edgeflow_file as parse_ef
+    except ImportError:
+        _parse_edgeflow_file = None
+        parse_ef = None
+
 from typing import Any
 from typing import Dict as DictType
 from typing import Optional
 
-# Import our modules
-
-try:  # Prefer Day 2 API if present
-    from parser import parse_edgeflow_file as _parse_edgeflow_file  # type: ignore
-except Exception:  # noqa: BLE001
-    _parse_edgeflow_file = None  # type: ignore
-
-from cli_formatter import (
+from edgeflow.reporting.cli_formatter import (
     CLIFormatter,
     Color,
     Icons,
@@ -41,13 +44,13 @@ from cli_formatter import (
     create_summary_box,
     get_edgeflow_ascii_art,
 )
-from code_generator import CodeGenerator, generate_code
-from edgeflow_ast import create_program_from_dict
-from edgeflow_ir import FusionPass, IRBuilder, IRGraph, QuantizationPass, SchedulingPass
-from explainability_reporter import generate_explainability_report
-from fast_compile import FastCompileResult, fast_compile_config
-from reporter import generate_report
-from validator import (
+from edgeflow.compiler.code_generator import CodeGenerator, generate_code
+from edgeflow.ir.edgeflow_ast import create_program_from_dict
+from edgeflow.ir.edgeflow_ir import FusionPass, IRBuilder, IRGraph, QuantizationPass, SchedulingPass
+from edgeflow.reporting.explainability_reporter import generate_explainability_report
+from edgeflow.optimization.fast_compile import FastCompileResult, fast_compile_config
+from edgeflow.reporting.reporter import generate_report
+from edgeflow.analysis.validator import (
     EdgeFlowValidator,
     validate_edgeflow_config,
     validate_model_compatibility,
@@ -55,21 +58,21 @@ from validator import (
 
 # Import new comprehensive pipeline components
 try:
-    from deployment_orchestrator import CrossPlatformDeployer, DeploymentTarget
-    from dynamic_device_profiles import get_device_profile, get_profile_manager
-    from end_to_end_pipeline import EdgeFlowPipeline
-    from integrated_error_system import (
+    from edgeflow.deployment.deployment_orchestrator import CrossPlatformDeployer, DeploymentTarget
+    from edgeflow.config.dynamic_device_profiles import get_device_profile, get_profile_manager
+    from edgeflow.pipeline.end_to_end_pipeline import EdgeFlowPipeline
+    from edgeflow.reporting.integrated_error_system import (
         ErrorCategory,
         ValidationSeverity,
         get_error_reporter,
     )
-    from interactive_validator import InteractiveValidator
-    from optimization_orchestrator import (
+    from edgeflow.analysis.interactive_validator import InteractiveValidator
+    from edgeflow.optimization.optimization_orchestrator import (
         OptimizationLevel,
         OptimizationOrchestrator,
         OptimizationStrategy,
     )
-    from traceability_system import export_session_report, get_global_tracker
+    from edgeflow.reporting.traceability_system import export_session_report, get_global_tracker
 
     ENHANCED_FEATURES_AVAILABLE = True
 except ImportError as e:
@@ -151,43 +154,6 @@ def parse_arguments() -> argparse.Namespace:
             "If provided without value, defaults to 'c'."
         ),
     )
-
-    # Enhanced pipeline options
-    if ENHANCED_FEATURES_AVAILABLE:
-        enhanced_group = parser.add_argument_group("Enhanced pipeline options")
-        enhanced_group.add_argument(
-            "--use-enhanced-pipeline",
-            action="store_true",
-            help="Use the enhanced end-to-end pipeline with all features",
-        )
-        enhanced_group.add_argument(
-            "--interactive-validation",
-            action="store_true",
-            help="Use interactive validation with real-time feedback",
-        )
-        enhanced_group.add_argument(
-            "--optimization-strategy",
-            choices=[
-                "size_focused",
-                "speed_focused",
-                "balanced",
-                "accuracy_focused",
-                "power_efficient",
-            ],
-            default="balanced",
-            help="Optimization strategy for the enhanced pipeline",
-        )
-        enhanced_group.add_argument(
-            "--deploy-targets",
-            nargs="*",
-            choices=["raspberry_pi", "docker", "kubernetes", "bare_metal"],
-            help="Deployment targets for the enhanced pipeline",
-        )
-        enhanced_group.add_argument(
-            "--export-provenance",
-            action="store_true",
-            help="Export complete provenance report",
-        )
 
     # Enhanced pipeline options
     if ENHANCED_FEATURES_AVAILABLE:
@@ -368,8 +334,10 @@ def load_config(
         # Prefer modern parser API if available
         spinner.update("Parsing EdgeFlow file")
         if _parse_edgeflow_file is not None:
+            print(f"DEBUG: Using _parse_edgeflow_file from {getattr(_parse_edgeflow_file, '__module__', 'unknown')}")
             config = _parse_edgeflow_file(file_path)
         else:
+            print(f"DEBUG: Using parse_ef from {getattr(parse_ef, '__module__', 'unknown')}")
             config = parse_ef(file_path)
 
         # Early validation for fast feedback
@@ -444,8 +412,8 @@ def optimize_model(
     """
     formatter = formatter or CLIFormatter()
     try:
-        from benchmarker import benchmark_model, compare_models
-        from optimizer import optimize
+        from edgeflow.benchmarking.benchmarker import benchmark_model, compare_models
+        from edgeflow.optimization.optimizer import optimize
 
         model_path = config.get("model", "model.tflite")
         if not os.path.exists(model_path):
@@ -616,7 +584,7 @@ def main() -> int:
         # Optional: run inside Docker
         if getattr(args, "docker", False):
             try:
-                from docker_manager import (  # lazy import
+                from edgeflow.deployment.docker_manager import (  # lazy import
                     DockerManager,
                     validate_docker_setup,
                 )
@@ -663,7 +631,7 @@ def main() -> int:
         # Initial device compatibility check (gate-keeping)
         if not getattr(args, "skip_check", False):
             try:
-                from initial_check import perform_initial_check
+                from edgeflow.analysis.initial_check import perform_initial_check
 
                 spinner = Spinner("Performing initial compatibility check", formatter)
                 spinner.start()
@@ -775,7 +743,7 @@ def main() -> int:
 
         # Semantic validation (IR-level)
         try:
-            from semantic_validator import SemanticValidator
+            from edgeflow.analysis.semantic_validator import SemanticValidator
 
             logging.info("Validating IR semantics against device constraints...")
             validator = SemanticValidator()
@@ -950,9 +918,9 @@ def main() -> int:
 
                 # Prefer generating from Unified IR when available
                 try:
-                    from framework_parsers import parse_model_to_uir
-                    from uir_normalizer import normalize_uir_graph
-                    from unified_ir import UIRGraph
+                    from edgeflow.compiler.framework_parsers import parse_model_to_uir
+                    from edgeflow.ir.uir_normalizer import normalize_uir_graph
+                    from edgeflow.ir.unified_ir import UIRGraph
 
                     model_path = cfg.get("model") or cfg.get("model_path")
                     uir_graph = parse_model_to_uir(model_path)

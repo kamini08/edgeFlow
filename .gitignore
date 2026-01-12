@@ -29,6 +29,8 @@ __pycache__/
 # Virtual environments
 .venv2/
 frontend/.venv2/
+.venv_test/
+frontend/.venv_test/
 
 # Test and temporary files
 *.ef

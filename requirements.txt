@@ -1,1 +1,3 @@
 antlr4-python3-runtime==4.13.2
+PyYAML>=6.0
+lark>=1.0

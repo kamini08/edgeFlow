@@ -49,6 +49,6 @@ class TestReporterIntegration:
         """Test reporter integration with API endpoints."""
         # Placeholder: backend API tests live under backend/ in this repo
         # Here we simply assert reporter can be imported to be used by the API layer.
-        import reporter as _  # noqa: F401
+        import edgeflow.reporting.reporter as _  # noqa: F401
 
         assert True

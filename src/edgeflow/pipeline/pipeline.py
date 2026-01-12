@@ -8,12 +8,12 @@ from __future__ import annotations
 import logging
 from typing import Tuple
 
-from framework_parsers import parse_model_to_uir
-from mlir_dialect import MLIRModule, MLIRPipeline, create_mlir_pipeline
-from uir_normalizer import normalize_uir_graph
-from uir_optimization_passes import QuantizationType, create_optimization_pipeline
-from uir_validators import ValidationResult, validate_uir_graph
-from unified_ir import UIRGraph
+from edgeflow.compiler.framework_parsers import parse_model_to_uir
+from edgeflow.compiler.mlir_dialect import MLIRModule, MLIRPipeline, create_mlir_pipeline
+from edgeflow.ir.uir_normalizer import normalize_uir_graph
+from edgeflow.ir.uir_optimization_passes import QuantizationType, create_optimization_pipeline
+from edgeflow.ir.uir_validators import ValidationResult, validate_uir_graph
+from edgeflow.ir.unified_ir import UIRGraph
 
 logger = logging.getLogger(__name__)
 

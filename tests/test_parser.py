@@ -1,4 +1,4 @@
-from parser import (
+from edgeflow.parser import (
     EdgeFlowParserError,
     parse_edgeflow_file,
     parse_edgeflow_string,
@@ -122,7 +122,7 @@ class TestParserIntegration:
         # Use CLI's load_config directly to avoid dependency on optimizer
         import importlib
 
-        import edgeflowc
+        from edgeflow.compiler import edgeflowc
 
         importlib.reload(edgeflowc)
         cfg = edgeflowc.load_config(str(p))

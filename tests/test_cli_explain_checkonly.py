@@ -2,7 +2,7 @@ import argparse
 import sys
 from unittest.mock import Mock, patch
 
-import edgeflowc
+from edgeflow.compiler import edgeflowc
 
 
 class TestExplainAndCheckOnly:

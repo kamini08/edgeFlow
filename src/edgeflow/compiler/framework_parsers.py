@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from unified_ir import (
+from edgeflow.ir.unified_ir import (
     DataType,
     FrameworkParser,
     FrameworkType,
@@ -336,9 +336,27 @@ class TensorFlowParser(FrameworkParser):
             framework_metadata={"simulated": True},
         )
 
+        # Create placeholder nodes for input/output
+        input_node = UIRNode(
+            node_id="input",
+            name="Input Placeholder",
+            operation_type=OperationType.CUSTOM,
+            framework_type=FrameworkType.TENSORFLOW,
+            framework_metadata={"simulated": True, "role": "input"},
+        )
+        output_node = UIRNode(
+            node_id="output",
+            name="Output Placeholder",
+            operation_type=OperationType.CUSTOM,
+            framework_type=FrameworkType.TENSORFLOW,
+            framework_metadata={"simulated": True, "role": "output"},
+        )
+
         graph.add_tensor(input_tensor)
         graph.add_tensor(output_tensor)
+        graph.add_node(input_node)
         graph.add_node(model_node)
+        graph.add_node(output_node)
         graph.add_edge("input", "model", "input")
         graph.add_edge("model", "output", "output")
 
@@ -628,9 +646,27 @@ class ONNXParser(FrameworkParser):
             framework_metadata={"simulated": True},
         )
 
+        # Create placeholder nodes for input/output
+        input_node = UIRNode(
+            node_id="input",
+            name="Input Placeholder",
+            operation_type=OperationType.CUSTOM,
+            framework_type=FrameworkType.ONNX,
+            framework_metadata={"simulated": True, "role": "input"},
+        )
+        output_node = UIRNode(
+            node_id="output",
+            name="Output Placeholder",
+            operation_type=OperationType.CUSTOM,
+            framework_type=FrameworkType.ONNX,
+            framework_metadata={"simulated": True, "role": "output"},
+        )
+
         graph.add_tensor(input_tensor)
         graph.add_tensor(output_tensor)
+        graph.add_node(input_node)
         graph.add_node(model_node)
+        graph.add_node(output_node)
         graph.add_edge("input", "model", "input")
         graph.add_edge("model", "output", "output")
 
@@ -755,9 +791,27 @@ class PyTorchParser(FrameworkParser):
             framework_metadata={"simulated": True},
         )
 
+        # Create placeholder nodes for input/output
+        input_node = UIRNode(
+            node_id="input",
+            name="Input Placeholder",
+            operation_type=OperationType.CUSTOM,
+            framework_type=FrameworkType.PYTORCH,
+            framework_metadata={"simulated": True, "role": "input"},
+        )
+        output_node = UIRNode(
+            node_id="output",
+            name="Output Placeholder",
+            operation_type=OperationType.CUSTOM,
+            framework_type=FrameworkType.PYTORCH,
+            framework_metadata={"simulated": True, "role": "output"},
+        )
+
         graph.add_tensor(input_tensor)
         graph.add_tensor(output_tensor)
+        graph.add_node(input_node)
         graph.add_node(model_node)
+        graph.add_node(output_node)
         graph.add_edge("input", "model", "input")
         graph.add_edge("model", "output", "output")
 

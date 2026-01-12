@@ -434,9 +434,12 @@ def validate_config(config: Dict[str, Any]) -> Tuple[bool, List[str]]:
     return (len(errors) == 0, errors)
 
 
+parse_ef = parse_edgeflow_file
+
 __all__ = [
     "EdgeFlowParserError",
     "parse_edgeflow_file",
     "parse_edgeflow_string",
     "validate_config",
+    "parse_ef",
 ]

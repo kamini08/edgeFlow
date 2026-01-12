@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from unified_ir import (
+from edgeflow.ir.unified_ir import (
     DataType,
     OperationType,
     TensorInfo,
@@ -918,7 +918,7 @@ def validate_uir_graph(graph: UIRGraph) -> ValidationResult:
 
 if __name__ == "__main__":
     # Test the validators
-    from unified_ir import create_uir_from_edgeflow_config
+    from edgeflow.ir.unified_ir import create_uir_from_edgeflow_config
 
     test_config = {
         "model": "test_model.tflite",

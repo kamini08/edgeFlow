@@ -1,7 +1,7 @@
 import subprocess
 
 import pytest
-from docker_manager import DockerManager, validate_docker_setup
+from edgeflow.deployment.docker_manager import DockerManager, validate_docker_setup
 
 
 @pytest.mark.docker

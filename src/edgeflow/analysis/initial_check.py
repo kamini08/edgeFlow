@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from device_specs import DeviceSpec, DeviceSpecManager
+from edgeflow.config.device_specs import DeviceSpec, DeviceSpecManager
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +100,8 @@ class InitialChecker:
         """Check if a model is compatible with target device."""
         profile = self.profile_model(model_path)
         device = self.spec_manager.get_device_spec(target_device or "generic")
+        print(f"DEBUG: target={target_device}, device={device.name}, ram={device.ram_mb}, max_model={device.max_model_size_mb}")
+        print(f"DEBUG: profile.size={profile.file_size_mb}")
 
         # Use config memory_limit if specified, otherwise use device spec
         memory_limit_mb = float(config.get("memory_limit", device.ram_mb))

@@ -15,7 +15,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from unified_ir import (
+from edgeflow.ir.unified_ir import (
     DataType,
     FrameworkType,
     OperationType,

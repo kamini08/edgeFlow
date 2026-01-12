@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from unified_ir import (
+from edgeflow.ir.unified_ir import (
     DataType,
     FrameworkType,
     OperationType,
@@ -275,9 +275,11 @@ class EdgeOptimizationPass(MLIRLoweringPass):
             optimized_node = self._optimize_node(node, graph)
             optimized_graph.add_node(optimized_node)
 
-        # Copy edges
-        for edge in graph.edges:
-            optimized_graph.add_edge(*edge)
+        # Copy edges with updated node IDs
+        for from_node, to_node, tensor_name in graph.edges:
+            new_from = f"{from_node}_opt"
+            new_to = f"{to_node}_opt"
+            optimized_graph.add_edge(new_from, new_to, tensor_name)
 
         return optimized_graph
 
@@ -369,9 +371,11 @@ class HardwareSpecificPass(MLIRLoweringPass):
             hw_node = self._optimize_for_hardware(node, graph)
             hw_graph.add_node(hw_node)
 
-        # Copy edges
-        for edge in graph.edges:
-            hw_graph.add_edge(*edge)
+        # Copy edges with updated node IDs
+        for from_node, to_node, tensor_name in graph.edges:
+            new_from = f"{from_node}_hw"
+            new_to = f"{to_node}_hw"
+            hw_graph.add_edge(new_from, new_to, tensor_name)
 
         return hw_graph
 
@@ -402,6 +406,10 @@ class HardwareSpecificPass(MLIRLoweringPass):
             self._optimize_for_cortex_m4(hw_node)
         elif self.target_device == "gpu":
             self._optimize_for_gpu(hw_node)
+        elif self.target_device == "cpu":
+            pass  # No specific hardware optimization for generic CPU
+        else:
+            raise KeyError(self.target_device)
 
         return hw_node
 
@@ -474,9 +482,17 @@ class CrossFrameworkOptimizationPass(UIRTransformation):
         for node in optimized_nodes:
             optimized_graph.add_node(node)
 
-        # Copy edges
-        for edge in graph.edges:
-            optimized_graph.add_edge(*edge)
+        # Copy edges with updated node IDs
+        for from_node, to_node, tensor_name in graph.edges:
+            # Check if nodes were quantized (renamed) or kept as is
+            new_from_q = f"{from_node}_quantized"
+            new_to_q = f"{to_node}_quantized"
+            
+            new_from = new_from_q if new_from_q in optimized_graph.nodes else from_node
+            new_to = new_to_q if new_to_q in optimized_graph.nodes else to_node
+            
+            if new_from in optimized_graph.nodes and new_to in optimized_graph.nodes:
+                optimized_graph.add_edge(new_from, new_to, tensor_name)
 
         return optimized_graph
 
@@ -603,7 +619,7 @@ def create_mlir_pipeline(target_device: str = "cpu") -> MLIRPipeline:
 
 if __name__ == "__main__":
     # Test the MLIR dialect system
-    from unified_ir import create_uir_from_edgeflow_config
+    from edgeflow.ir.unified_ir import create_uir_from_edgeflow_config
 
     test_config = {
         "model": "test_model.tflite",

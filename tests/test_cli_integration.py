@@ -10,6 +10,8 @@ class TestEndToEndIntegration:
     """End-to-end integration tests (CLI and optional API)."""
 
     def test_cli_parser_integration(self):
+        import os, sys; print(f"DEBUG: PYTHONPATH: {os.environ.get("PYTHONPATH")}"); print(f"DEBUG: sys.path: {sys.path}")
+        import sys; print(f"DEBUG: sys.executable: {sys.executable}")
         """Test CLI with parser end-to-end using --dry-run."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".ef", delete=False) as f:
             content = """
@@ -21,7 +23,7 @@ quantize = int8
 
         try:
             result = subprocess.run(
-                ["python", "edgeflowc.py", config_path, "--dry-run"],
+                [sys.executable, "-m", "edgeflow.compiler.edgeflowc", config_path,  "--check-only"],
                 capture_output=True,
                 text=True,
             )

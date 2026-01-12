@@ -12,7 +12,7 @@ from __future__ import annotations
 import os
 from typing import Any, Dict, List, Optional, Set
 
-from edgeflow_ast import (
+from edgeflow.ir.edgeflow_ast import (
     ASTVisitor,
     BinaryExpression,
     BufferSizeStatement,
@@ -40,7 +40,7 @@ from edgeflow_ast import (
 
 # Import IR classes for advanced code generation
 try:
-    from edgeflow_ir import IRGraph, NodeType
+    from edgeflow.ir.edgeflow_ir import IRGraph, NodeType
 
     IR_AVAILABLE = True
 except ImportError:

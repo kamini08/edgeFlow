@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from unified_ir import (
+from edgeflow.ir.unified_ir import (
     DataType,
     OperationType,
     TensorInfo,
@@ -89,9 +89,11 @@ class QuantizationPass(UIRTransformation):
             quantized_node = self._quantize_node(node)
             quantized_graph.add_node(quantized_node)
 
-        # Copy edges
-        for edge in graph.edges:
-            quantized_graph.add_edge(*edge)
+        # Copy edges with updated node IDs
+        for from_node, to_node, tensor_name in graph.edges:
+            new_from = f"{from_node}_quantized"
+            new_to = f"{to_node}_quantized"
+            quantized_graph.add_edge(new_from, new_to, tensor_name)
 
         return quantized_graph
 
@@ -189,9 +191,14 @@ class PruningPass(UIRTransformation):
             pruned_node = self._prune_node(node)
             pruned_graph.add_node(pruned_node)
 
-        # Copy edges
-        for edge in graph.edges:
-            pruned_graph.add_edge(*edge)
+        # Copy edges with updated node IDs
+        for from_node, to_node, tensor_name in graph.edges:
+            # Check if nodes were pruned (renamed) or kept as is
+            new_from = f"{from_node}_pruned" if f"{from_node}_pruned" in pruned_graph.nodes else from_node
+            new_to = f"{to_node}_pruned" if f"{to_node}_pruned" in pruned_graph.nodes else to_node
+            
+            if new_from in pruned_graph.nodes and new_to in pruned_graph.nodes:
+                pruned_graph.add_edge(new_from, new_to, tensor_name)
 
         return pruned_graph
 
@@ -450,9 +457,11 @@ class MemoryOptimizationPass(UIRTransformation):
             mem_opt_node = self._optimize_node_memory(node)
             mem_opt_graph.add_node(mem_opt_node)
 
-        # Copy edges
-        for edge in graph.edges:
-            mem_opt_graph.add_edge(*edge)
+        # Copy edges with updated node IDs
+        for from_node, to_node, tensor_name in graph.edges:
+            new_from = f"{from_node}_mem_opt"
+            new_to = f"{to_node}_mem_opt"
+            mem_opt_graph.add_edge(new_from, new_to, tensor_name)
 
         return mem_opt_graph
 
@@ -536,6 +545,13 @@ class HardwareSpecificOptimizationPass(UIRTransformation):
                 "preferred_data_types": [DataType.FLOAT16, DataType.FLOAT32],
                 "vectorization_width": 32,
             },
+            "cpu": {
+                "neon_simd": False,
+                "memory_bandwidth": "medium",
+                "cache_size": "large",
+                "preferred_data_types": [DataType.FLOAT32],
+                "vectorization_width": 8,
+            },
         }
         return capabilities.get(self.target_device, capabilities["cpu"])
 
@@ -565,9 +581,11 @@ class HardwareSpecificOptimizationPass(UIRTransformation):
             hw_opt_node = self._optimize_for_hardware(node)
             hw_opt_graph.add_node(hw_opt_node)
 
-        # Copy edges
-        for edge in graph.edges:
-            hw_opt_graph.add_edge(*edge)
+        # Copy edges with updated node IDs
+        for from_node, to_node, tensor_name in graph.edges:
+            new_from = f"{from_node}_hw_{self.target_device}"
+            new_to = f"{to_node}_hw_{self.target_device}"
+            hw_opt_graph.add_edge(new_from, new_to, tensor_name)
 
         return hw_opt_graph
 
@@ -733,7 +751,7 @@ def create_optimization_pipeline(
 
 if __name__ == "__main__":
     # Test the optimization passes
-    from unified_ir import create_uir_from_edgeflow_config
+    from edgeflow.ir.unified_ir import create_uir_from_edgeflow_config
 
     test_config = {
         "model": "test_model.tflite",

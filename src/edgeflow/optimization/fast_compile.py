@@ -12,14 +12,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # Import our existing semantic analyzer components
-from semantic_analyzer import SemanticAnalyzer
-from semantic_analyzer.constraints import (
+from edgeflow.semantic_analyzer.analyzer import SemanticAnalyzer
+from edgeflow.semantic_analyzer.constraints import (
     get_edge_device_config,
     get_mobile_device_config,
     get_server_device_config,
 )
-from semantic_analyzer.error_types import ErrorSeverity
-from semantic_analyzer.ir_nodes import DataType, IRGraph, LayerType
+from edgeflow.semantic_analyzer.error_types import ErrorSeverity
+from edgeflow.semantic_analyzer.ir_nodes import DataType, IRGraph, LayerType
 
 logger = logging.getLogger(__name__)
 
