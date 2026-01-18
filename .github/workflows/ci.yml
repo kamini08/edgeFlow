@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Cache pip
         uses: actions/cache@v4
@@ -45,15 +45,15 @@ jobs:
       - name: Run tests (CLI only)
         env:
           PYTHONPATH: .
-        run: python -m pytest -q tests --cov=edgeflowc --cov-report=xml --cov-fail-under=75
+        run: python -m pytest -q tests --cov=src/edgeflow --cov-report=xml --cov-fail-under=75
 
       - name: Run parser unit tests
         env:
           PYTHONPATH: .
         run: |
           # Optional ANTLR generation if jar present
-          if [ -f "grammer/antlr-4.13.1-complete.jar" ]; then \
-            java -jar grammer/antlr-4.13.1-complete.jar -Dlanguage=Python3 -o parser grammer/EdgeFlow.g4; \
+          if [ -f "grammar/antlr-4.13.1-complete.jar" ]; then \
+            java -jar grammar/antlr-4.13.1-complete.jar -Dlanguage=Python3 -o parser grammar/EdgeFlow.g4; \
           else \
             echo "ANTLR jar not found; using fallback parser"; \
           fi

@@ -2,7 +2,7 @@ name: CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -48,10 +48,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: backend/Dockerfile
+          file: src/edgeflow/backend/Dockerfile
           push: true
           provenance: false
-          compression: gzip
           tags: |
             ${{ steps.tags.outputs.backend }}
             ${{ steps.tags.outputs.backend_latest }}
@@ -59,11 +58,10 @@ jobs:
       - name: Build and push frontend
         uses: docker/build-push-action@v6
         with:
-          context: frontend
-          file: frontend/Dockerfile
+          context: src/edgeflow/frontend
+          file: src/edgeflow/frontend/Dockerfile
           push: true
           provenance: false
-          compression: gzip
           tags: |
             ${{ steps.tags.outputs.frontend }}
             ${{ steps.tags.outputs.frontend_latest }}
@@ -72,8 +70,6 @@ jobs:
         run: |
           echo "Backend: ${{ steps.tags.outputs.backend }}"
           echo "Frontend: ${{ steps.tags.outputs.frontend }}"
-
-  
 
   deploy-compose:
     runs-on: ubuntu-latest
