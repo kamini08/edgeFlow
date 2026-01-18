@@ -253,9 +253,9 @@ class DeviceProfile:
         """
         config: Dict[str, Any] = {
             "quantization": self.preferred_quantization,
-            "preferred_precision": "int8"
-            if "int8" in self.preferred_quantization
-            else "fp16",
+            "preferred_precision": (
+                "int8" if "int8" in self.preferred_quantization else "fp16"
+            ),
             "enabled_optimizations": [],
             "optimization_flags": {},
             "target_device": self.device_id,

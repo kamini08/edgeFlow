@@ -1,6 +1,7 @@
 """
 Error types and severity levels for semantic analysis.
 """
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -85,13 +86,15 @@ class SemanticError:
             "message": self.message,
             "node_id": self.node_id,
             "layer_name": self.layer_name,
-            "location": {
-                "line": self.location.line,
-                "column": self.location.column,
-                "file_path": self.location.file_path,
-            }
-            if self.location
-            else None,
+            "location": (
+                {
+                    "line": self.location.line,
+                    "column": self.location.column,
+                    "file_path": self.location.file_path,
+                }
+                if self.location
+                else None
+            ),
             "context": self.context,
             "suggestion": self.suggestion,
         }

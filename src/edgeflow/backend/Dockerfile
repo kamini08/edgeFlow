@@ -6,21 +6,20 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Install backend runtime deps
-COPY backend/requirements.txt /app/requirements.txt
+COPY src/edgeflow/backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy backend app and core modules used by the API
-COPY backend /app/backend
-COPY edgeflowc.py /app/edgeflowc.py
-COPY parser /app/parser
-COPY parser.py /app/parser.py
-COPY optimizer.py /app/optimizer.py
-COPY edgeflow_ast.py /app/edgeflow_ast.py
-COPY code_generator.py /app/code_generator.py
-COPY benchmarker.py /app/benchmarker.py
-COPY reporter.py /app/reporter.py
-COPY device_specs.py /app/device_specs.py
-COPY initial_check.py /app/initial_check.py
+COPY src/edgeflow/backend /app/backend
+COPY src/edgeflow/compiler/edgeflowc.py /app/edgeflowc.py
+COPY src/edgeflow/parser /app/parser
+COPY src/edgeflow/optimization/optimizer.py /app/optimizer.py
+COPY src/edgeflow/ir/edgeflow_ast.py /app/edgeflow_ast.py
+COPY src/edgeflow/compiler/code_generator.py /app/code_generator.py
+COPY src/edgeflow/benchmarking/benchmarker.py /app/benchmarker.py
+COPY src/edgeflow/reporting/reporter.py /app/reporter.py
+COPY src/edgeflow/config/device_specs.py /app/device_specs.py
+COPY src/edgeflow/analysis/initial_check.py /app/initial_check.py
 
 EXPOSE 8000
 

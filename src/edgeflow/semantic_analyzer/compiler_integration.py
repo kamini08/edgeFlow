@@ -1,6 +1,7 @@
 """
 Integration module for plugging semantic analyzer into DSL compiler pipeline.
 """
+
 import json
 from pathlib import Path
 from typing import Any, Dict, Optional

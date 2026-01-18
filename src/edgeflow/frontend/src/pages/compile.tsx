@@ -89,7 +89,7 @@ export default function CompilePage() {
 
   const onValidateDeployment = async (
     packagePath: string,
-    deviceType: string
+    deviceType: string,
   ) => {
     setLoading(true);
     try {
@@ -106,7 +106,7 @@ export default function CompilePage() {
     setLoading(true);
     try {
       const res = await deviceBenchmark(content, filename);
-      setPipelineResults((prev) => ({ ...prev, benchmarkResults: res }));
+      setPipelineResults((prev: any) => ({ ...prev, benchmarkResults: res }));
     } catch (error) {
       console.error("Device benchmark error:", error);
     } finally {
@@ -118,7 +118,7 @@ export default function CompilePage() {
     setLoading(true);
     try {
       const res = await benchmarkInterfaces(content, filename);
-      setPipelineResults((prev) => ({
+      setPipelineResults((prev: any) => ({
         ...prev,
         interfaceBenchmarkResults: res,
       }));
@@ -243,7 +243,7 @@ export default function CompilePage() {
                       {JSON.stringify(
                         fastCompileResults.estimated_impact,
                         null,
-                        2
+                        2,
                       )}
                     </pre>
                   </div>
@@ -257,7 +257,7 @@ export default function CompilePage() {
                       {JSON.stringify(
                         fastCompileResults.validation_results,
                         null,
-                        2
+                        2,
                       )}
                     </pre>
                   </div>
@@ -272,7 +272,7 @@ export default function CompilePage() {
                         {fastCompileResults.warnings.map(
                           (warning: string, index: number) => (
                             <li key={index}>• {warning}</li>
-                          )
+                          ),
                         )}
                       </ul>
                     </div>
@@ -340,7 +340,7 @@ export default function CompilePage() {
                         {JSON.stringify(
                           pipelineResults.benchmarkResults,
                           null,
-                          2
+                          2,
                         )}
                       </pre>
                     </div>
@@ -358,7 +358,7 @@ export default function CompilePage() {
                         {JSON.stringify(
                           pipelineResults.interfaceBenchmarkResults,
                           null,
-                          2
+                          2,
                         )}
                       </pre>
                     </div>
@@ -376,7 +376,7 @@ export default function CompilePage() {
                       {pipelineResults.errors.map(
                         (error: string, index: number) => (
                           <li key={index}>• {error}</li>
-                        )
+                        ),
                       )}
                     </ul>
                   )}
@@ -408,7 +408,7 @@ export default function CompilePage() {
                         onClick={() =>
                           onValidateDeployment(
                             deploymentArtifacts.final_package,
-                            deploymentArtifacts.device_type || "raspberry_pi"
+                            deploymentArtifacts.device_type || "raspberry_pi",
                           )
                         }
                         disabled={loading}>

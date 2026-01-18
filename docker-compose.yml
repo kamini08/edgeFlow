@@ -21,7 +21,7 @@ services:
   edgeflow-api:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: src/edgeflow/backend/Dockerfile
     image: edgeflow-api:latest
     container_name: edgeflow-api
     ports:
@@ -45,7 +45,7 @@ services:
 
   edgeflow-frontend:
     build:
-      context: ./frontend
+      context: ./src/edgeflow/frontend
       dockerfile: Dockerfile
     image: edgeflow-frontend:latest
     container_name: edgeflow-frontend

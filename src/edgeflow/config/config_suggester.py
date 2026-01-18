@@ -594,15 +594,15 @@ class EdgeFlowConfigSuggester:
             "use_case": use_case.value if use_case else "unknown",
             "optimization_focus": config.get("optimize_for", "balanced"),
             "quantization_strategy": config.get("quantize", "none"),
-            "memory_efficiency": "high"
-            if config.get("memory_limit", 256) < 256
-            else "medium",
-            "latency_optimization": "high"
-            if config.get("buffer_size", 1) == 1
-            else "medium",
-            "accuracy_preservation": "high"
-            if config.get("quantize") == "none"
-            else "medium",
+            "memory_efficiency": (
+                "high" if config.get("memory_limit", 256) < 256 else "medium"
+            ),
+            "latency_optimization": (
+                "high" if config.get("buffer_size", 1) == 1 else "medium"
+            ),
+            "accuracy_preservation": (
+                "high" if config.get("quantize") == "none" else "medium"
+            ),
             "compatibility_score": validation_result.compatibility_score,
             "estimated_performance": validation_result.estimated_performance_impact,
             "recommendations": [],

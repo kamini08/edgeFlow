@@ -70,9 +70,11 @@ class TensorFlowParser(FrameworkParser):
             framework_metadata={
                 "model_path": model_path,
                 "model_type": "saved_model",
-                "signatures": list(model.signatures.keys())
-                if hasattr(model, "signatures")
-                else [],
+                "signatures": (
+                    list(model.signatures.keys())
+                    if hasattr(model, "signatures")
+                    else []
+                ),
             },
         )
 
@@ -102,9 +104,9 @@ class TensorFlowParser(FrameworkParser):
             framework_metadata={
                 "model_path": model_path,
                 "model_type": "keras",
-                "model_config": model.get_config()
-                if hasattr(model, "get_config")
-                else {},
+                "model_config": (
+                    model.get_config() if hasattr(model, "get_config") else {}
+                ),
             },
         )
 
@@ -177,9 +179,9 @@ class TensorFlowParser(FrameworkParser):
             framework_type=FrameworkType.TENSORFLOW,
             framework_metadata={
                 "keras_layer_type": type(layer).__name__,
-                "keras_layer_config": layer.get_config()
-                if hasattr(layer, "get_config")
-                else {},
+                "keras_layer_config": (
+                    layer.get_config() if hasattr(layer, "get_config") else {}
+                ),
                 "layer_index": layer_index,
             },
         )
@@ -406,9 +408,9 @@ class ONNXParser(FrameworkParser):
                     "model_path": model_path,
                     "model_type": "onnx",
                     "ir_version": model.ir_version,
-                    "opset_version": model.opset_import[0].version
-                    if model.opset_import
-                    else None,
+                    "opset_version": (
+                        model.opset_import[0].version if model.opset_import else None
+                    ),
                     "producer_name": model.producer_name,
                     "producer_version": model.producer_version,
                 },

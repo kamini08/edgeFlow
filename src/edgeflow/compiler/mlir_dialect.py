@@ -487,10 +487,10 @@ class CrossFrameworkOptimizationPass(UIRTransformation):
             # Check if nodes were quantized (renamed) or kept as is
             new_from_q = f"{from_node}_quantized"
             new_to_q = f"{to_node}_quantized"
-            
+
             new_from = new_from_q if new_from_q in optimized_graph.nodes else from_node
             new_to = new_to_q if new_to_q in optimized_graph.nodes else to_node
-            
+
             if new_from in optimized_graph.nodes and new_to in optimized_graph.nodes:
                 optimized_graph.add_edge(new_from, new_to, tensor_name)
 

@@ -100,7 +100,9 @@ class InitialChecker:
         """Check if a model is compatible with target device."""
         profile = self.profile_model(model_path)
         device = self.spec_manager.get_device_spec(target_device or "generic")
-        print(f"DEBUG: target={target_device}, device={device.name}, ram={device.ram_mb}, max_model={device.max_model_size_mb}")
+        print(
+            f"DEBUG: target={target_device}, device={device.name}, ram={device.ram_mb}, max_model={device.max_model_size_mb}"
+        )
         print(f"DEBUG: profile.size={profile.file_size_mb}")
 
         # Use config memory_limit if specified, otherwise use device spec

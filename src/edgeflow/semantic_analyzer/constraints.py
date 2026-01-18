@@ -2,6 +2,7 @@
 Configuration system for parameter ranges, forbidden configurations,
 and device constraints.
 """
+
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 

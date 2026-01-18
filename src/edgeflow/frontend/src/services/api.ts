@@ -13,12 +13,12 @@ export const compileConfigVerbose = (config_file: string, filename: string) =>
 
 export const optimizeModel = (
   model_file: string,
-  config: Record<string, unknown>
+  config: Record<string, unknown>,
 ) => api.post("/api/optimize", { model_file, config }).then((r) => r.data);
 
 export const benchmarkModels = (
   original_model: string,
-  optimized_model: string
+  optimized_model: string,
 ) =>
   api
     .post("/api/benchmark", { original_model, optimized_model })
@@ -34,15 +34,50 @@ export const getVersion = () => api.get("/api/version").then((r) => r.data);
 export const getHelp = () => api.get("/api/help").then((r) => r.data);
 export const getHealth = () => api.get("/api/health").then((r) => r.data);
 
-export const checkCompatibility = (modelFile: File | null, config: any, deviceSpecFile?: string) => {
+export const checkCompatibility = (
+  modelFile: File | null,
+  config: any,
+  deviceSpecFile?: string,
+) => {
   if (modelFile) {
     const form = new FormData();
     form.append("model", modelFile);
     form.append("config", JSON.stringify(config || {}));
     if (deviceSpecFile) form.append("device_spec_file", deviceSpecFile);
-    return api.post("/api/check/upload", form, { headers: { "Content-Type": "multipart/form-data" } }).then((r) => r.data);
+    return api
+      .post("/api/check/upload", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((r) => r.data);
   }
   return api
-    .post("/api/check", { model_path: config?.model_path || config?.model, config, device_spec_file: deviceSpecFile })
+    .post("/api/check", {
+      model_path: config?.model_path || config?.model,
+      config,
+      device_spec_file: deviceSpecFile,
+    })
     .then((r) => r.data);
 };
+
+export const validateDeployment = (packagePath: string, deviceType: string) =>
+  api
+    .post("/api/deployment/validate", {
+      package_path: packagePath,
+      device_type: deviceType,
+    })
+    .then((r) => r.data);
+
+export const packageDeployment = (config_file: string, filename: string) =>
+  api
+    .post("/api/deployment/package", { config_file, filename })
+    .then((r) => r.data);
+
+export const deviceBenchmark = (config_file: string, filename: string) =>
+  api
+    .post("/api/benchmark/device", { config_file, filename })
+    .then((r) => r.data);
+
+export const benchmarkInterfaces = (config_file: string, filename: string) =>
+  api
+    .post("/api/benchmark/interfaces", { config_file, filename })
+    .then((r) => r.data);

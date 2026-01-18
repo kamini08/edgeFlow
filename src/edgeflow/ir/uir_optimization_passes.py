@@ -194,9 +194,17 @@ class PruningPass(UIRTransformation):
         # Copy edges with updated node IDs
         for from_node, to_node, tensor_name in graph.edges:
             # Check if nodes were pruned (renamed) or kept as is
-            new_from = f"{from_node}_pruned" if f"{from_node}_pruned" in pruned_graph.nodes else from_node
-            new_to = f"{to_node}_pruned" if f"{to_node}_pruned" in pruned_graph.nodes else to_node
-            
+            new_from = (
+                f"{from_node}_pruned"
+                if f"{from_node}_pruned" in pruned_graph.nodes
+                else from_node
+            )
+            new_to = (
+                f"{to_node}_pruned"
+                if f"{to_node}_pruned" in pruned_graph.nodes
+                else to_node
+            )
+
             if new_from in pruned_graph.nodes and new_to in pruned_graph.nodes:
                 pruned_graph.add_edge(new_from, new_to, tensor_name)
 

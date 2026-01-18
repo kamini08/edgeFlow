@@ -504,9 +504,11 @@ main "$@"
         # Create model metadata
         metadata = {
             "device_type": device_type.value,
-            "original_size_mb": os.path.getsize(model_path) / (1024 * 1024)
-            if os.path.exists(model_path)
-            else 0.0,
+            "original_size_mb": (
+                os.path.getsize(model_path) / (1024 * 1024)
+                if os.path.exists(model_path)
+                else 0.0
+            ),
             "optimized_size_mb": os.path.getsize(optimized_model_path) / (1024 * 1024),
             "optimization_flags": constraints.optimization_flags,
             "compression_level": constraints.compression_level,
@@ -593,9 +595,11 @@ main "$@"
             size_mb=os.path.getsize(package_path) / (1024 * 1024),
             dependencies=constraints.runtime_requirements,
             metadata={
-                "language": "python"
-                if device_type not in [DeviceType.CORTEX_M4, DeviceType.CORTEX_M7]
-                else "cpp"
+                "language": (
+                    "python"
+                    if device_type not in [DeviceType.CORTEX_M4, DeviceType.CORTEX_M7]
+                    else "cpp"
+                )
             },
         )
 

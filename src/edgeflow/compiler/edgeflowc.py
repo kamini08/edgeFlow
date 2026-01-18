@@ -20,6 +20,7 @@ import json
 import logging
 import os
 import sys
+
 try:
     from edgeflow.parser import parse_edgeflow_file as _parse_edgeflow_file
     from edgeflow.parser import parse_edgeflow_file as parse_ef
@@ -46,7 +47,13 @@ from edgeflow.reporting.cli_formatter import (
 )
 from edgeflow.compiler.code_generator import CodeGenerator, generate_code
 from edgeflow.ir.edgeflow_ast import create_program_from_dict
-from edgeflow.ir.edgeflow_ir import FusionPass, IRBuilder, IRGraph, QuantizationPass, SchedulingPass
+from edgeflow.ir.edgeflow_ir import (
+    FusionPass,
+    IRBuilder,
+    IRGraph,
+    QuantizationPass,
+    SchedulingPass,
+)
 from edgeflow.reporting.explainability_reporter import generate_explainability_report
 from edgeflow.optimization.fast_compile import FastCompileResult, fast_compile_config
 from edgeflow.reporting.reporter import generate_report
@@ -58,8 +65,14 @@ from edgeflow.analysis.validator import (
 
 # Import new comprehensive pipeline components
 try:
-    from edgeflow.deployment.deployment_orchestrator import CrossPlatformDeployer, DeploymentTarget
-    from edgeflow.config.dynamic_device_profiles import get_device_profile, get_profile_manager
+    from edgeflow.deployment.deployment_orchestrator import (
+        CrossPlatformDeployer,
+        DeploymentTarget,
+    )
+    from edgeflow.config.dynamic_device_profiles import (
+        get_device_profile,
+        get_profile_manager,
+    )
     from edgeflow.pipeline.end_to_end_pipeline import EdgeFlowPipeline
     from edgeflow.reporting.integrated_error_system import (
         ErrorCategory,
@@ -72,7 +85,10 @@ try:
         OptimizationOrchestrator,
         OptimizationStrategy,
     )
-    from edgeflow.reporting.traceability_system import export_session_report, get_global_tracker
+    from edgeflow.reporting.traceability_system import (
+        export_session_report,
+        get_global_tracker,
+    )
 
     ENHANCED_FEATURES_AVAILABLE = True
 except ImportError as e:
@@ -334,10 +350,14 @@ def load_config(
         # Prefer modern parser API if available
         spinner.update("Parsing EdgeFlow file")
         if _parse_edgeflow_file is not None:
-            print(f"DEBUG: Using _parse_edgeflow_file from {getattr(_parse_edgeflow_file, '__module__', 'unknown')}")
+            print(
+                f"DEBUG: Using _parse_edgeflow_file from {getattr(_parse_edgeflow_file, '__module__', 'unknown')}"
+            )
             config = _parse_edgeflow_file(file_path)
         else:
-            print(f"DEBUG: Using parse_ef from {getattr(parse_ef, '__module__', 'unknown')}")
+            print(
+                f"DEBUG: Using parse_ef from {getattr(parse_ef, '__module__', 'unknown')}"
+            )
             config = parse_ef(file_path)
 
         # Early validation for fast feedback

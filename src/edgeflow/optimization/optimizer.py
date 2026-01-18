@@ -847,9 +847,11 @@ class EdgeFlowOptimizer:
                 "size_reduction_percent": size_reduction,
                 "quantization_type": "none",
                 "target_device": target_device,
-                "optimizations_applied": ["operator_fusion", "graph_optimization"]
-                if enable_operator_fusion
-                else ["graph_optimization"],
+                "optimizations_applied": (
+                    ["operator_fusion", "graph_optimization"]
+                    if enable_operator_fusion
+                    else ["graph_optimization"]
+                ),
                 "note": "Basic optimizations applied to existing TFLite model",
             }
 

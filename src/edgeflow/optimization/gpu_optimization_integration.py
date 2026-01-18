@@ -53,9 +53,11 @@ class GPUOptimizationConfig:
         """Convert to dictionary."""
         return {
             "target_gpu": self.target_gpu.to_dict() if self.target_gpu else None,
-            "preferred_acceleration": self.preferred_acceleration.value
-            if self.preferred_acceleration
-            else None,
+            "preferred_acceleration": (
+                self.preferred_acceleration.value
+                if self.preferred_acceleration
+                else None
+            ),
             "gpu_memory_fraction": self.gpu_memory_fraction,
             "enable_mixed_precision": self.enable_mixed_precision,
             "enable_tensorrt": self.enable_tensorrt,
@@ -211,12 +213,14 @@ class GPUOptimizationIntegrator:
                         f"gpu_optimized_model_{int(time.time())}",
                         "optimized_model",
                         metadata={
-                            "gpu_used": result.gpu_used.to_dict()
-                            if result.gpu_used
-                            else None,
-                            "acceleration": result.acceleration_used.value
-                            if result.acceleration_used
-                            else None,
+                            "gpu_used": (
+                                result.gpu_used.to_dict() if result.gpu_used else None
+                            ),
+                            "acceleration": (
+                                result.acceleration_used.value
+                                if result.acceleration_used
+                                else None
+                            ),
                             "optimizations": result.optimizations_applied,
                             "performance_improvement": result.performance_improvement,
                         },
@@ -344,9 +348,9 @@ class GPUOptimizationIntegrator:
             # In real implementation, this would use TFLite converter with GPU delegate
             optimization_params = {
                 "use_gpu_delegate": True,
-                "gpu_precision": "fp16"
-                if gpu_config.enable_mixed_precision
-                else "fp32",
+                "gpu_precision": (
+                    "fp16" if gpu_config.enable_mixed_precision else "fp32"
+                ),
                 "gpu_memory_fraction": gpu_config.gpu_memory_fraction,
             }
 
@@ -410,10 +414,12 @@ class GPUOptimizationIntegrator:
             memory_params = {
                 "memory_fraction": gpu_config.gpu_memory_fraction,
                 "allow_growth": True,
-                "memory_layout": "NCHW"
-                if gpu_config.target_gpu
-                and gpu_config.target_gpu.vendor.value == "nvidia"
-                else "NHWC",
+                "memory_layout": (
+                    "NCHW"
+                    if gpu_config.target_gpu
+                    and gpu_config.target_gpu.vendor.value == "nvidia"
+                    else "NHWC"
+                ),
             }
 
             logger.info(f"Memory layout params: {memory_params}")
@@ -553,7 +559,9 @@ def optimize_model_with_gpu_acceleration(
     # Log results
     if result.success:
         logger.info("✅ GPU optimization completed successfully")
-        logger.info(f"🚀 Performance improvement: {result.performance_improvement:.1f}x")
+        logger.info(
+            f"🚀 Performance improvement: {result.performance_improvement:.1f}x"
+        )
         logger.info(f"📊 Model size reduction: {result.model_size_reduction:.1f}%")
         logger.info(
             f"⚡ GPU used: {result.gpu_used.name if result.gpu_used else 'None'}"

@@ -249,9 +249,9 @@ class RaspberryPiMonitor:
         fps_values = [s["fps"] for s in self.inference_stats]
 
         summary: Dict[str, Any] = {
-            "monitoring_duration_s": time.time() - self.start_time
-            if self.start_time is not None
-            else 0,
+            "monitoring_duration_s": (
+                time.time() - self.start_time if self.start_time is not None else 0
+            ),
             "total_samples": len(self.stats),
             "total_inferences": len(self.inference_stats),
             "system_performance": {

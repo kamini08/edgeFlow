@@ -3,13 +3,16 @@ Grammar-aware semantic validator that integrates with ANTLR parser and existing
 semantic analyzer.
 This module provides early validation at the grammar/AST level before IR conversion.
 """
+
 import os
 import sys
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 # Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # noqa: E402
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)  # noqa: E402
 
 from edgeflow_ast import (
     ActivationType,
